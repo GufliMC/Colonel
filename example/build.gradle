@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+    id 'net.minecrell.plugin-yml.bukkit' version '0.5.1'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+repositories {
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+}
+
+dependencies {
+    implementation project(':common')
+    implementation project(':paper')
+
+    // platform dependency is provided
+    compileOnly 'org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT'
+}
+
+bukkit {
+    name = "ColonelExample"
+    main = project.group + '.spigot.example.ColonelExamplePlugin'
+    apiVersion = '1.13'
+}
+
+// I want it nice like that
+generateBukkitPluginDescription.group = "minecraft"
+
+shadowJar {
+    archiveClassifier.set("")
+    archiveBaseName.set("ColonelExampleSpigot")
+
+    doLast {
+        copy {
+            from "build/libs/" + archiveFileName.get()
+            into "D:/Documents/testservers/1.19/plugins"
+        }
+    }
+}

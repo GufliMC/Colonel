@@ -1,0 +1,24 @@
+plugins {
+    id 'pl.allegro.tech.build.axion-release' version '1.13.6'
+}
+
+group 'com.guflimc.colonel'
+version = scmVersion.version
+
+def javadocProjects = [project(':common'), project(':spigot'), project(':paper')]
+ext.set("javadocProjects", javadocProjects)
+
+def publishProjects = [project(':common'), project(':spigot'), project(':paper')]
+ext.set("publishProjects", publishProjects)
+
+subprojects {
+    apply plugin: 'java-library'
+
+    repositories {
+        maven { url "https://libraries.minecraft.net" }
+    }
+}
+
+apply from: 'https://guflimc.github.io/scripts/gradle/subprojects-default.gradle'
+apply from: 'https://guflimc.github.io/scripts/gradle/subprojects-javadoc.gradle'
+apply from: 'https://guflimc.github.io/scripts/gradle/subprojects-publish.gradle'

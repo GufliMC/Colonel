@@ -1,0 +1,6 @@
+rootProject.name = 'Colonel'
+
+include 'common'
+include 'spigot'
+include 'paper'
+include 'example'
