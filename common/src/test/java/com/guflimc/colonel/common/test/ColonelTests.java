@@ -1,8 +1,8 @@
 package com.guflimc.colonel.common.test;
 
 import com.guflimc.colonel.common.Colonel;
-import com.guflimc.colonel.common.annotations.Command;
-import com.guflimc.colonel.common.annotations.CommandSource;
+import com.guflimc.colonel.common.annotation.Command;
+import com.guflimc.colonel.common.annotation.CommandSource;
 import com.guflimc.colonel.common.test.util.MultiOutputStream;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ public class ColonelTests {
 
     @Test
     public void test() throws CommandSyntaxException {
-        colonel.register(this);
+        colonel.registerCommands(this);
 
         // create mock source
         MockSource source = new MockSource();

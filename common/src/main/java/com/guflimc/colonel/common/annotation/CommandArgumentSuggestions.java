@@ -1,4 +1,6 @@
-package com.guflimc.colonel.common.annotations;
+package com.guflimc.colonel.common.annotation;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface CommandSuggestionProvider {
-    String value() default "";
+@Target(ElementType.PARAMETER)
+public @interface CommandArgumentSuggestions {
+    @NotNull String value();
 }

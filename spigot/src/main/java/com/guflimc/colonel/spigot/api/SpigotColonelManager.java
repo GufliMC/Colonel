@@ -36,7 +36,7 @@ public class SpigotColonelManager {
     }
 
     public void register(@NotNull Object container) {
-        colonel.register(container);
+        colonel.registerCommands(container);
         update();
     }
 

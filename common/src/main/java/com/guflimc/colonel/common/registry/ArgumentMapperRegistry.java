@@ -1,4 +1,4 @@
-package com.guflimc.colonel.common;
+package com.guflimc.colonel.common.registry;
 
 import com.mojang.brigadier.arguments.*;
 

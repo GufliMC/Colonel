@@ -1,4 +1,4 @@
-package com.guflimc.colonel.common.annotations;
+package com.guflimc.colonel.common.annotation;
 
 import java.lang.annotation.*;
 

@@ -1,10 +1,14 @@
 package com.guflimc.colonel.common;
 
-import com.guflimc.colonel.common.annotations.Command;
-import com.guflimc.colonel.common.annotations.CommandSource;
+import com.guflimc.colonel.common.annotation.*;
+import com.guflimc.colonel.common.exception.ColonelRegistrationFailedException;
+import com.guflimc.colonel.common.registry.ArgumentMapperRegistry;
+import com.guflimc.colonel.common.registry.SourceMapperRegistry;
+import com.guflimc.colonel.common.registry.SuggestionProviderRegistry;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.CommandNode;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +18,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
@@ -40,9 +46,13 @@ public class Colonel<S> {
     //
 
     private final CommandDispatcher<S> dispatcher;
+
     private final ArgumentMapperRegistry argumentMapperRegistry = new ArgumentMapperRegistry();
+    private final SourceMapperRegistry<S> sourceMapperRegistry = new SourceMapperRegistry<>();
+    private final SuggestionProviderRegistry<S> suggestionProviderRegistry = new SuggestionProviderRegistry<>();
 
     private final Collection<CommandNode<S>> nodes = new ArrayList<>();
+    private BiPredicate<S, String> permissionValidator = null; // defaults to ignore permission annotations
 
     public Colonel(CommandDispatcher<S> dispatcher) {
         this.dispatcher = dispatcher;
@@ -54,26 +64,51 @@ public class Colonel<S> {
 
     //
 
+    /**
+     * @return the {@link CommandDispatcher} used by this {@link Colonel}.
+     */
     public CommandDispatcher<S> dispatcher() {
         return dispatcher;
     }
 
-    public void register(@NotNull Object container) {
-        Class<?> cc = container.getClass();
-        for (Method method : cc.getDeclaredMethods()) {
-            if (method.getAnnotationsByType(Command.class).length == 0) {
-                continue;
-            }
-
-            register(container, method);
-        }
+    /**
+     * @return the {@link ArgumentMapperRegistry} used by this {@link Colonel}.
+     */
+    public ArgumentMapperRegistry argumentMapperRegistry() {
+        return argumentMapperRegistry;
     }
 
+    /**
+     * @return the {@link SourceMapperRegistry} used by this {@link Colonel}.
+     */
+    public SourceMapperRegistry<S> sourceMapperRegistry() {
+        return sourceMapperRegistry;
+    }
+
+    /**
+     * @return the {@link SuggestionProviderRegistry} used by this {@link Colonel}.
+     */
+    public SuggestionProviderRegistry<S> suggestionProviderRegistry() {
+        return suggestionProviderRegistry;
+    }
+
+    /**
+     * Set a {@link BiPredicate} that will be used to validate permissions of a command source.
+     *
+     * @param permissionValidator the {@link BiPredicate} to use.
+     */
+    public void setPermissionValidator(@NotNull BiPredicate<S, String> permissionValidator) {
+        this.permissionValidator = permissionValidator;
+    }
+
+    /**
+     * Unregisters all commands registered by this {@link Colonel}.
+     */
     public void unregisterAll() {
         nodes.forEach(this::unregister);
     }
 
-    private void unregister(CommandNode<S> node) {
+    private void unregister(@NotNull CommandNode<S> node) {
         try {
             for (Field field : CHILDREN_FIELDS) {
                 Map<String, ?> children = (Map<String, ?>) field.get(dispatcher.getRoot());
@@ -84,7 +119,32 @@ public class Colonel<S> {
         }
     }
 
-    private void register(@NotNull Object container, @NotNull Method method) {
+    /**
+     * Registers all commands annotated with {@link Command} in the given object.
+     *
+     * @param container the object to register commands from.
+     */
+    public void registerCommands(@NotNull Object container) {
+        Class<?> cc = container.getClass();
+        for (Method method : cc.getDeclaredMethods()) {
+            if (method.getAnnotation(CommandArgumentSuggestionProvider.class) == null) {
+                continue;
+            }
+
+            // TODO register suggestion providers
+        }
+
+        // PARSE COMMANDS
+        for (Method method : cc.getDeclaredMethods()) {
+            if (method.getAnnotationsByType(Command.class).length == 0) {
+                continue;
+            }
+
+            registerCommands(container, method);
+        }
+    }
+
+    private void registerCommands(@NotNull Object container, @NotNull Method method) {
         // SETUP PARAMETERS
         Map<Parameter, Parser<S, ?>> parsers = new HashMap<>();
 
@@ -94,8 +154,8 @@ public class Colonel<S> {
                 continue;
             }
 
-            // TODO derived types for command source
-            parsers.put(parameter, CommandContext::getSource);
+            parsers.put(parameter, ctx -> sourceMapperRegistry
+                    .map(ctx, parameter.getType()).orElse(ctx.getSource()));
         }
 
         // SETUP ARGUMENTS
@@ -108,15 +168,26 @@ public class Colonel<S> {
 
             ArgumentType<?> type = argumentMapperRegistry.map(parameter).orElse(null);
             if (type == null) {
-                // TODO error message
-                System.out.println("Argument type not found for " + parameter.getName() + " in " + method.getName());
-                return;
+                throw new ColonelRegistrationFailedException(String
+                        .format("Argument type not found for %s in %s.", parameter.getName(), method.getName()));
             }
 
-            // TODO argument suggestions
-
+            // type parser
             parsers.put(parameter, ctx -> ctx.getArgument(parameter.getName(), parameter.getType()));
-            arguments.add(argument(parameter.getName(), type));
+
+            // create argument
+            RequiredArgumentBuilder<S, ?> argument = argument(parameter.getName(), type);
+            arguments.add(argument);
+
+            // suggestions
+            String suggestionProviderName = null;
+            CommandArgumentSuggestions suggestions = parameter.getAnnotation(CommandArgumentSuggestions.class);
+            if ( suggestions != null ) {
+                suggestionProviderName = suggestions.value();
+            }
+
+            suggestionProviderRegistry.provider(suggestionProviderName, parameter.getType())
+                    .ifPresent(argument::suggests);
         }
 
         // SETUP EXECUTOR
@@ -129,19 +200,23 @@ public class Colonel<S> {
                 method.invoke(container, args);
                 return 1;
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
+                throw new ColonelRegistrationFailedException(e);
             }
         };
 
-        // TODO argument perimissions
+        // PERMISSIONS
+        CommandPermissions permissions = method.getAnnotation(CommandPermissions.class);
+        Predicate<S> requires = null;
+        if (permissions != null && permissionValidator != null ) {
+            requires = permissionsPredicate(permissions);
+        }
 
         // BUILD TREE
         Command[] commands = method.getAnnotationsByType(Command.class);
         for (Command cmd : commands) {
             if (cmd == null || cmd.value().trim().length() == 0) {
-                // TODO error message
-                System.out.println("Command annotation is empty for " + method.getName());
-                return;
+                throw new ColonelRegistrationFailedException(String
+                        .format("Command annotation is empty for %s.", method.getName()));
             }
 
             List<ArgumentBuilder<S, ?>> parts = new ArrayList<>();
@@ -156,7 +231,13 @@ public class Colonel<S> {
             parts.addAll(arguments);
 
             // executor
-            parts.get(parts.size() - 1).executes(command);
+            ArgumentBuilder<S, ?> exitNode = parts.get(parts.size() - 1);
+            exitNode.executes(command);
+
+            // requires (permissions)
+            if (requires != null) {
+                exitNode.requires(requires);
+            }
 
             // build actual tree
             for (int i = parts.size() - 1; i > 0; i--) {
@@ -168,6 +249,22 @@ public class Colonel<S> {
             dispatcher.getRoot().addChild(node);
             nodes.add(node);
         }
+    }
+
+    private Predicate<S> permissionsPredicate(CommandPermissions permissions) {
+        return source -> {
+            int match = (int) Arrays.stream(permissions.value()).filter(permissionTest(source)).count();
+            return permissions.gate().test(match, permissions.value().length);
+        };
+    }
+
+    private Predicate<CommandPermissions.CommandPermission> permissionTest(S source) {
+        return permission -> {
+            if (permission.negate()) {
+                return !permissionValidator.test(source, permission.value());
+            }
+            return permissionValidator.test(source, permission.value());
+        };
     }
 
     @FunctionalInterface

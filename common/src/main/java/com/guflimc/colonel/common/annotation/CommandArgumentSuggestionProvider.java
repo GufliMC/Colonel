@@ -1,4 +1,4 @@
-package com.guflimc.colonel.common.annotations;
+package com.guflimc.colonel.common.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-public @interface CommandSuggestions {
-    String value();
+@Target(ElementType.METHOD)
+public @interface CommandArgumentSuggestionProvider {
+    String value() default "";
 }
