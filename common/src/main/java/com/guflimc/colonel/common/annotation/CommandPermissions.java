@@ -40,7 +40,7 @@ public @interface CommandPermissions {
     }
 
     @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
+    @Target({})
     @interface CommandPermission {
         String value();
 

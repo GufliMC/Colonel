@@ -1,11 +1,14 @@
 package com.guflimc.colonel.common.registry;
 
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.*;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import java.lang.reflect.Parameter;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 public class ArgumentMapperRegistry {
 
@@ -16,10 +19,21 @@ public class ArgumentMapperRegistry {
         ArgumentType<T> map(Parameter parameter);
     }
 
+    private record CustomArgumentType<T>(Function<String, T> parser) implements ArgumentType<T> {
+        @Override
+        public T parse(StringReader reader) throws CommandSyntaxException {
+            return parser.apply(reader.readString());
+        }
+    }
+
     //
 
     public <T> void register(Class<T> type, Mapper<T> mapper) {
         mappers.put(type, mapper);
+    }
+
+    public <T> void registerParser(Class<T> type, Function<String, T> parser) {
+        mappers.put(type, (Mapper<T>) parameter -> new CustomArgumentType<>(parser));
     }
 
     public Optional<ArgumentType<?>> map(Parameter parameter) {

@@ -45,14 +45,20 @@ public class Colonel<S> {
 
     //
 
+    // dispatcher, provided in constructor
     private final CommandDispatcher<S> dispatcher;
 
+    // registries
     private final ArgumentMapperRegistry argumentMapperRegistry = new ArgumentMapperRegistry();
     private final SourceMapperRegistry<S> sourceMapperRegistry = new SourceMapperRegistry<>();
     private final SuggestionProviderRegistry<S> suggestionProviderRegistry = new SuggestionProviderRegistry<>();
 
-    private final Collection<CommandNode<S>> nodes = new ArrayList<>();
+    // values that can be changed
     private BiPredicate<S, String> permissionValidator = null; // defaults to ignore permission annotations
+
+    // list of 2nd-level nodes that are registered by colonel.
+    // TODO this should only be exit nodes.
+    private final Collection<CommandNode<S>> nodes = new ArrayList<>();
 
     public Colonel(CommandDispatcher<S> dispatcher) {
         this.dispatcher = dispatcher;
@@ -182,7 +188,7 @@ public class Colonel<S> {
             // suggestions
             String suggestionProviderName = null;
             CommandArgumentSuggestions suggestions = parameter.getAnnotation(CommandArgumentSuggestions.class);
-            if ( suggestions != null ) {
+            if (suggestions != null) {
                 suggestionProviderName = suggestions.value();
             }
 
@@ -207,7 +213,7 @@ public class Colonel<S> {
         // PERMISSIONS
         CommandPermissions permissions = method.getAnnotation(CommandPermissions.class);
         Predicate<S> requires = null;
-        if (permissions != null && permissionValidator != null ) {
+        if (permissions != null && permissionValidator != null) {
             requires = permissionsPredicate(permissions);
         }
 
