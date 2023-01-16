@@ -8,7 +8,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-public @interface CommandArgumentSuggestions {
-    @NotNull String value();
+@Target(ElementType.METHOD)
+public @interface SuggestionProvider {
+    @NotNull String value() default "";
+
+    @NotNull Class<?> target();
 }

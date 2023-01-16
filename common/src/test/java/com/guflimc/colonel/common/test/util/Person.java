@@ -3,13 +3,15 @@ package com.guflimc.colonel.common.test.util;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MockSource {
+public class Person {
 
-    private final String name;
-    private int age = 17;
     private final List<String> permissions = new ArrayList<>();
+    private final String name;
 
-    public MockSource(String name) {
+    private int age = 17;
+    private Gender gender;
+
+    public Person(String name) {
         this.name = name;
     }
 
@@ -39,8 +41,24 @@ public class MockSource {
 
     //
 
+    public Gender gender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
+    }
+
+    //
+
     public String name() {
         return name;
+    }
+
+    //
+
+    public enum Gender {
+        MAN, WOMAN;
     }
 
 }

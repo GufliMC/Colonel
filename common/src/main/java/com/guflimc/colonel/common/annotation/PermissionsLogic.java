@@ -8,24 +8,34 @@ import java.util.function.BiPredicate;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface CommandPermissions {
+public @interface PermissionsLogic {
 
-    CommandPermission[] value();
-
-    LogicalGate gate() default LogicalGate.AND;
+    LogicalGate value() default LogicalGate.AND;
 
     enum LogicalGate {
-        /** True if all permissions test true. */
+        /**
+         * True if all permissions test true.
+         */
         AND(Integer::equals),
-        /** True if one permission tests false. */
+        /**
+         * True if one permission tests false.
+         */
         NAND((match, total) -> !match.equals(total)),
-        /** True if at least one permission tests true. */
+        /**
+         * True if at least one permission tests true.
+         */
         OR((match, total) -> match > 0),
-        /** True if exactly one permission tests true. */
+        /**
+         * True if exactly one permission tests true.
+         */
         XOR((match, total) -> match == 1),
-        /** True if no permissions test true. */
+        /**
+         * True if no permissions test true.
+         */
         NOR((match, total) -> match == 0),
-        /** True if all or none of the permissions test true. */
+        /**
+         * True if all or none of the permissions test true.
+         */
         XNOR((match, total) -> match == 0 || match.equals(total));
 
         private final BiPredicate<Integer, Integer> test;
@@ -37,13 +47,5 @@ public @interface CommandPermissions {
         public boolean test(int match, int total) {
             return test.test(match, total);
         }
-    }
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({})
-    @interface CommandPermission {
-        String value();
-
-        boolean negate() default false;
     }
 }

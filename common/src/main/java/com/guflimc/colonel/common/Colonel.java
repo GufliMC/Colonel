@@ -1,15 +1,13 @@
 package com.guflimc.colonel.common;
 
 import com.guflimc.colonel.common.annotation.*;
+import com.guflimc.colonel.common.builder.AnnotatedArgumentBuilder;
+import com.guflimc.colonel.common.builder.AnnotatedCommandBuilder;
 import com.guflimc.colonel.common.exception.ColonelRegistrationFailedException;
-import com.guflimc.colonel.common.registry.ArgumentMapperRegistry;
-import com.guflimc.colonel.common.registry.SourceMapperRegistry;
-import com.guflimc.colonel.common.registry.SuggestionProviderRegistry;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
-import com.mojang.brigadier.builder.ArgumentBuilder;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.tree.CommandNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,12 +16,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-
-import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
-import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
+import java.util.concurrent.CompletableFuture;
 
 public class Colonel<S> {
 
@@ -48,17 +41,13 @@ public class Colonel<S> {
     // dispatcher, provided in constructor
     private final CommandDispatcher<S> dispatcher;
 
-    // registries
-    private final ArgumentMapperRegistry argumentMapperRegistry = new ArgumentMapperRegistry();
-    private final SourceMapperRegistry<S> sourceMapperRegistry = new SourceMapperRegistry<>();
-    private final SuggestionProviderRegistry<S> suggestionProviderRegistry = new SuggestionProviderRegistry<>();
-
-    // values that can be changed
-    private BiPredicate<S, String> permissionValidator = null; // defaults to ignore permission annotations
-
     // list of 2nd-level nodes that are registered by colonel.
     // TODO this should only be exit nodes.
     private final Collection<CommandNode<S>> nodes = new ArrayList<>();
+
+    // registries
+    private final ColonelConfig<S> config = new ColonelConfig<>();
+
 
     public Colonel(CommandDispatcher<S> dispatcher) {
         this.dispatcher = dispatcher;
@@ -70,46 +59,16 @@ public class Colonel<S> {
 
     //
 
-    /**
-     * @return the {@link CommandDispatcher} used by this {@link Colonel}.
-     */
     public CommandDispatcher<S> dispatcher() {
         return dispatcher;
     }
 
-    /**
-     * @return the {@link ArgumentMapperRegistry} used by this {@link Colonel}.
-     */
-    public ArgumentMapperRegistry argumentMapperRegistry() {
-        return argumentMapperRegistry;
+    public ColonelConfig<S> config() {
+        return config;
     }
 
-    /**
-     * @return the {@link SourceMapperRegistry} used by this {@link Colonel}.
-     */
-    public SourceMapperRegistry<S> sourceMapperRegistry() {
-        return sourceMapperRegistry;
-    }
+    //
 
-    /**
-     * @return the {@link SuggestionProviderRegistry} used by this {@link Colonel}.
-     */
-    public SuggestionProviderRegistry<S> suggestionProviderRegistry() {
-        return suggestionProviderRegistry;
-    }
-
-    /**
-     * Set a {@link BiPredicate} that will be used to validate permissions of a command source.
-     *
-     * @param permissionValidator the {@link BiPredicate} to use.
-     */
-    public void setPermissionValidator(@NotNull BiPredicate<S, String> permissionValidator) {
-        this.permissionValidator = permissionValidator;
-    }
-
-    /**
-     * Unregisters all commands registered by this {@link Colonel}.
-     */
     public void unregisterAll() {
         nodes.forEach(this::unregister);
     }
@@ -125,19 +84,16 @@ public class Colonel<S> {
         }
     }
 
-    /**
-     * Registers all commands annotated with {@link Command} in the given object.
-     *
-     * @param container the object to register commands from.
-     */
+    //
+
     public void registerCommands(@NotNull Object container) {
         Class<?> cc = container.getClass();
         for (Method method : cc.getDeclaredMethods()) {
-            if (method.getAnnotation(CommandArgumentSuggestionProvider.class) == null) {
+            if (method.getAnnotation(SuggestionProvider.class) == null) {
                 continue;
             }
 
-            // TODO register suggestion providers
+            registerSuggestions(container, method);
         }
 
         // PARSE COMMANDS
@@ -150,131 +106,143 @@ public class Colonel<S> {
         }
     }
 
-    private void registerCommands(@NotNull Object container, @NotNull Method method) {
-        // SETUP PARAMETERS
-        Map<Parameter, Parser<S, ?>> parsers = new HashMap<>();
-
-        // SETUP COMMAND SOURCE
-        for (Parameter parameter : method.getParameters()) {
-            if (parameter.getAnnotation(CommandSource.class) == null) {
-                continue;
-            }
-
-            parsers.put(parameter, ctx -> sourceMapperRegistry
-                    .map(ctx, parameter.getType()).orElse(ctx.getSource()));
+    private void registerSuggestions(@NotNull Object container, @NotNull Method method) {
+        if (!List.class.isAssignableFrom(method.getReturnType())) {
+            throw new ColonelRegistrationFailedException(String.format("The return type of %s must be a List.", method.getName()));
+        }
+        if (method.getParameters().length == 1 && !method.getParameters()[0].getType().equals(CommandContext.class)) {
+            throw new ColonelRegistrationFailedException(String.format("%s must have a single parameter of type CommandContext.", method.getName()));
         }
 
-        // SETUP ARGUMENTS
-        List<ArgumentBuilder<S, ?>> arguments = new ArrayList<>();
-        Parameter[] parameters = method.getParameters();
-        for (Parameter parameter : parameters) {
-            if (parameter.getAnnotation(CommandSource.class) != null) {
-                continue;
-            }
-
-            ArgumentType<?> type = argumentMapperRegistry.map(parameter).orElse(null);
-            if (type == null) {
-                throw new ColonelRegistrationFailedException(String
-                        .format("Argument type not found for %s in %s.", parameter.getName(), method.getName()));
-            }
-
-            // type parser
-            parsers.put(parameter, ctx -> ctx.getArgument(parameter.getName(), parameter.getType()));
-
-            // create argument
-            RequiredArgumentBuilder<S, ?> argument = argument(parameter.getName(), type);
-            arguments.add(argument);
-
-            // suggestions
-            String suggestionProviderName = null;
-            CommandArgumentSuggestions suggestions = parameter.getAnnotation(CommandArgumentSuggestions.class);
-            if (suggestions != null) {
-                suggestionProviderName = suggestions.value();
-            }
-
-            suggestionProviderRegistry.provider(suggestionProviderName, parameter.getType())
-                    .ifPresent(argument::suggests);
+        SuggestionProvider annotation = method.getAnnotation(SuggestionProvider.class);
+        if (annotation.target() == null) {
+            throw new ColonelRegistrationFailedException(String.format("The target class for %s must be specified.", method.getName()));
         }
 
-        // SETUP EXECUTOR
-        com.mojang.brigadier.Command<S> command = ctx -> {
-            Object[] args = new Object[parameters.length];
-            for (int i = 0; i < args.length; i++) {
-                args[i] = parsers.get(parameters[i]).parse(ctx);
-            }
+        String name = annotation.value().trim();
+        if (name.isEmpty()) name = null;
+
+        com.mojang.brigadier.suggestion.SuggestionProvider<S> provider = (ctx, b) -> {
+            List<?> result;
             try {
-                method.invoke(container, args);
-                return 1;
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new ColonelRegistrationFailedException(e);
+                result = (List<?>) method.invoke(container, ctx);
+                Objects.requireNonNull(result);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
+
+            if (result.get(0) instanceof Suggestion) {
+                return CompletableFuture.completedFuture(com.mojang.brigadier.suggestion.Suggestions.create(ctx.getInput(), (List<Suggestion>) result));
+            }
+
+            result.stream().map(Object::toString).forEach(b::suggest);
+
+            return CompletableFuture.completedFuture(b.build());
         };
 
-        // PERMISSIONS
-        CommandPermissions permissions = method.getAnnotation(CommandPermissions.class);
-        Predicate<S> requires = null;
-        if (permissions != null && permissionValidator != null) {
-            requires = permissionsPredicate(permissions);
-        }
+        config.withSuggestionSupplier(name, annotation.target(), provider);
+    }
 
-        // BUILD TREE
+    private void registerCommands(@NotNull Object container, @NotNull Method method) {
+        AnnotatedCommandBuilder<S> builder = new AnnotatedCommandBuilder<>(config);
+
+        // literals
         Command[] commands = method.getAnnotationsByType(Command.class);
         for (Command cmd : commands) {
             if (cmd == null || cmd.value().trim().length() == 0) {
                 throw new ColonelRegistrationFailedException(String
                         .format("Command annotation is empty for %s.", method.getName()));
             }
+            builder.withLiterals(cmd.value());
+        }
 
-            List<ArgumentBuilder<S, ?>> parts = new ArrayList<>();
+        // permissions
+        Permission[] permissions = method.getAnnotationsByType(Permission.class);
+        if (permissions != null) {
+            builder.withPermissions(permissions);
+        }
 
-            // literals
-            String[] literals = cmd.value().trim().split(Pattern.quote(" "));
-            for (String literal : literals) {
-                parts.add(literal(literal));
+
+        PermissionsLogic permissionsLogic = method.getAnnotation(PermissionsLogic.class);
+        if ( permissionsLogic != null ) {
+            builder.withPermissionsLogic(permissionsLogic);
+        }
+
+        // parameters
+        Map<Parameter, ParameterMapper<S, ?>> parameters = new HashMap<>();
+
+        // arguments & command source
+        Parameter[] params = method.getParameters();
+        for (Parameter parameter : params) {
+
+            // command source
+            if (parameter.getAnnotation(CommandSource.class) != null) {
+                parameters.put(parameter, ctx -> config.commandSource(ctx, parameter.getType()).orElse(ctx.getSource()));
+                continue;
             }
 
             // arguments
-            parts.addAll(arguments);
-
-            // executor
-            ArgumentBuilder<S, ?> exitNode = parts.get(parts.size() - 1);
-            exitNode.executes(command);
-
-            // requires (permissions)
-            if (requires != null) {
-                exitNode.requires(requires);
-            }
-
-            // build actual tree
-            for (int i = parts.size() - 1; i > 0; i--) {
-                parts.get(i - 1).then(parts.get(i));
-            }
-
-            // register
-            CommandNode<S> node = parts.get(0).build();
-            dispatcher.getRoot().addChild(node);
-            nodes.add(node);
+            builder.withArgument(parameter.getName(), b -> argument(parameter, b));
+            parameters.put(parameter, ctx -> ctx.getArgument(parameter.getName(), parameter.getType()));
         }
-    }
 
-    private Predicate<S> permissionsPredicate(CommandPermissions permissions) {
-        return source -> {
-            int match = (int) Arrays.stream(permissions.value()).filter(permissionTest(source)).count();
-            return permissions.gate().test(match, permissions.value().length);
-        };
-    }
-
-    private Predicate<CommandPermissions.CommandPermission> permissionTest(S source) {
-        return permission -> {
-            if (permission.negate()) {
-                return !permissionValidator.test(source, permission.value());
+        // executor
+        builder.withExecutor(ctx -> {
+            Object[] args = new Object[params.length];
+            for (int i = 0; i < args.length; i++) {
+                args[i] = parameters.get(params[i]).parse(ctx);
             }
-            return permissionValidator.test(source, permission.value());
-        };
+            try {
+                method.invoke(container, args);
+                return com.mojang.brigadier.Command.SINGLE_SUCCESS;
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new ColonelRegistrationFailedException(e);
+            }
+        });
+
+        // register
+        builder.register(dispatcher.getRoot());
+    }
+
+    private <T> void argument(@NotNull Parameter parameter, @NotNull AnnotatedArgumentBuilder<S, T> b) {
+        ArgumentType<?> type = config.argumentType(parameter).orElse(null);
+        if (type == null) {
+            throw new ColonelRegistrationFailedException(String
+                    .format("Argument type not found for %s with type %s.", parameter.getName(), parameter.getType().getSimpleName()));
+        }
+
+        b.withArgumentType((ArgumentType<T>) type);
+
+        // suggestions
+        String name = null;
+
+        Suggestions suggestions = parameter.getAnnotation(Suggestions.class);
+        if (suggestions != null && !suggestions.value().trim().isEmpty()) {
+            name = suggestions.value().trim();
+            if ( name.equals(Suggestions.TYPE_OR_NAME_INFERRED) ) {
+                name = parameter.getName();
+            }
+        }
+
+        com.mojang.brigadier.suggestion.SuggestionProvider<S> provider = config.suggestionSupplier(name, parameter.getType()).orElse(null);
+        if (provider != null) {
+            b.withSuggestions(provider);
+            return;
+        }
+
+        if (!parameter.getType().isEnum()) {
+            return;
+        }
+
+        // fallback to automatic enum suggestions
+        b.withSuggestions((ctx, sb) -> {
+            Arrays.stream(parameter.getType().getEnumConstants()).forEach(o -> sb.suggest(o.toString()));
+            return CompletableFuture.completedFuture(sb.build());
+        });
     }
 
     @FunctionalInterface
-    private interface Parser<S, T> {
+    private interface ParameterMapper<S, T> {
         T parse(CommandContext<S> ctx);
     }
 

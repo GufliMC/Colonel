@@ -1,18 +1,18 @@
 package com.guflimc.colonel.common.annotation;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Repeatable(Command.Commands.class)
-public @interface Command {
-    @NotNull String value();
+@Repeatable(Permission.Permissions.class)
+public @interface Permission {
+    String value();
+
+    boolean invert() default false;
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    @interface Commands {
-        Command[] value();
+    @interface Permissions {
+        Permission[] value();
     }
 }
