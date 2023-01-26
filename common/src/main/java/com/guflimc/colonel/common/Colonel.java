@@ -3,6 +3,7 @@ package com.guflimc.colonel.common;
 import com.guflimc.colonel.common.annotation.*;
 import com.guflimc.colonel.common.builder.AnnotatedArgumentBuilder;
 import com.guflimc.colonel.common.builder.AnnotatedCommandBuilder;
+import com.guflimc.colonel.common.exception.ColonelCommandExeception;
 import com.guflimc.colonel.common.exception.ColonelRegistrationFailedException;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -196,7 +197,7 @@ public class Colonel<S> {
                 method.invoke(container, args);
                 return com.mojang.brigadier.Command.SINGLE_SUCCESS;
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new ColonelRegistrationFailedException(e);
+                throw new ColonelCommandExeception(e);
             }
         });
 

@@ -22,7 +22,8 @@ public class ColonelCommand extends org.bukkit.command.Command {
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
         try {
-            manager.colonel.dispatcher().execute(commandLabel + " " + String.join(" ", args), sender);
+            String input = (commandLabel + " " + String.join(" ", args)).trim();
+            manager.colonel.dispatcher().execute(input, sender);
         } catch (CommandSyntaxException e) {
             sender.sendMessage(ChatColor.RED + e.getMessage());
         }

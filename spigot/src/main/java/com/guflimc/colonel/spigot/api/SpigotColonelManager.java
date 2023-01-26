@@ -1,10 +1,12 @@
 package com.guflimc.colonel.spigot.api;
 
 import com.guflimc.colonel.common.Colonel;
+import com.guflimc.colonel.common.ColonelConfig;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginDisableEvent;
@@ -27,12 +29,18 @@ public class SpigotColonelManager {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(new EventListener(), plugin);
 
+        colonel.config().withPermmissionTester(CommandSender::hasPermission);
+
         try {
             commandMap = (SimpleCommandMap) plugin.getServer().getClass()
                     .getMethod("getCommandMap").invoke(plugin.getServer());
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public ColonelConfig<CommandSender> config() {
+        return colonel.config();
     }
 
     public void register(@NotNull Object container) {
