@@ -1,6 +1,12 @@
 package com.guflimc.colonel.common;
 
-import com.guflimc.colonel.common.annotation.*;
+import com.guflimc.colonel.common.annotation.command.Command;
+import com.guflimc.colonel.common.annotation.command.Permission;
+import com.guflimc.colonel.common.annotation.command.PermissionsLogic;
+import com.guflimc.colonel.common.annotation.command.parameter.CommandSource;
+import com.guflimc.colonel.common.annotation.command.parameter.WithParser;
+import com.guflimc.colonel.common.annotation.command.parameter.WithSuggestions;
+import com.guflimc.colonel.common.annotation.suggestions.Suggestions;
 import com.guflimc.colonel.common.builder.AnnotatedArgumentBuilder;
 import com.guflimc.colonel.common.builder.AnnotatedCommandBuilder;
 import com.guflimc.colonel.common.exception.ColonelCommandExeception;
@@ -90,7 +96,7 @@ public class Colonel<S> {
     public void registerCommands(@NotNull Object container) {
         Class<?> cc = container.getClass();
         for (Method method : cc.getDeclaredMethods()) {
-            if (method.getAnnotation(SuggestionProvider.class) == null) {
+            if (method.getAnnotation(Suggestions.class) == null) {
                 continue;
             }
 
@@ -115,12 +121,12 @@ public class Colonel<S> {
             throw new ColonelRegistrationFailedException(String.format("%s must have a single parameter of type CommandContext.", method.getName()));
         }
 
-        SuggestionProvider annotation = method.getAnnotation(SuggestionProvider.class);
+        Suggestions annotation = method.getAnnotation(Suggestions.class);
         if (annotation.target() == null) {
             throw new ColonelRegistrationFailedException(String.format("The target class for %s must be specified.", method.getName()));
         }
 
-        String name = annotation.value().trim();
+        String name = annotation.name().trim();
         if (name.isEmpty()) name = null;
 
         com.mojang.brigadier.suggestion.SuggestionProvider<S> provider = (ctx, b) -> {
@@ -141,7 +147,7 @@ public class Colonel<S> {
             return CompletableFuture.completedFuture(b.build());
         };
 
-        config.withSuggestionSupplier(name, annotation.target(), provider);
+        config.withSuggestionProvider(name, annotation.target(), provider);
     }
 
     private void registerCommands(@NotNull Object container, @NotNull Method method) {
@@ -206,26 +212,33 @@ public class Colonel<S> {
     }
 
     private <T> void argument(@NotNull Parameter parameter, @NotNull AnnotatedArgumentBuilder<S, T> b) {
-        ArgumentType<?> type = config.argumentType(parameter).orElse(null);
+        // argument type
+        Class<?> parameterType = parameter.getType();
+        WithParser parser = parameter.getAnnotation(WithParser.class);
+        if (parser != null) {
+            parameterType = parser.value();
+        }
+
+        ArgumentType<?> type = config.argumentType(parameterType, parameter).orElse(null);
         if (type == null) {
             throw new ColonelRegistrationFailedException(String
-                    .format("Argument type not found for %s with type %s.", parameter.getName(), parameter.getType().getSimpleName()));
+                    .format("Argument type not found for %s with type %s.", parameter.getName(), parameterType.getSimpleName()));
         }
 
         b.withArgumentType((ArgumentType<T>) type);
 
-        // suggestions
-        String name = null;
-
-        Suggestions suggestions = parameter.getAnnotation(Suggestions.class);
+        // suggestion provider
+        String suggestionProviderName = null;
+        WithSuggestions suggestions = parameter.getAnnotation(WithSuggestions.class);
         if (suggestions != null && !suggestions.value().trim().isEmpty()) {
-            name = suggestions.value().trim();
-            if ( name.equals(Suggestions.TYPE_OR_NAME_INFERRED) ) {
-                name = parameter.getName();
+            suggestionProviderName = suggestions.value().trim();
+            if ( suggestionProviderName.equals(WithSuggestions.TYPE_OR_NAME_INFERRED) ) {
+                suggestionProviderName = parameter.getName();
             }
         }
 
-        com.mojang.brigadier.suggestion.SuggestionProvider<S> provider = config.suggestionSupplier(name, parameter.getType()).orElse(null);
+        com.mojang.brigadier.suggestion.SuggestionProvider<S> provider = config.
+                suggestionProvider(parameterType, suggestionProviderName).orElse(null);
         if (provider != null) {
             b.withSuggestions(provider);
             return;

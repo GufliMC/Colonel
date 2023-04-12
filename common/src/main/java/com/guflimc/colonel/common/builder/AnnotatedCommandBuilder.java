@@ -1,8 +1,8 @@
 package com.guflimc.colonel.common.builder;
 
 import com.guflimc.colonel.common.ColonelConfig;
-import com.guflimc.colonel.common.annotation.Permission;
-import com.guflimc.colonel.common.annotation.PermissionsLogic;
+import com.guflimc.colonel.common.annotation.command.Permission;
+import com.guflimc.colonel.common.annotation.command.PermissionsLogic;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.tree.CommandNode;

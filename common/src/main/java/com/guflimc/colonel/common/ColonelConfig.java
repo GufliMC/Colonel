@@ -58,33 +58,35 @@ public class ColonelConfig<S> {
         argumentTypes.put(type, mapper);
     }
 
+    public Optional<ArgumentType<?>> argumentType(Class<?> type, Parameter parameter) {
+        return this.find(argumentTypes, type).map(mapper -> mapper.map(parameter));
+    }
+
+    //
+
     public <T> void withArgumentTypeParser(Class<T> type, Function<String, T> parser) {
         argumentTypes.put(type, (ArgumentMapper<T>) ignored -> (ArgumentType<T>) reader -> parser.apply(reader.readString()));
     }
 
-    public Optional<ArgumentType<?>> argumentType(Parameter parameter) {
-        return this.<ArgumentMapper<?>>find(argumentTypes, parameter.getType()).map(mapper -> mapper.map(parameter));
-    }
-
     // SUGGESTION SUPPLIERS
 
-    private final List<SuggestionSupplier<S, ?>> suggestionSuppliers = new ArrayList<>();
+    private final List<ColonelSuggestionProvider<S, ?>> suggestionProviders = new ArrayList<>();
 
-    public record SuggestionSupplier<S, T>(@Nullable String name,
-                                           @NotNull Class<T> type,
-                                           @NotNull SuggestionProvider<S> provider) {
+    private record ColonelSuggestionProvider<S, T>(@Nullable String name,
+                                                  @NotNull Class<T> type,
+                                                  @NotNull SuggestionProvider<S> provider) {
     }
 
-    public <T> void withSuggestionSupplier(@Nullable String name, @NotNull Class<T> type, @NotNull SuggestionProvider<S> provider) {
-        suggestionSuppliers.add(new SuggestionSupplier<>(name, type, provider));
+    public <T> void withSuggestionProvider(@Nullable String name, @NotNull Class<T> type, @NotNull SuggestionProvider<S> provider) {
+        suggestionProviders.add(new ColonelSuggestionProvider<>(name, type, provider));
     }
 
-    public <T> void withSuggestionSupplier(@NotNull Class<T> type, @NotNull com.mojang.brigadier.suggestion.SuggestionProvider<S> provider) {
-        withSuggestionSupplier(null, type, provider);
+    public <T> void withSuggestionProvider(@NotNull Class<T> type, @NotNull SuggestionProvider<S> provider) {
+        withSuggestionProvider(null, type, provider);
     }
 
-    public Optional<SuggestionProvider<S>> suggestionSupplier(@Nullable String name, @NotNull Class<?> type) {
-        return suggestionSuppliers.stream().filter(p -> p.type.equals(type))
+    public Optional<SuggestionProvider<S>> suggestionProvider(@NotNull Class<?> type, @Nullable String name) {
+        return suggestionProviders.stream().filter(p -> p.type.equals(type))
                 .filter(p -> name == null || name.equals(p.name)) // if name is given, it must match
                 .findFirst().map(rsp -> rsp.provider);
     }

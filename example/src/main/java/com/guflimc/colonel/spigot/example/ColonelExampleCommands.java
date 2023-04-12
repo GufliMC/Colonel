@@ -1,7 +1,7 @@
 package com.guflimc.colonel.spigot.example;
 
-import com.guflimc.colonel.common.annotation.Command;
-import com.guflimc.colonel.common.annotation.CommandSource;
+import com.guflimc.colonel.common.annotation.command.Command;
+import com.guflimc.colonel.common.annotation.command.parameter.CommandSource;
 import org.bukkit.entity.Player;
 
 public class ColonelExampleCommands {

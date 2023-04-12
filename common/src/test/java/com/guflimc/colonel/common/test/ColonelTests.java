@@ -1,7 +1,12 @@
 package com.guflimc.colonel.common.test;
 
 import com.guflimc.colonel.common.Colonel;
-import com.guflimc.colonel.common.annotation.*;
+import com.guflimc.colonel.common.annotation.command.Command;
+import com.guflimc.colonel.common.annotation.command.Permission;
+import com.guflimc.colonel.common.annotation.command.PermissionsLogic;
+import com.guflimc.colonel.common.annotation.command.parameter.CommandSource;
+import com.guflimc.colonel.common.annotation.command.parameter.WithSuggestions;
+import com.guflimc.colonel.common.annotation.suggestions.Suggestions;
 import com.guflimc.colonel.common.test.util.Person;
 import com.guflimc.colonel.common.test.util.MultiOutputStream;
 import com.mojang.brigadier.ParseResults;
@@ -106,7 +111,7 @@ public class ColonelTests {
 
     // command methods
 
-    @SuggestionProvider(value = "age", target = int.class)
+    @Suggestions(value = "age", target = int.class)
     public List<Integer> ageSuggestions(CommandContext<Person> ctx) {
         return IntStream.range(0, 100).filter(i -> i != ctx.getSource().age()).boxed().toList();
     }
@@ -123,7 +128,7 @@ public class ColonelTests {
     @Command("setage")
     @Command("set age")
     @Permission("command.setage")
-    public void setAge(@CommandSource Person source, @Suggestions("age") int age) {
+    public void setAge(@CommandSource Person source, @WithSuggestions("age") int age) {
         source.setAge(age);
     }
 

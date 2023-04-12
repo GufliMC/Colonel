@@ -1,4 +1,4 @@
-package com.guflimc.colonel.common.annotation;
+package com.guflimc.colonel.common.annotation.suggestions;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -8,10 +8,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
+@Target(ElementType.METHOD)
 public @interface Suggestions {
 
-    String TYPE_OR_NAME_INFERRED = "__TYPE_OR_NAME_INFERRED__";
+    @NotNull String name();
 
-    @NotNull String value() default TYPE_OR_NAME_INFERRED;
+    @NotNull Class<?> target();
+    
 }
