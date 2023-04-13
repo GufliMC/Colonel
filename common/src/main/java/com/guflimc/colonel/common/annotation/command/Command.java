@@ -8,6 +8,7 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Repeatable(Command.Commands.class)
 public @interface Command {
+
     @NotNull String value();
 
     @Retention(RetentionPolicy.RUNTIME)

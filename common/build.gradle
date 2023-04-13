@@ -1,6 +1,6 @@
 
 dependencies {
-    api 'com.mojang:brigadier:1.0.18'
+//    api 'com.mojang:brigadier:1.0.18'
 
     // TESTS
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
