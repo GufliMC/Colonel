@@ -1,42 +1,59 @@
 package com.guflimc.colonel.common.command;
 
-import com.guflimc.colonel.common.command.handler.CommandParameterParser;
+import com.guflimc.colonel.common.command.syntax.CommandParameterParser;
+import com.guflimc.colonel.common.command.syntax.CommandParameterSuggestion;
+import com.guflimc.colonel.common.command.syntax.CommandParameterSuggestionProvider;
+import com.guflimc.colonel.common.command.syntax.CommandParameterType;
 import com.guflimc.colonel.common.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 public class CommandDispatcherContext {
 
     // PARAMETERS
 
-    public record ParameterParser<T>(CommandParameterParser<T> parser, Collection<String> dependencies) {
+    private final Registry<CommandParameterType<?>> parameterTypes = new Registry<>();
+
+    public <T> void registerParameterType(@NotNull String name, @NotNull Class<T> type,
+                                          @NotNull CommandParameterParser<T> parser,
+                                          @NotNull CommandParameterSuggestionProvider suggestionProvider) {
+        CommandParameterType<T> parameterType = new CommandParameterType<>(name, type) {
+            @Override
+            public List<CommandParameterSuggestion> suggest(@NotNull CommandContext context, @NotNull String input) {
+                return suggestionProvider.suggest(context, input);
+            }
+
+            @Override
+            public T parse(@NotNull CommandContext context, @NotNull String input) {
+                return parser.parse(context, input);
+            }
+        };
+        parameterTypes.register(name, type, parameterType);
     }
 
-    private final Registry<ParameterParser<?>> parameterParsers = new Registry<>();
-
-    public <T> void registerParameterParser(@NotNull String name, @NotNull Class<T> type, @NotNull CommandParameterParser<T> parser) {
-        registerParameterParser(name, type, parser, Set.of());
+    public <T> void registerParameterType(@NotNull String name, @NotNull Class<T> type,
+                                          @NotNull CommandParameterParser<T> parser) {
+        registerParameterType(name, type, parser, (context, input) -> List.of());
     }
 
-    public <T> void registerParameterParser(@NotNull String name, @NotNull Class<T> type, @NotNull CommandParameterParser<T> parser, @NotNull Collection<String> dependencies) {
-        parameterParsers.register(name, type, new ParameterParser<>(parser, dependencies));
+    public <T> void registerParameterType(@NotNull CommandParameterType<T> parameterType) {
+        parameterTypes.register(parameterType.name(), parameterType.type(), parameterType);
     }
 
-    public <T> void unregisterParameterParser(@NotNull String name) {
-        parameterParsers.unregister(name);
+    public <T> void unregisterParameterType(@NotNull String name) {
+        parameterTypes.unregister(name);
     }
 
-    public <T> ParameterParser<T> parameterParser(@NotNull Class<T> type, @NotNull String name) {
-        return parameterParsers.find(name, type)
-                .map(r -> (ParameterParser<T>) r)
+    public <T> CommandParameterType<T> parameterType(@NotNull Class<T> type, @NotNull String name) {
+        return parameterTypes.find(name, type)
+                .map(r -> (CommandParameterType<T>) r)
                 .orElseThrow(() -> new IllegalArgumentException(String.format("No parameter parser with name '%s' and type %s found.", name, type.getSimpleName())));
     }
 
-    public <T> ParameterParser<T> parameterParser(@NotNull Class<T> type) {
-        return parameterParsers.find(type)
-                .map(r -> (ParameterParser<T>) r)
+    public <T> CommandParameterType<T> parameterType(@NotNull Class<T> type) {
+        return parameterTypes.find(type)
+                .map(r -> (CommandParameterType<T>) r)
                 .orElseThrow(() -> new IllegalArgumentException(String.format("No parameter parser with type %s found.", type.getSimpleName())));
     }
 

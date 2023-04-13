@@ -2,17 +2,9 @@ package com.guflimc.colonel.common.test;
 
 import com.guflimc.colonel.common.command.CommandDispatcher;
 import com.guflimc.colonel.common.command.CommandSourceContext;
-import com.guflimc.colonel.common.command.builder.CommandHandlerBuilder;
-import com.guflimc.colonel.common.test.util.MultiOutputStream;
-import com.guflimc.colonel.common.test.util.Person;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,10 +16,10 @@ public class CommandDispatcherTests {
     public void dispatchSingleLiteral() {
         AtomicReference<String> ref = new AtomicReference<>();
 
-        dispatcher.register(CommandHandlerBuilder.of(dispatcher.context())
-                .withLiterals("ping")
-                .withExecutor((context) -> ref.set("pong"))
-                .build());
+        dispatcher.register(
+                cs -> cs.withLiterals("ping"),
+                (context) -> ref.set("pong")
+        );
 
         assertNull(ref.get());
 
@@ -39,10 +31,10 @@ public class CommandDispatcherTests {
     public void dispatchMultiLiteral() {
         AtomicReference<String> ref = new AtomicReference<>();
 
-        dispatcher.register(CommandHandlerBuilder.of(dispatcher.context())
-                .withLiterals("foo bar")
-                .withExecutor((context) -> ref.set("baz"))
-                .build());
+        dispatcher.register(
+                cs -> cs.withLiterals("foo bar"),
+                (context) -> ref.set("baz")
+        );
 
         assertNull(ref.get());
 
@@ -54,11 +46,11 @@ public class CommandDispatcherTests {
     public void dispatchSingleArgument() {
         AtomicReference<String> ref = new AtomicReference<>();
 
-        dispatcher.register(CommandHandlerBuilder.of(dispatcher.context())
-                .withLiterals("foo")
-                .withParameter("bar", String.class, (context, input) -> input)
-                .withExecutor((context) -> ref.set(context.get("bar")))
-                .build());
+        dispatcher.context().registerParameterType("string", String.class, (context, input) -> input);
+        dispatcher.register(
+                cs -> cs.withLiterals("foo").withParameter("bar", String.class),
+                (context) -> ref.set(context.get("bar"))
+        );
 
         assertNull(ref.get());
 
@@ -71,15 +63,16 @@ public class CommandDispatcherTests {
         AtomicReference<Integer> baz = new AtomicReference<>();
         AtomicReference<Boolean> fiz = new AtomicReference<>();
 
-        dispatcher.register(CommandHandlerBuilder.of(dispatcher.context())
-                .withLiterals("foo bar")
-                .withParameter("baz", Integer.class, (context, input) -> Integer.parseInt(input))
-                .withParameter("fiz", Boolean.class, (context, input) -> Boolean.parseBoolean(input))
-                .withExecutor((context) -> {
+        dispatcher.context().registerParameterType("integer", Integer.class, (context, input) -> Integer.parseInt(input));
+        dispatcher.context().registerParameterType("boolean", Boolean.class, (context, input) -> Boolean.parseBoolean(input));
+        dispatcher.register(
+                cs -> cs.withLiterals("foo bar")
+                        .withParameter("baz", Integer.class)
+                        .withParameter("fiz", Boolean.class),
+                (context) -> {
                     baz.set(context.get("baz"));
                     fiz.set(context.get("fiz"));
-                })
-                .build());
+                });
 
         assertNull(baz.get());
         assertNull(fiz.get());
@@ -96,10 +89,10 @@ public class CommandDispatcherTests {
         dispatcher.context().registerSourceParser("string", String.class,
                 CommandSourceContext::source);
 
-        dispatcher.register(CommandHandlerBuilder.of(dispatcher.context())
-                .withLiterals("foo bar")
-                .withExecutor((context) -> ref.set(context.source(String.class)))
-                .build());
+        dispatcher.register(
+                cs -> cs.withLiterals("foo bar"),
+                (context) -> ref.set(context.source(String.class))
+        );
 
         assertNull(ref.get());
 
@@ -114,10 +107,10 @@ public class CommandDispatcherTests {
         dispatcher.context().registerSourceParser("number", Integer.class,
                 (context) -> Integer.parseInt(context.source()));
 
-        dispatcher.register(CommandHandlerBuilder.of(dispatcher.context())
-                .withLiterals("foo bar")
-                .withExecutor((context) -> ref.set(context.source("number")))
-                .build());
+        dispatcher.register(
+                cs -> cs.withLiterals("foo bar"),
+                (context) -> ref.set(context.source("number"))
+        );
 
         assertNull(ref.get());
 

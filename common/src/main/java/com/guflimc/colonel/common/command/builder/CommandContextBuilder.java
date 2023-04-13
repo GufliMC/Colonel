@@ -3,7 +3,7 @@ package com.guflimc.colonel.common.command.builder;
 import com.guflimc.colonel.common.command.Command;
 import com.guflimc.colonel.common.command.CommandContext;
 import com.guflimc.colonel.common.command.CommandDispatcherContext;
-import com.guflimc.colonel.common.command.handler.CommandHandler;
+import com.guflimc.colonel.common.command.syntax.CommandSyntax;
 import org.jetbrains.annotations.NotNull;
 
 public final class CommandContextBuilder {
@@ -11,7 +11,7 @@ public final class CommandContextBuilder {
     private final CommandDispatcherContext context;
 
     private Command command;
-    private CommandHandler handler;
+    private CommandSyntax handler;
 
     public static CommandContextBuilder of(@NotNull CommandDispatcherContext context) {
         return new CommandContextBuilder(context);
@@ -28,7 +28,7 @@ public final class CommandContextBuilder {
         return this;
     }
 
-    public CommandContextBuilder withHandler(@NotNull CommandHandler handler) {
+    public CommandContextBuilder withSyntax(@NotNull CommandSyntax handler) {
         this.handler = handler;
         return this;
     }

@@ -1,6 +1,4 @@
-package com.guflimc.colonel.common.annotation.command.parameter;
-
-import org.jetbrains.annotations.NotNull;
+package com.guflimc.colonel.common.annotation.parameter;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,8 +7,12 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface WithParser {
+public @interface Parameter {
 
-    @NotNull Class<?> value();
+    String NAME_INFERRED = "__NAME_INFERRED__";
+
+    String name() default NAME_INFERRED;
+
+    String type() default NAME_INFERRED;
 
 }

@@ -1,7 +1,7 @@
 package com.guflimc.colonel.common.command;
 
-import com.guflimc.colonel.common.command.handler.CommandHandler;
-import com.guflimc.colonel.common.command.handler.CommandParameter;
+import com.guflimc.colonel.common.command.syntax.CommandSyntax;
+import com.guflimc.colonel.common.command.syntax.CommandParameter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,13 +9,13 @@ import java.util.Map;
 public abstract class CommandContext implements CommandSourceContext {
 
     private final Command command;
-    private final CommandHandler handler;
+    private final CommandSyntax syntax;
 
     final Map<CommandParameter<?>, Object> parsed = new HashMap<>();
 
-    public CommandContext(Command command, CommandHandler handler) {
+    public CommandContext(Command command, CommandSyntax syntax) {
         this.command = command;
-        this.handler = handler;
+        this.syntax = syntax;
     }
 
     @Override
@@ -24,8 +24,8 @@ public abstract class CommandContext implements CommandSourceContext {
     }
 
     @Override
-    public CommandHandler handler() {
-        return handler;
+    public CommandSyntax syntax() {
+        return syntax;
     }
 
     //
@@ -42,7 +42,7 @@ public abstract class CommandContext implements CommandSourceContext {
     //
 
     public <T> T get(CommandParameter<T> parameter) {
-        return parameter.type().cast(parsed.get(parameter));
+        return parameter.type().type().cast(parsed.get(parameter));
     }
 
     public <T> T get(String parameterName) {

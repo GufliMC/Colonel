@@ -1,13 +1,13 @@
-package com.guflimc.colonel.common.command.handler;
+package com.guflimc.colonel.common.command.syntax;
 
-import com.guflimc.colonel.common.command.CommandContext;
+import org.jetbrains.annotations.NotNull;
 
-public abstract class CommandHandler {
+public class CommandSyntax {
 
     private final String[] literals;
     private final CommandParameter<?>[] parameters;
 
-    public CommandHandler(String[] literals, CommandParameter<?>[] parameters) {
+    public CommandSyntax(@NotNull String[] literals, @NotNull CommandParameter<?>[] parameters) {
         this.literals = literals;
         this.parameters = parameters;
     }
@@ -19,7 +19,5 @@ public abstract class CommandHandler {
     public CommandParameter<?>[] parameters() {
         return parameters;
     }
-
-    public abstract void invoke(CommandContext context);
 
 }

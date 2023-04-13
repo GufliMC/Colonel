@@ -1,4 +1,4 @@
-package com.guflimc.colonel.common.annotation.command.parameter;
+package com.guflimc.colonel.common.annotation.parameter;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,5 +7,10 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface CommandSource {
+public @interface Source {
+
+    String NAME_INFERRED = "__NAME_INFERRED__";
+
+    String value() default NAME_INFERRED;
+
 }

@@ -1,4 +1,4 @@
-package com.guflimc.colonel.common.annotation.command;
+package com.guflimc.colonel.common.annotation;
 
 import org.jetbrains.annotations.NotNull;
 
