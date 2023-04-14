@@ -11,7 +11,7 @@ public @interface Parameter {
 
     String NAME_INFERRED = "__NAME_INFERRED__";
 
-    String name() default NAME_INFERRED;
+    String value() default NAME_INFERRED;
 
     String type() default NAME_INFERRED;
 

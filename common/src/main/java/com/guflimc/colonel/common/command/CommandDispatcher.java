@@ -1,35 +1,21 @@
 package com.guflimc.colonel.common.command;
 
-import com.guflimc.colonel.common.command.builder.CommandContextBuilder;
-import com.guflimc.colonel.common.command.builder.CommandSyntaxBuilder;
 import com.guflimc.colonel.common.command.syntax.CommandExecutor;
 import com.guflimc.colonel.common.command.syntax.CommandSyntax;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class CommandDispatcher {
 
-    private final CommandDispatcherContext context = new CommandDispatcherContext();
     private final Map<CommandSyntax, CommandExecutor> syntaxes = new HashMap<>();
 
     public void register(CommandSyntax syntax, CommandExecutor executor) {
         syntaxes.put(syntax, executor);
     }
 
-    public void register(Consumer<CommandSyntaxBuilder> cs, CommandExecutor executor) {
-        CommandSyntaxBuilder builder = CommandSyntaxBuilder.of(context);
-        cs.accept(builder);
-        syntaxes.put(builder.build(), executor);
-    }
-
     public void unregister(CommandSyntax syntax) {
         syntaxes.remove(syntax);
-    }
-
-    public CommandDispatcherContext context() {
-        return context;
     }
 
     public Collection<CommandSyntax> syntaxes() {
@@ -38,11 +24,11 @@ public class CommandDispatcher {
 
     //
 
-    public void dispatch(Object commandSource, String input) {
+    public void dispatch(Object source, String input) {
 
         // parse
         String[] parts = CommandParser.of(input).parse();
-        Command command = new Command(commandSource, parts);
+        Command command = new Command(source, parts);
 
         // find syntax
         MatchResult match = match(parts);
@@ -57,14 +43,11 @@ public class CommandDispatcher {
     }
 
     private void dispatch(Command command, CommandSyntax syntax) {
-        CommandContext context = CommandContextBuilder.of(this.context)
-                .withCommand(command)
-                .withSyntax(syntax)
-                .build();
+        CommandContext context = new CommandContext(command, syntax);
 
         // parse arguments
         String[] arguments = Arrays.copyOfRange(command.input(), syntax.literals().length, command.input().length);
-        for ( int i = 0; i < syntax.parameters().length; i++ ) {
+        for (int i = 0; i < syntax.parameters().length; i++) {
             Object parsed = syntax.parameters()[i].type().parse(context, arguments[i]);
             context.parsed.put(syntax.parameters()[i], parsed);
         }
@@ -84,7 +67,7 @@ public class CommandDispatcher {
                     .filter(h -> h.literals()[index].equalsIgnoreCase(input[index]))
                     .collect(Collectors.toSet());
 
-            if ( current.isEmpty() ) {
+            if (current.isEmpty()) {
                 break;
             }
 

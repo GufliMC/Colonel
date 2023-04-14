@@ -1,12 +1,12 @@
 package com.guflimc.colonel.common.command;
 
-import com.guflimc.colonel.common.command.syntax.CommandSyntax;
 import com.guflimc.colonel.common.command.syntax.CommandParameter;
+import com.guflimc.colonel.common.command.syntax.CommandSyntax;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class CommandContext implements CommandSourceContext {
+public class CommandContext implements CommandSourceContext {
 
     private final Command command;
     private final CommandSyntax syntax;
@@ -30,24 +30,16 @@ public abstract class CommandContext implements CommandSourceContext {
 
     //
 
-    @Override
-    public <T> T source() {
-        return (T) command.source();
-    }
-
-    public abstract <T> T source(Class<T> type);
-
-    public abstract <T> T source(String providerName);
-
-    //
-
-    public <T> T get(CommandParameter<T> parameter) {
+    public <T> T argument(CommandParameter<T> parameter) {
         return parameter.type().type().cast(parsed.get(parameter));
     }
 
-    public <T> T get(String parameterName) {
-        return parsed.keySet().stream().filter(key -> key.name().equals(parameterName))
-                .map(key -> (CommandParameter<T>) key).map(this::get).findFirst().orElse(null);
+    @SuppressWarnings("unchecked")
+    public <T> T argument(String name) {
+        return parsed.keySet().stream().filter(key -> key.name().equals(name))
+                .map(key -> (CommandParameter<T>) key)
+                .map(this::argument)
+                .findFirst().orElse(null);
     }
 
 }

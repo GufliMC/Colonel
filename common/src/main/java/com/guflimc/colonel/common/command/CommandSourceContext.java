@@ -8,6 +8,9 @@ public interface CommandSourceContext {
 
     CommandSyntax syntax();
 
-    <T> T source();
+    @SuppressWarnings("unchecked")
+    default <T> T source() {
+        return (T) command().source();
+    }
 
 }
