@@ -1,4 +1,4 @@
-package com.guflimc.colonel.common.builder;
+package com.guflimc.colonel.annotation.builder;
 
 import com.guflimc.colonel.common.command.CommandContext;
 import com.guflimc.colonel.common.command.syntax.*;
