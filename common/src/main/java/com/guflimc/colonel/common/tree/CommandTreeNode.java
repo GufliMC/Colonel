@@ -1,40 +1,59 @@
-package com.guflimc.colonel.common.broker;
+package com.guflimc.colonel.common.tree;
 
 import com.guflimc.colonel.common.parser.CommandInput;
 import com.guflimc.colonel.common.parser.CommandInputReader;
 import com.guflimc.colonel.common.suggestion.Suggestion;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-public final class Mediator {
+public final class CommandTreeNode {
 
-    private final List<Handler> handlers = new ArrayList<>();
+    private final String name;
 
-    public void addHandler(Handler handler) {
-        handlers.add(handler);
+    // yes these are exposed, no unmodifiable wrappers etc.
+    private final List<CommandTreeNode> children = new ArrayList<>();
+    private final List<CommandHandler> handlers = new ArrayList<>();
+
+    public CommandTreeNode(String name) {
+        this.name = name;
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public List<CommandTreeNode> children() {
+        return children;
+    }
+
+    public List<CommandHandler> handlers() {
+        return handlers;
     }
 
     //
 
     public boolean apply(Object source, String input) {
         // parse arguments in as strings
-        Map<Handler, CommandInput> parsed = new LinkedHashMap<>(); // keep order
+        Map<CommandHandler, CommandInput> parsed = new LinkedHashMap<>(); // keep order
         int min = Integer.MAX_VALUE;
-        for (Handler handler : handlers) {
+        for (CommandHandler handler : handlers) {
             CommandInputReader reader = new CommandInputReader(handler.definition(), input);
             CommandInput ci = reader.read();
             min = Math.min(min, ci.errors());
         }
 
-        for ( Handler handler : handlers ) {
+        for ( CommandHandler handler : handlers ) {
             if ( parsed.get(handler).errors() > min )
                 parsed.remove(handler);
         }
 
         // execute the best handler
-        Delegate best = null;
-        for (Handler handler : parsed.keySet() ) {
-            Delegate delegate = handler.prepare(source, parsed.get(handler));
+        CommandDelegate best = null;
+        for (CommandHandler handler : parsed.keySet() ) {
+            CommandDelegate delegate = handler.prepare(source, parsed.get(handler));
             if ( delegate.input().errors() == 0 ) {
                 delegate.run(); // should actually execute
                 return true;
@@ -56,7 +75,7 @@ public final class Mediator {
         List<Suggestion> suggestions = new ArrayList<>();
 
         // parse arguments in as strings and ask suggestions
-        for (Handler handler : handlers) {
+        for (CommandHandler handler : handlers) {
             CommandInputReader reader = new CommandInputReader(handler.definition(), input);
             CommandInput ci = reader.read();
             suggestions.addAll(handler.suggestions(source, ci));
@@ -64,4 +83,5 @@ public final class Mediator {
 
         return suggestions;
     }
+
 }

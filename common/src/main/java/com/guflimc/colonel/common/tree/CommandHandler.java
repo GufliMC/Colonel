@@ -1,4 +1,4 @@
-package com.guflimc.colonel.common.broker;
+package com.guflimc.colonel.common.tree;
 
 import com.guflimc.colonel.common.definition.CommandDefinition;
 import com.guflimc.colonel.common.parser.CommandInput;
@@ -7,11 +7,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public abstract class Handler {
+public abstract class CommandHandler {
 
     private final CommandDefinition definition;
 
-    public Handler(@NotNull CommandDefinition definition) {
+    public CommandHandler(@NotNull CommandDefinition definition) {
         this.definition = definition;
     }
 
@@ -33,6 +33,6 @@ public abstract class Handler {
      * @param input The input parsed as strings
      * @return The delegate to execute the command or provide information about errors
      */
-    public abstract Delegate prepare(Object source, CommandInput input);
+    public abstract CommandDelegate prepare(Object source, CommandInput input);
 
 }

@@ -1,23 +1,23 @@
 package com.guflimc.colonel.common;
 
-import com.guflimc.colonel.common.definition.CommandDefinition;
-import com.guflimc.colonel.common.broker.Messenger;
+import com.guflimc.colonel.common.tree.CommandHandler;
+import com.guflimc.colonel.common.tree.CommandTree;
+import org.jetbrains.annotations.NotNull;
 
 public class Colonel<S> {
 
-    private final Messenger messenger = new Messenger();
+    private final CommandTree tree = new CommandTree();
 
     //
 
-    public void register(String path, CommandDefinition definition, ) {
-
+    public void register(@NotNull String path, @NotNull CommandHandler handler) {
+        tree.register(path, handler);
     }
-
 
     //
 
     public void dispatch(S source, String input) {
-        if ( messenger.apply(source, input) ) {
+        if (tree.apply(source, input)) {
             return;
         }
 
@@ -25,6 +25,5 @@ public class Colonel<S> {
     }
 
     //
-
 
 }

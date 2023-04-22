@@ -1,13 +1,13 @@
-package com.guflimc.colonel.common.broker;
+package com.guflimc.colonel.common.tree;
 
 import com.guflimc.colonel.common.parser.CommandInput;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class Delegate implements Runnable {
+public abstract class CommandDelegate implements Runnable {
 
-    private final CommandInput input;
+    protected final CommandInput input;
 
-    protected Delegate(@NotNull CommandInput input) {
+    protected CommandDelegate(@NotNull CommandInput input) {
         this.input = input;
     }
 
