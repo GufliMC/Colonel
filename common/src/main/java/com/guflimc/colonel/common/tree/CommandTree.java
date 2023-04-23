@@ -45,23 +45,50 @@ public final class CommandTree {
     //
 
     public boolean apply(Object source, String input) {
-        return apply(source, input.split(SPACE), nodes);
+        return apply(source, input.split(SPACE), input.length(), nodes);
     }
 
-    private boolean apply(Object source, String[] input, List<CommandTreeNode> nodes) {
-        return recursive(source, input, nodes, (s, i, n) -> n.apply(s, String.join(" ", i)));
+    private boolean apply(Object source, String[] input, int cursor, List<CommandTreeNode> nodes) {
+        return recursive(source, input, cursor, nodes, (s, i, c, n) -> n.apply(s, String.join(" ", i)));
     }
 
     //
 
-    public List<Suggestion> suggestions(Object source, String input) {
-        return suggestions(source, input.split(SPACE), nodes);
+    public List<Suggestion> suggestions(Object source, String input, int cursor) {
+        return suggestions(source, input.split(SPACE), cursor, nodes);
     }
 
-    private List<Suggestion> suggestions(Object source, String[] input, List<CommandTreeNode> nodes) {
+    private List<Suggestion> suggestions(Object source, String[] input, int cursor, List<CommandTreeNode> nodes) {
         List<Suggestion> suggestions = new ArrayList<>();
-        recursive(source, input, nodes, (s, i, n) -> {
-            suggestions.addAll(n.suggestions(s, String.join(" ", i)));
+
+        // suggest command path
+        int argcursor = 0; // TODO find this
+        int i = 0;
+        List<CommandTreeNode> pool = nodes;
+        CommandTreeNode node;
+        while ( true ) {
+            int index = i;
+            if ( argcursor == index ) {
+                String prefix = index < input.length ? input[index].toLowerCase() : "";
+                pool.stream().map(CommandTreeNode::name)
+                        .filter(name -> name.toLowerCase().startsWith(prefix))
+                        .forEach(name -> suggestions.add(new Suggestion(name)));
+                break;
+            }
+
+            node = pool.stream().filter(n -> n.name().equalsIgnoreCase(input[index]))
+                    .findFirst().orElse(null);
+            if ( node == null ) {
+                break;
+            }
+
+            pool = node.children();
+            i++;
+        }
+
+        // suggest arguments
+        recursive(source, input, cursor, nodes, (s, j, c, n) -> {
+            suggestions.addAll(n.suggestions(s, String.join(" ", j), c));
             return false;
         });
         return suggestions;
@@ -69,8 +96,8 @@ public final class CommandTree {
 
     //
 
-    private boolean recursive(Object source, String[] input, List<CommandTreeNode> nodes, RecursiveHandler run) {
-        if ( input.length == 0 ) {
+    private boolean recursive(Object source, String[] input, int cursor, List<CommandTreeNode> nodes, RecursiveHandler run) {
+        if ( input.length == 0 || cursor < 0 ) {
             return false;
         }
 
@@ -79,17 +106,19 @@ public final class CommandTree {
                 continue;
             }
 
-            if ( recursive(source, Arrays.copyOfRange(input, 1, input.length), node.children(), run) ) {
+            int nc = cursor - input[0].length() - Math.min(1, input.length - 1); // count space only if there is more input
+            String[] ni = Arrays.copyOfRange(input, 1, input.length);
+            if ( recursive(source, ni, nc, node.children(), run) ) {
                 return true;
             }
 
-            return run.apply(source, input, node); //node.apply(source, String.join(" ", input));
+            return run.apply(source, ni, nc, node); // execute for current node
         }
         return false;
     }
 
     @FunctionalInterface
     private interface RecursiveHandler {
-        boolean apply(Object source, String[] input, CommandTreeNode node);
+        boolean apply(Object source, String[] input, int cursor, CommandTreeNode node);
     }
 }

@@ -5,8 +5,8 @@ import com.guflimc.colonel.common.suggestion.Suggestion;
 import java.util.List;
 
 @FunctionalInterface
-public interface CommandCompleter<S> {
+public interface CommandParameterCompleter<S> {
 
-    List<Suggestion> execute(CommandContext<S> context);
+    List<Suggestion> suggestions(CommandContext<S> context, String input);
 
 }

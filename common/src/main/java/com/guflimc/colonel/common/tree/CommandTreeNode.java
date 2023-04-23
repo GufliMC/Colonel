@@ -42,11 +42,15 @@ public final class CommandTreeNode {
         for (CommandHandler handler : handlers) {
             CommandInputReader reader = new CommandInputReader(handler.definition(), input);
             CommandInput ci = reader.read();
-            min = Math.min(min, ci.errors());
+            min = Math.min(min, ci.errors().size());
+            parsed.put(handler, ci);
         }
 
+        // remove handlers with errors from possible targets
         for ( CommandHandler handler : handlers ) {
-            if ( parsed.get(handler).errors() > min )
+            if ( parsed.get(handler).errors().size() > min )  // exceeds max error count
+                parsed.remove(handler);
+            else if ( parsed.get(handler).excess() != null )  // not a match (too many arguments)
                 parsed.remove(handler);
         }
 
@@ -54,12 +58,12 @@ public final class CommandTreeNode {
         CommandDelegate best = null;
         for (CommandHandler handler : parsed.keySet() ) {
             CommandDelegate delegate = handler.prepare(source, parsed.get(handler));
-            if ( delegate.input().errors() == 0 ) {
+            if ( delegate.input().errors().size() == 0 ) {
                 delegate.run(); // should actually execute
                 return true;
             }
 
-            if ( best == null || best.input().errors() > delegate.input().errors() )
+            if ( best == null || best.input().errors().size() > delegate.input().errors().size() )
                 best = delegate;
         }
 
@@ -71,12 +75,12 @@ public final class CommandTreeNode {
         return false;
     }
 
-    public List<Suggestion> suggestions(Object source, String input) {
+    public List<Suggestion> suggestions(Object source, String input, int cursor) {
         List<Suggestion> suggestions = new ArrayList<>();
 
         // parse arguments in as strings and ask suggestions
         for (CommandHandler handler : handlers) {
-            CommandInputReader reader = new CommandInputReader(handler.definition(), input);
+            CommandInputReader reader = new CommandInputReader(handler.definition(), input, cursor);
             CommandInput ci = reader.read();
             suggestions.addAll(handler.suggestions(source, ci));
         }

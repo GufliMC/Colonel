@@ -2,85 +2,79 @@ package com.guflimc.colonel.common.build;
 
 import com.guflimc.colonel.common.definition.CommandDefinition;
 import com.guflimc.colonel.common.definition.CommandParameter;
+import com.guflimc.colonel.common.parser.CommandInput;
+import com.guflimc.colonel.common.parser.CommandInputArgument;
+import com.guflimc.colonel.common.parser.CommandInputBuilder;
+import com.guflimc.colonel.common.suggestion.Suggestion;
 import com.guflimc.colonel.common.tree.CommandDelegate;
 import com.guflimc.colonel.common.tree.CommandHandler;
-import com.guflimc.colonel.common.parser.CommandInput;
-import com.guflimc.colonel.common.suggestion.Suggestion;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 
 class CommandHandlerImpl<S> extends CommandHandler {
 
-    private final Map<CommandParameter, Function<String, Object>> parameters;
-
+    private final List<CommandParameterWrapper<S>> parameters;
     private final CommandExecutor<S> executor;
-    private final CommandCompleter<S> completer;
 
-    public CommandHandlerImpl(@NotNull Map<CommandParameter, Function<String, Object>> parameters,
-                              @NotNull CommandExecutor<S> executor,
-                              @NotNull CommandCompleter<S> completer) {
-        super(new CommandDefinition(parameters.keySet().toArray(CommandParameter[]::new)));
-        this.parameters = Map.copyOf(parameters);
+    public CommandHandlerImpl(@NotNull List<CommandParameterWrapper<S>> parameters,
+                              @NotNull CommandExecutor<S> executor) {
+        super(new CommandDefinition(parameters.stream().map(CommandParameterWrapper::parameter).toArray(CommandParameter[]::new)));
+        this.parameters = List.copyOf(parameters);
         this.executor = executor;
-        this.completer = completer;
+    }
+
+    private CommandContext<S> context(Object source, CommandInputBuilder b) {
+        return new CommandContext<>(definition(), (S) source, b.build());
     }
 
     @Override
-    public CommandDelegate prepare(Object source, CommandInput input) {
-        Map<String, Object> arguments = new HashMap<>();
-        Map<String, CommandInput.ParseError> errors = new HashMap<>();
+    public CommandDelegateImpl<S> prepare(Object source, CommandInput input) {
+        CommandInputBuilder builder = CommandInputBuilder.builder();
         Runnable failure = null;
 
-        for ( CommandParameter param : parameters.keySet() ) {
-            if ( input.error(param.name()) != null ) {
-                errors.put(param.name(), input.error(param.name()));
+        for ( CommandParameterWrapper<S> param : parameters ) {
+            // missing error
+            if ( input.failure(param.parameter()) ) {
+                builder.fail(param.parameter(), input.error(param.parameter()));
                 continue;
             }
 
-            String value = (String) input.argument(param.name());
+            // parse value
+            String value = (String) input.argument(param.parameter());
             try {
-                Object parsed = parameters.get(param).apply(value);
-                if ( parsed instanceof ArgumentParseResult.ArgumentParseSuccess aps ) {
-                    arguments.put(param.name(), aps.value);
-                } else if ( parsed instanceof ArgumentParseResult.ArgumentParseFail apf ) {
-                    errors.put(param.name(), CommandInput.ParseError.INVALID);
-                    failure = apf.runnable;
-                } else {
-                    arguments.put(param.name(), parsed);
+                CommandContext<S> ctx = context(source, builder);
+                Argument arg = param.parser().parse(ctx, value);
+
+                if ( arg instanceof Argument.ArgumentSuccess as) {
+                    builder.success(param.parameter(), as.value);
+                } else if ( arg instanceof Argument.ArgumentFailure af ) {
+                    builder.fail(param.parameter(), CommandInputArgument.ArgumentFailureType.INVALID);
+                    failure = af.runnable;
                 }
-                arguments.put(param.name(), parsed);
             } catch (Exception ex) {
-                errors.put(param.name(), CommandInput.ParseError.INVALID);
+                builder.fail(param.parameter(), CommandInputArgument.ArgumentFailureType.INVALID);
             }
         }
 
-        CommandInput ri = new CommandInput(arguments, errors, new HashMap<>());
-        Runnable fi = failure;
-
-        return new CommandDelegate(ri) {
-            @Override
-            public void run() {
-                if ( input.errors().isEmpty() ) {
-                    executor.execute(new CommandContext<>((S) source, input));
-                    return;
-                }
-
-                if ( fi != null ) {
-                    fi.run();
-                }
-            }
-        };
+        CommandContext<S> ctx = context(source, builder);
+        return new CommandDelegateImpl<>(ctx, executor, failure);
     }
 
     @Override
     public List<Suggestion> suggestions(Object source, CommandInput input) {
-        CommandDelegate delegate = prepare(source, input);
-        return completer.execute(new CommandContext<>((S) source, delegate.input()));
+        CommandDelegateImpl<S> delegate = prepare(source, input);
+        if ( delegate.input().cursor() == null ) {
+            return List.of();
+        }
+
+        CommandParameterWrapper<S> param = parameters.stream()
+                .filter(p -> p.parameter().equals(delegate.input().cursor()))
+                .findFirst().orElseThrow();
+
+        String str = (String) input.argument(param.parameter());
+        if ( str == null ) str = "";
+        return param.completer().suggestions(delegate.context, str);
     }
 
 }

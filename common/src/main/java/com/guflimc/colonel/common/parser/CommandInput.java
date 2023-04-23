@@ -1,68 +1,89 @@
 package com.guflimc.colonel.common.parser;
 
+import com.guflimc.colonel.common.definition.CommandParameter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.swing.text.html.parser.Parser;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CommandInput {
 
-    private final Map<String, Object> arguments;
-    private final Map<String, ParseError> errors;
-    private final Map<String, Object> options;
+    private final Map<CommandParameter, CommandInputArgument> arguments;
 
-    public CommandInput(@NotNull Map<String, Object> arguments, @NotNull Map<String, ParseError> errors, @NotNull Map<String, Object> options) {
+    private final CommandParameter cursor;
+    private final String excess;
+
+    public CommandInput(@NotNull Map<CommandParameter, CommandInputArgument> arguments,
+                        @Nullable CommandParameter cursor,
+                        @Nullable String excess) {
         this.arguments = Map.copyOf(arguments);
-        this.errors = Map.copyOf(errors);
-        this.options = Map.copyOf(options);
+        this.cursor = cursor;
+        this.excess = excess;
     }
 
-    public CommandInput(@NotNull Map<String, Object> arguments, @NotNull Map<String, ParseError> errors) {
-        this(arguments, errors, Map.of());
+    public CommandInput(@NotNull Map<CommandParameter, CommandInputArgument> arguments) {
+        this(arguments, null, null);
     }
 
-    public ParseError error(String name) {
-        return errors.get(name);
+    //
+
+    public CommandParameter cursor() {
+        return cursor;
     }
 
-    public Collection<String> errors() {
-        return errors.keySet();
+    public String excess() {
+        return excess;
     }
 
-    public Collection<String> errors(ParseError type) {
-        return errors.entrySet().stream()
-                .filter(e -> e.getValue() == type)
+    //
+
+    public boolean failure(CommandParameter parameter) {
+        return arguments.get(parameter) instanceof CommandInputArgument.ArgumentFailure;
+    }
+
+    public CommandInputArgument.ArgumentFailureType error(CommandParameter parameter) {
+        if ( arguments.get(parameter) instanceof CommandInputArgument.ArgumentFailure ) {
+            return ((CommandInputArgument.ArgumentFailure) arguments.get(parameter)).type;
+        }
+        return null;
+    }
+
+    public Collection<CommandParameter> errors() {
+        return arguments.entrySet().stream()
+                .filter(e -> e.getValue() instanceof CommandInputArgument.ArgumentFailure)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+    }
+
+    public Collection<CommandParameter> errors(CommandInputArgument.ArgumentFailureType type) {
+        return arguments.entrySet().stream()
+                .filter(e -> e.getValue() instanceof CommandInputArgument.ArgumentFailure)
+                .filter(e -> ((CommandInputArgument.ArgumentFailure) e.getValue()).type == type)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
     }
 
     //
 
-    public Object argument(String name) {
-        return arguments.get(name);
+    public boolean success(CommandParameter parameter) {
+        return arguments.get(parameter) instanceof CommandInputArgument.ArgumentSuccess;
     }
 
-    public Collection<String> arguments() {
-        return arguments.keySet();
+    public Object argument(CommandParameter parameter) {
+        if ( arguments.get(parameter) instanceof CommandInputArgument.ArgumentSuccess ) {
+            return ((CommandInputArgument.ArgumentSuccess) arguments.get(parameter)).value;
+        }
+        return null;
     }
 
-    //
-
-    public Object option(String name) {
-        return options.get(name);
+    public Collection<CommandParameter> arguments() {
+        return arguments.entrySet().stream()
+                .filter(e -> e.getValue() instanceof CommandInputArgument.ArgumentSuccess)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
     }
 
-    public Collection<String> options() {
-        return arguments.keySet();
-    }
-
-    //
-
-    public enum ParseError {
-        MISSING,
-        INVALID;
-    }
 
 }

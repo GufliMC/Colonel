@@ -11,31 +11,47 @@ public class CommandInputReader {
     private final static Pattern QUOTED = Pattern.compile("^([\"'])((?:\\\\\\1|(?:(?!\\1)).)*)(\\1)");
 
     private final CommandDefinition definition;
-    private String input;
+
+    private int cursor;
+    private String buffer;
+
+    public CommandInputReader(CommandDefinition definition, String input, int cursor) {
+        this.definition = definition;
+        this.cursor = cursor;
+        this.buffer = input;
+    }
 
     public CommandInputReader(CommandDefinition definition, String input) {
-        this.definition = definition;
-        this.input = input;
+        this(definition, input, input.length());
     }
 
     //
 
     public CommandInput read() {
-        CommandInputBuilder builder = CommandInputBuilder.of();
+        CommandInputBuilder builder = CommandInputBuilder.builder();
 
         int index = 0;
-        while ( !input.isEmpty() ) {
+        while ( !buffer.isEmpty() ) {
             // TODO options
+
+            if ( index >= definition.parameters().length ) {
+                builder.withExcess(buffer);
+                break;
+            }
+
+            int cc = cursor;
 
             CommandParameter param = definition.parameters()[index];
             if ( param.parseMode() == CommandParameter.ParseMode.STRING ) {
-                builder.withArgument(param.name(), readString());
+                builder.success(param, readString());
             } else if ( param.parseMode() == CommandParameter.ParseMode.WORD ) {
-                builder.withArgument(param.name(), readWord());
+                builder.success(param, readWord());
             } else {
-                if ( definition.parameters().length > index + 1 )
-                    throw new IllegalStateException("Greedy parameter must be the last one.");
-                builder.withArgument(param.name(), readAll());
+                builder.success(param, readAll());
+            }
+
+            if ( cc >= 0 && cursor <= 0 ) {
+                builder.withCursor(param);
             }
 
             index++;
@@ -43,7 +59,7 @@ public class CommandInputReader {
 
         for ( int i = index; i < definition.parameters().length; i++ ) {
             CommandParameter param = definition.parameters()[i];
-            builder.withError(param.name(), CommandInput.ParseError.MISSING);
+            builder.fail(param, CommandInputArgument.ArgumentFailureType.MISSING);
         }
 
         return builder.build();
@@ -52,36 +68,36 @@ public class CommandInputReader {
     //
 
     private String peek() {
-        return input;
+        return buffer;
     }
 
     private String readWord() {
-        int index = input.indexOf(" ");
+        int index = buffer.indexOf(" ");
 
         // return until end
         if (index == -1) {
-            String result = input;
-            input = "";
+            String result = buffer;
+            skip(result.length());
             return result;
         }
 
         // return until space
-        String result = input.substring(0, index);
-        input = input.substring(index);
+        String result = buffer.substring(0, index);
+        skip(index + 1); // also skip space
         return result;
     }
 
     private String readString() {
-        if (input.length() == 0)
+        if (buffer.length() == 0)
             throw new IllegalStateException("Cannot continue when there is no data.");
 
         // first try quotes
-        Matcher mr = QUOTED.matcher(input);
+        Matcher mr = QUOTED.matcher(buffer);
         if (mr.find()) {
-            if (mr.end() != input.length() && input.charAt(mr.end()) != ' ')
+            if (mr.end() != buffer.length() && buffer.charAt(mr.end()) != ' ')
                 throw new IllegalArgumentException("The given data is malformed.");
 
-            input = input.substring(mr.end());
+            skip(mr.end() + 1); // also skip space
             return mr.group(2);
         }
 
@@ -89,16 +105,18 @@ public class CommandInputReader {
     }
 
     private String readAll() {
-        String result = input;
-        input = "";
+        String result = buffer;
+        skip(buffer.length());
         return result;
     }
 
     private void skip(int amount) {
-        if ( amount >= input.length() ) {
-            input = "";
+        if ( amount >= buffer.length() ) {
+            cursor -= buffer.length();
+            buffer = "";
         } else {
-            input = input.substring(amount);
+            cursor -= amount;
+            buffer = buffer.substring(amount);
         }
     }
 
