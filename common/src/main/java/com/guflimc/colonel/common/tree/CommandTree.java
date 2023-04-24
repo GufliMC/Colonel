@@ -55,42 +55,57 @@ public final class CommandTree {
     //
 
     public List<Suggestion> suggestions(Object source, String input, int cursor) {
+        if ( cursor > input.length() ) {
+            throw new IllegalArgumentException("The cursor must not exceed the input length.");
+        }
         return suggestions(source, input.split(SPACE), cursor, nodes);
     }
 
     private List<Suggestion> suggestions(Object source, String[] input, int cursor, List<CommandTreeNode> nodes) {
-        List<Suggestion> suggestions = new ArrayList<>();
-
         // suggest command path
-        int argcursor = 0; // TODO find this
-        int i = 0;
-        List<CommandTreeNode> pool = nodes;
-        CommandTreeNode node;
-        while ( true ) {
-            int index = i;
-            if ( argcursor == index ) {
-                String prefix = index < input.length ? input[index].toLowerCase() : "";
-                pool.stream().map(CommandTreeNode::name)
-                        .filter(name -> name.toLowerCase().startsWith(prefix))
-                        .forEach(name -> suggestions.add(new Suggestion(name)));
-                break;
-            }
-
-            node = pool.stream().filter(n -> n.name().equalsIgnoreCase(input[index]))
-                    .findFirst().orElse(null);
-            if ( node == null ) {
-                break;
-            }
-
-            pool = node.children();
-            i++;
-        }
+        List<Suggestion> suggestions = new ArrayList<>(suggestions(input, cursor));
 
         // suggest arguments
         recursive(source, input, cursor, nodes, (s, j, c, n) -> {
             suggestions.addAll(n.suggestions(s, String.join(" ", j), c));
             return false;
         });
+        return suggestions;
+    }
+
+    private List<Suggestion> suggestions(String[] input, int cursor) {
+        List<Suggestion> suggestions = new ArrayList<>();
+
+        // argcursor = which index of input contains the cursor, may exceed bounds of input
+        int length = 0, argcursor = 0;
+        for ( int i = 0; i < input.length; i++ ) {
+            length += input[i].length() + 1;
+            if ( cursor <= length ) {
+                argcursor = cursor == length ? i + 1 : i;
+                break;
+            }
+        }
+
+        // traverse tree until node that matches with the argcursor
+        List<CommandTreeNode> pool = nodes;
+        CommandTreeNode node;
+        for ( int i = 0; i < Math.min(input.length, argcursor); i++ ) {
+            int index = i;
+            node = pool.stream().filter(n -> n.name().equalsIgnoreCase(input[index]))
+                    .findFirst().orElse(null);
+            if ( node == null ) {
+                return List.of(); // no match found for input before cursor
+            }
+
+            pool = node.children();
+        }
+
+        // get suggestions from the children of the parent node of the argcursor
+        String prefix = argcursor < input.length ? input[argcursor].toLowerCase() : "";
+        pool.stream().map(CommandTreeNode::name)
+                .filter(name -> name.toLowerCase().startsWith(prefix))
+                .forEach(name -> suggestions.add(new Suggestion(name)));
+
         return suggestions;
     }
 
