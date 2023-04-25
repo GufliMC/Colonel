@@ -2,6 +2,7 @@ package com.guflimc.colonel.common.test;
 
 import com.guflimc.colonel.common.Colonel;
 import com.guflimc.colonel.common.build.Argument;
+import com.guflimc.colonel.common.build.CommandParameterCompleter;
 import com.guflimc.colonel.common.suggestion.Suggestion;
 import com.guflimc.colonel.common.test.util.Person;
 import org.junit.jupiter.api.Test;
@@ -112,9 +113,12 @@ public class ColonelSuggestionTests {
     @Test
     public void suggestFirstArgument() {
         colonel.register("foo bar", b -> b
-                .word("p1", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("fizz"), new Suggestion("buzz")))
-                .word("p2", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("hello"), new Suggestion("world")))
-                .word("p3", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("hi"), new Suggestion("mom")))
+                .word("p1", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                                List.of(new Suggestion("fizz"), new Suggestion("buzz"))))
+                .word("p2", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                                List.of(new Suggestion("hello"), new Suggestion("world"))))
+                .word("p3", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                                List.of(new Suggestion("hi"), new Suggestion("mom"))))
                 .executor(ctx -> {})
         );
 
@@ -125,9 +129,12 @@ public class ColonelSuggestionTests {
     @Test
     public void suggestFirstArgumentWithPrefix() {
         colonel.register("foo bar", b -> b
-                .word("p1", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("fizz"), new Suggestion("buzz")))
-                .word("p2", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("hello"), new Suggestion("world")))
-                .word("p3", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("hi"), new Suggestion("mom")))
+                .word("p1", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("fizz"), new Suggestion("buzz"))))
+                .word("p2", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("hello"), new Suggestion("world"))))
+                .word("p3", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("hi"), new Suggestion("mom"))))
                 .executor(ctx -> {})
         );
 
@@ -141,9 +148,12 @@ public class ColonelSuggestionTests {
     @Test
     public void suggestMiddleArgument() {
         colonel.register("foo bar", b -> b
-                .word("p1", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("fizz"), new Suggestion("buzz")))
-                .word("p2", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("hello"), new Suggestion("world")))
-                .word("p3", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("hi"), new Suggestion("mom")))
+                .word("p1", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("fizz"), new Suggestion("buzz"))))
+                .word("p2", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("hello"), new Suggestion("world"))))
+                .word("p3", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("hi"), new Suggestion("mom"))))
                 .executor(ctx -> {})
         );
 
@@ -154,9 +164,12 @@ public class ColonelSuggestionTests {
     @Test
     public void suggestMiddleArgumentWithPrefix() {
         colonel.register("foo bar", b -> b
-                .word("p1", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("fizz"), new Suggestion("buzz")))
-                .word("p2", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("hello"), new Suggestion("world")))
-                .word("p3", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("hi"), new Suggestion("mom")))
+                .word("p1", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("fizz"), new Suggestion("buzz"))))
+                .word("p2", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("hello"), new Suggestion("world"))))
+                .word("p3", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("hi"), new Suggestion("mom"))))
                 .executor(ctx -> {})
         );
 
@@ -170,9 +183,12 @@ public class ColonelSuggestionTests {
     @Test
     public void suggestLastArgument() {
         colonel.register("foo bar", b -> b
-                .word("p1", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("fizz"), new Suggestion("buzz")))
-                .word("p2", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("hello"), new Suggestion("world")))
-                .word("p3", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("hi"), new Suggestion("mom")))
+                .word("p1", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("fizz"), new Suggestion("buzz"))))
+                .word("p2", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("hello"), new Suggestion("world"))))
+                .word("p3", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("hi"), new Suggestion("mom"))))
                 .executor(ctx -> {})
         );
 
@@ -183,9 +199,12 @@ public class ColonelSuggestionTests {
     @Test
     public void suggestLastArgumentWithPrefix() {
         colonel.register("foo bar", b -> b
-                .word("p1", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("fizz"), new Suggestion("buzz")))
-                .word("p2", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("hello"), new Suggestion("world")))
-                .word("p3", (ctx, val) -> Argument.success(null), (ctx, input) -> List.of(new Suggestion("hi"), new Suggestion("mom")))
+                .word("p1", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("fizz"), new Suggestion("buzz"))))
+                .word("p2", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("hello"), new Suggestion("world"))))
+                .word("p3", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
+                        List.of(new Suggestion("hi"), new Suggestion("mom"))))
                 .executor(ctx -> {})
         );
 

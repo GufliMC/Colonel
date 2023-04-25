@@ -204,4 +204,18 @@ public class CommandInputReaderTests {
         assertEquals(p1, input.cursor());
     }
 
+    @Test
+    public void cursorEmptyInput() {
+        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ParseMode.WORD);
+        CommandParameter p2 = new CommandParameter("p2", CommandParameter.ParseMode.STRING);
+        CommandParameter p3 = new CommandParameter("p3", CommandParameter.ParseMode.WORD);
+        CommandParameter p4 = new CommandParameter("p4", CommandParameter.ParseMode.WORD);
+        CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1, p2, p3, p4 });
+
+        CommandInputReader reader = new CommandInputReader(def, "", 0);
+        CommandInput input = reader.read();
+
+        assertEquals(p1, input.cursor());
+    }
+
 }

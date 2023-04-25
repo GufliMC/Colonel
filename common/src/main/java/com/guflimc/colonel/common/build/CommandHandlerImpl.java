@@ -57,6 +57,8 @@ class CommandHandlerImpl<S> extends CommandHandler {
             }
         }
 
+        builder.withCursor(input.cursor());
+
         CommandContext<S> ctx = context(source, builder);
         return new CommandDelegateImpl<>(ctx, executor, failure);
     }
@@ -73,7 +75,6 @@ class CommandHandlerImpl<S> extends CommandHandler {
                 .findFirst().orElseThrow();
 
         String str = (String) input.argument(param.parameter());
-        if ( str == null ) str = "";
         return param.completer().suggestions(delegate.context, str);
     }
 

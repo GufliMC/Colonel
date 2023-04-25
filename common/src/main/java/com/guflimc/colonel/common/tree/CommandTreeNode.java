@@ -76,6 +76,10 @@ public final class CommandTreeNode {
     }
 
     public List<Suggestion> suggestions(Object source, String input, int cursor) {
+        if ( cursor < 0 ) {
+            return List.of();
+        }
+
         List<Suggestion> suggestions = new ArrayList<>();
 
         // parse arguments in as strings and ask suggestions

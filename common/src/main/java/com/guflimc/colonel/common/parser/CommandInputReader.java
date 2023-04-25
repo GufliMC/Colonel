@@ -31,11 +31,13 @@ public class CommandInputReader {
         CommandInputBuilder builder = CommandInputBuilder.builder();
 
         int index = 0;
-        while ( !buffer.isEmpty() ) {
+        do {
             // TODO options
 
             if ( index >= definition.parameters().length ) {
-                builder.withExcess(buffer);
+                if ( !buffer.isEmpty() ) {
+                    builder.withExcess(buffer);
+                }
                 break;
             }
 
@@ -54,6 +56,13 @@ public class CommandInputReader {
                 builder.withCursor(param);
             }
 
+            index++;
+        } while ( !buffer.isEmpty() );
+
+        // If cursor = 1 but buffer is empty, the user intended to begin a new parameter but has not entered any input for it yet.
+        if ( cursor == 1 && index < definition.parameters().length ) {
+            builder.withCursor(definition.parameters()[index]);
+            builder.success(definition.parameters()[index], "");
             index++;
         }
 

@@ -37,7 +37,7 @@ public class Person {
     }
 
     public String read() {
-        return inbox.remove();
+        return inbox.poll();
     }
 
 

@@ -121,7 +121,7 @@ public final class CommandTree {
                 continue;
             }
 
-            int nc = cursor - input[0].length() - Math.min(1, input.length - 1); // count space only if there is more input
+            int nc = cursor - input[0].length() - 1;
             String[] ni = Arrays.copyOfRange(input, 1, input.length);
             if ( recursive(source, ni, nc, node.children(), run) ) {
                 return true;
