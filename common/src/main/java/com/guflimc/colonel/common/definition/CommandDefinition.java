@@ -25,7 +25,7 @@ public class CommandDefinition {
 
         // check for greedy validity
         for ( int i = 0; i < parameters.length - 1; i++ ) {
-            if ( parameters[i].parseMode() == CommandParameter.ParseMode.GREEDY ) {
+            if ( parameters[i].parseMode() == CommandParameter.ReadMode.GREEDY ) {
                 throw new IllegalArgumentException("There can only be one greedy parameter and it must be the last one.");
             }
         }

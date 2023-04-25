@@ -3,28 +3,28 @@ package com.guflimc.colonel.common.definition;
 public class CommandParameter {
 
     private final String name;
-    private final ParseMode parseMode;
+    private final ReadMode readMode;
 
-    public CommandParameter(String name, ParseMode parseMode) {
+    public CommandParameter(String name, ReadMode readMode) {
         this.name = name;
-        this.parseMode = parseMode;
+        this.readMode = readMode;
     }
 
     public CommandParameter(String name) {
-        this(name, ParseMode.STRING);
+        this(name, ReadMode.STRING);
     }
 
     public String name() {
         return name;
     }
 
-    public ParseMode parseMode() {
-        return parseMode;
+    public ReadMode parseMode() {
+        return readMode;
     }
 
     //
 
-    public enum ParseMode {
+    public enum ReadMode {
         /** Read a single word. **/
         WORD,
         /** Read a single word or a string with spaces if it is quoted. **/

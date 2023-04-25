@@ -1,0 +1,355 @@
+package com.guflimc.colonel.annotation;
+
+import com.guflimc.colonel.annotation.annotations.Command;
+import com.guflimc.colonel.annotation.annotations.parameter.Completer;
+import com.guflimc.colonel.annotation.annotations.parameter.Parser;
+import com.guflimc.colonel.annotation.annotations.parameter.Source;
+import com.guflimc.colonel.common.Colonel;
+import com.guflimc.colonel.common.build.*;
+import com.guflimc.colonel.common.definition.CommandParameter;
+import com.guflimc.colonel.common.suggestion.Suggestion;
+import com.guflimc.colonel.common.tree.CommandHandler;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+public class AnnotationColonel<S> extends Colonel<S> {
+
+    private record FunctionKey(Class<?> type, String name) {}
+
+    private final Map<FunctionKey, CommandParameterCompleter<S>> completers = new HashMap<>();
+    private final Map<FunctionKey, CommandParameterParser<S>> parsers = new HashMap<>();
+    private final Map<FunctionKey, CommandSourceMapper<S>> mappers = new HashMap<>();
+
+    public AnnotationColonel() {
+
+        // REGISTER DEFAULT JAVA TYPES
+        Function<BiFunction<CommandContext<S>, String, Object>, CommandParameterParser<S>> wrap = (func) -> (ctx, value) -> {
+            try {
+                return Argument.success(func.apply(ctx, value));
+            } catch (Throwable e) {
+                return Argument.fail(() -> {
+                    throw e;
+                });
+            }
+        };
+
+        registerParameterParser(String.class, null, (ctx, value) -> Argument.success(value));
+        registerParameterParser(Integer.class, null, wrap.apply((ctx, value) -> Integer.parseInt(value)));
+        registerParameterParser(Long.class, null, wrap.apply((ctx, value) -> Long.parseLong(value)));
+        registerParameterParser(Float.class, null, wrap.apply((ctx, value) -> Float.parseFloat(value)));
+        registerParameterParser(Double.class, null, wrap.apply((ctx, value) -> Double.parseDouble(value)));
+        registerParameterParser(Byte.class, null, wrap.apply((ctx, value) -> Byte.parseByte(value)));
+        registerParameterParser(Short.class, null, wrap.apply((ctx, value) -> Short.parseShort(value)));
+        registerParameterParser(Instant.class, null, wrap.apply((ctx, value) -> Instant.parse(value)));
+        registerParameterParser(LocalTime.class, null, wrap.apply((ctx, value) -> LocalTime.parse(value)));
+        registerParameterParser(LocalDate.class, null, wrap.apply((ctx, value) -> LocalDate.parse(value)));
+        registerParameterParser(LocalDateTime.class, null, wrap.apply((ctx, value) -> LocalDateTime.parse(value)));
+        registerParameterParser(UUID.class, null, wrap.apply((ctx, value) -> UUID.fromString(value)));
+        registerParameterParser(Boolean.class, null, (ctx, value) -> {
+            if ( value.equalsIgnoreCase("true") || value.equals("1")
+                    || value.equalsIgnoreCase("y") || value.equalsIgnoreCase("yes") ) {
+                return Argument.success(true);
+            }
+            if ( value.equalsIgnoreCase("false") || value.equals("0")
+                    || value.equalsIgnoreCase("n") || value.equalsIgnoreCase("no") ) {
+                return Argument.success(false);
+            }
+            return Argument.fail(() -> {
+                throw new IllegalArgumentException("Invalid boolean value: " + value);
+            });
+        });
+    }
+
+    public void registerAll(@NotNull Object container) {
+        Class<?> cc = container.getClass();
+        for (Method method : cc.getDeclaredMethods()) {
+            if ( method.isAnnotationPresent(Completer.class) ) {
+                registerCompleter(method, container);
+                continue;
+            }
+
+            if ( method.isAnnotationPresent(Parser.class) ) {
+                registerParser(method, container);
+                continue;
+            }
+
+            if ( method.getAnnotationsByType(Command.class).length > 0 ) {
+                registerCommands(method, container);
+                continue;
+            }
+        }
+    }
+
+    private void registerCommands(@NotNull Method method, @NotNull Object container) {
+        Command[] commands = method.getAnnotationsByType(Command.class);
+        for (Command cmd : commands) {
+            if (cmd == null || cmd.value().trim().length() == 0) {
+                throw new IllegalArgumentException(String.format("Command annotation is empty for method '%s' in class '%s'.",
+                        method.getName(), container.getClass().getSimpleName()));
+            }
+        }
+
+        CommandHandlerBuilder<S> builder = new CommandHandlerBuilder<>();
+
+        Map<Parameter, Function<CommandContext<S>, Object>> suppliers = new LinkedHashMap<>();
+        for ( Parameter param  : method.getParameters() ) {
+            if (param.isAnnotationPresent(Source.class)) {
+                Source sourceConf = param.getAnnotation(Source.class);
+                CommandSourceMapper<S> mapper;
+                if ( sourceConf != null && !sourceConf.value().isEmpty() ) {
+                    mapper = find(mappers, param.getType(), sourceConf.value()).orElse(null);
+                } else {
+                    mapper = find(mappers, param.getType(), null).orElse(null);
+                }
+                if ( mapper != null ) {
+                    suppliers.put(param, ctx -> mapper.map(ctx.source()));
+                    continue;
+                }
+
+                suppliers.put(param, ctx -> {
+                    if ( param.getType().isInstance(ctx.source()) ) {
+                        return ctx.source();
+                    }
+                    throw new IllegalStateException(String.format("No source mapper found for parameter '%s' in method '%s' in class '%s'.",
+                            param.getName(), method.getName(), container.getClass().getSimpleName()));
+                });
+                continue;
+            }
+
+            com.guflimc.colonel.annotation.annotations.parameter.Parameter paramConf = param.getAnnotation(com.guflimc.colonel.annotation.annotations.parameter.Parameter.class);
+
+            // name
+            String name = param.getName();
+            if ( paramConf != null && !paramConf.value().isEmpty() ) {
+                name = paramConf.value();
+            }
+
+            // read mode
+            CommandParameter.ReadMode mode = CommandParameter.ReadMode.STRING;
+            if ( paramConf != null ) {
+                mode = paramConf.read();
+            }
+
+            // parser
+            Parser parserConf = param.getAnnotation(Parser.class);
+            CommandParameterParser<S> parser;
+            if ( parserConf != null && !parserConf.value().isEmpty() ) {
+                parser = find(parsers, param.getType(), parserConf.value()).orElse(null);
+            } else {
+                parser = find(parsers, param.getType(), null).orElse(null);
+            }
+            if ( parser == null ) {
+                throw new IllegalArgumentException(String.format("No parser found for parameter '%s' in method '%s' in class '%s'.",
+                        param.getName(), method.getName(), container.getClass().getSimpleName()));
+            }
+
+            // completer
+            Completer completerConf = param.getAnnotation(Completer.class);
+            CommandParameterCompleter<S> completer;
+            if ( completerConf != null && !completerConf.value().isEmpty() ) {
+                completer = find(completers, param.getType(), completerConf.value()).orElse(null);
+            } else {
+                completer = find(completers, param.getType(), null).orElse(null);
+            }
+            if ( completer == null ) {
+                completer = (context, input) -> List.of();
+            }
+
+            // register
+            CommandParameter cp = new CommandParameter(name, mode);
+            builder.parameter(cp, parser, completer);
+            suppliers.put(param, ctx -> ctx.argument(cp));
+        }
+
+        build(method, builder);
+
+        builder.executor(ctx -> {
+            try {
+                method.invoke(container, suppliers.values().stream().map(f -> f.apply(ctx)).toArray());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        CommandHandler handler = builder.build();
+        for ( Command cmd : commands ) {
+            register(cmd.value(), handler);
+        }
+    }
+
+    protected void build(@NotNull Method method, @NotNull CommandHandlerBuilder<S> builder) {}
+
+    //
+
+    private void registerCompleter(@NotNull Method method, @NotNull Object container) {
+        if ( !method.getReturnType().equals(List.class) ) {
+            throw new IllegalArgumentException(String.format("Completer method '%s' in class '%s' must return a List.",
+                    method.getName(), container.getClass().getSimpleName()));
+        }
+        Map<Parameter, BiFunction<CommandContext<S>, String, Object>> suppliers = new LinkedHashMap<>();
+        for ( Parameter param : method.getParameters() ) {
+            if ( param.getType().equals(CommandContext.class) ) {
+                suppliers.put(param, (ctx, input) -> ctx);
+                continue;
+            }
+            if ( param.getType().equals(String.class) ) {
+                suppliers.put(param, (ctx, input) -> input);
+                continue;
+            }
+            throw new IllegalArgumentException(String.format("Completer method '%s' in class '%s' may only have a context and input parameter.",
+                    method.getName(), container.getClass().getSimpleName()));
+        }
+
+        Completer completerConf = method.getAnnotation(Completer.class);
+        String name = method.getName();
+        if ( completerConf != null && !completerConf.value().isEmpty() ) {
+            name = completerConf.value();
+        }
+
+        CommandParameterCompleter<S> completer = (context, input) -> {
+            List<?> result;
+            try {
+                result = (List<?>) method.invoke(container, suppliers.values().stream().map(f -> f.apply(context, input)).toArray());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            if ( result.isEmpty() ) {
+                return List.of();
+            }
+
+            return result.stream().map(o -> {
+                if ( o instanceof Suggestion s) {
+                    return s;
+                }
+                return new Suggestion(o.toString());
+            }).toList();
+        };
+
+        registerParameterCompleter(name, completer);
+    }
+
+    private void registerParser(@NotNull Method method, @NotNull Object container) {
+        if ( method.getReturnType().equals(Void.TYPE) ) {
+            throw new IllegalArgumentException(String.format("Parser method '%s' in class '%s' must return an something.",
+                    method.getName(), container.getClass().getSimpleName()));
+        }
+        Map<Parameter, BiFunction<CommandContext<S>, String, Object>> suppliers = new LinkedHashMap<>();
+        for ( Parameter param : method.getParameters() ) {
+            if ( param.getType().equals(CommandContext.class) ) {
+                suppliers.put(param, (ctx, s) -> ctx);
+                continue;
+            }
+            if ( param.getType().equals(String.class) ) {
+                suppliers.put(param, (ctx, s) -> s);
+                continue;
+            }
+            throw new IllegalArgumentException(String.format("Parser method '%s' in class '%s' may only have a context and input parameter.",
+                    method.getName(), container.getClass().getSimpleName()));
+        }
+
+        Parser parserConf = method.getAnnotation(Parser.class);
+        String name = method.getName();
+        if ( parserConf != null && !parserConf.value().isEmpty() ) {
+            name = parserConf.value();
+        }
+
+        CommandParameterParser<S> parser = (context, input) -> {
+            Object value;
+            try {
+                value = method.invoke(container, suppliers.values().stream().map(f -> f.apply(context, input)).toArray());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            if ( value instanceof Argument arg) {
+                return arg;
+            }
+            return Argument.success(value);
+        };
+
+        registerParameterParser(method.getReturnType(), name, parser);
+    }
+
+    //
+
+    public void registerParameterCompleter(@NotNull Class<?> type,
+                                           @NotNull String name,
+                                           @NotNull CommandParameterCompleter<S> completer) {
+        type = wrap(type);
+        completers.put(new FunctionKey(type, name), completer);
+    }
+
+    public void registerParameterCompleter(@NotNull String name,
+                                           @NotNull CommandParameterCompleter<S> completer) {
+        completers.put(new FunctionKey(null, name), completer);
+    }
+
+    public void registerParameterParser(@NotNull Class<?> type,
+                                        @NotNull CommandParameterParser<S> parser) {
+        registerParameterParser(type, null, parser);
+    }
+
+    public void registerParameterParser(@NotNull Class<?> type,
+                                        @Nullable String name,
+                                        @NotNull CommandParameterParser<S> parser) {
+        parsers.put(new FunctionKey(type, name), parser);
+    }
+
+    public void registerParameterType(@NotNull Class<?> type,
+                                      @NotNull CommandParameterCompleter<S> completer,
+                                      @NotNull CommandParameterParser<S> parser) {
+        registerParameterType(type, null, completer, parser);
+    }
+
+    public void registerParameterType(@NotNull Class<?> type,
+                                      @Nullable String name,
+                                      @NotNull CommandParameterCompleter<S> completer,
+                                      @NotNull CommandParameterParser<S> parser) {
+        type = wrap(type);
+        registerParameterParser(type, name, parser);
+
+        if ( name != null ) {
+            registerParameterCompleter(type, name, completer);
+        }
+    }
+
+    public void registerSourceMapper(@NotNull Class<?> type,
+                                     @NotNull CommandSourceMapper<S> mapper) {
+        registerSourceMapper(type, null, mapper);
+    }
+
+    public void registerSourceMapper(@NotNull Class<?> type,
+                                     @Nullable String name,
+                                     @NotNull CommandSourceMapper<S> mapper) {
+        type = wrap(type);
+        mappers.put(new FunctionKey(type, name), mapper);
+    }
+
+    //
+
+    public <T> Optional<T> find(@NotNull Map<FunctionKey, T> map, @NotNull Class<?> type, @Nullable String name) {
+        Class<?> rtype = wrap(type);
+        return map.entrySet().stream()
+                .filter(e -> (name != null && e.getKey().type == null) || e.getKey().type.isAssignableFrom(rtype))
+                .filter(e -> name == null || name.equals(e.getKey().name))
+                .findFirst()
+                .map(Map.Entry::getValue);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Class<T> wrap(Class<T> c) {
+        return (Class<T>) MethodType.methodType(c).wrap().returnType();
+    }
+}

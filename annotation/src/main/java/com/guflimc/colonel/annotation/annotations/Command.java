@@ -9,6 +9,9 @@ import java.lang.annotation.*;
 @Repeatable(Command.Commands.class)
 public @interface Command {
 
+    /**
+     * The name of the command. This is the string that must be entered to execute the command.
+     */
     @NotNull String value();
 
     @Retention(RetentionPolicy.RUNTIME)

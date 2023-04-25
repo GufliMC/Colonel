@@ -1,4 +1,6 @@
-package com.guflimc.colonel.common.annotation.parameter;
+package com.guflimc.colonel.annotation.annotations.parameter;
+
+import com.guflimc.colonel.common.definition.CommandParameter;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,10 +11,14 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 public @interface Parameter {
 
-    String NAME_INFERRED = "__NAME_INFERRED__";
+    /**
+     * The name of the parameter. Will try to use the name of the compiled parameter by default.
+     */
+    String value() default "";
 
-    String value() default NAME_INFERRED;
-
-    String type() default NAME_INFERRED;
+    /**
+     * How the argument value should be read from the input.
+     */
+    CommandParameter.ReadMode read() default CommandParameter.ReadMode.STRING;
 
 }

@@ -31,8 +31,15 @@ public abstract class CommandHandler {
     /**
      * @param source The source of the command
      * @param input The input parsed as strings
-     * @return The delegate to execute the command or provide information about errors
+     * @return The delegate which can execute the command or provide information about errors
      */
     public abstract CommandDelegate prepare(Object source, CommandInput input);
 
+    /**
+     * @param source The source of the command
+     * @return Whether this handler is available or not for the given source.
+     */
+    public boolean available(Object source) {
+        return true;
+    }
 }

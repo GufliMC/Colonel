@@ -7,11 +7,11 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface Source {
+public @interface Suggestions {
 
     /**
-     * The name of the source mapper to use.
+     * The array of fixed suggestions to use for this parameter.
      */
-    String value() default "";
+    String[] value();
 
 }

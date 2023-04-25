@@ -6,22 +6,26 @@ import com.guflimc.colonel.common.parser.CommandInput;
 import com.guflimc.colonel.common.parser.CommandInputArgument;
 import com.guflimc.colonel.common.parser.CommandInputBuilder;
 import com.guflimc.colonel.common.suggestion.Suggestion;
-import com.guflimc.colonel.common.tree.CommandDelegate;
 import com.guflimc.colonel.common.tree.CommandHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 class CommandHandlerImpl<S> extends CommandHandler {
 
     private final List<CommandParameterWrapper<S>> parameters;
     private final CommandExecutor<S> executor;
+    private final Predicate<S> condition;
 
     public CommandHandlerImpl(@NotNull List<CommandParameterWrapper<S>> parameters,
-                              @NotNull CommandExecutor<S> executor) {
+                              @NotNull CommandExecutor<S> executor,
+                              @Nullable Predicate<S> condition) {
         super(new CommandDefinition(parameters.stream().map(CommandParameterWrapper::parameter).toArray(CommandParameter[]::new)));
         this.parameters = List.copyOf(parameters);
         this.executor = executor;
+        this.condition = condition;
     }
 
     private CommandContext<S> context(Object source, CommandInputBuilder b) {
@@ -57,7 +61,9 @@ class CommandHandlerImpl<S> extends CommandHandler {
             }
         }
 
+        // copy other values
         builder.withCursor(input.cursor());
+        builder.withExcess(input.excess());
 
         CommandContext<S> ctx = context(source, builder);
         return new CommandDelegateImpl<>(ctx, executor, failure);
@@ -78,4 +84,8 @@ class CommandHandlerImpl<S> extends CommandHandler {
         return param.completer().suggestions(delegate.context, str);
     }
 
+    @Override
+    public boolean available(Object source) {
+        return condition == null || condition.test((S) source);
+    }
 }

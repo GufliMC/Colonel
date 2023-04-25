@@ -4,10 +4,7 @@ import com.guflimc.colonel.common.parser.CommandInput;
 import com.guflimc.colonel.common.parser.CommandInputReader;
 import com.guflimc.colonel.common.suggestion.Suggestion;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class CommandTreeNode {
 
@@ -40,6 +37,10 @@ public final class CommandTreeNode {
         Map<CommandHandler, CommandInput> parsed = new LinkedHashMap<>(); // keep order
         int min = Integer.MAX_VALUE;
         for (CommandHandler handler : handlers) {
+            if ( !handler.available(source) ) {
+                continue;
+            }
+
             CommandInputReader reader = new CommandInputReader(handler.definition(), input);
             CommandInput ci = reader.read();
             min = Math.min(min, ci.errors().size());
@@ -47,7 +48,7 @@ public final class CommandTreeNode {
         }
 
         // remove handlers with errors from possible targets
-        for ( CommandHandler handler : handlers ) {
+        for ( CommandHandler handler : new HashSet<>(parsed.keySet())) {
             if ( parsed.get(handler).errors().size() > min )  // exceeds max error count
                 parsed.remove(handler);
             else if ( parsed.get(handler).excess() != null )  // not a match (too many arguments)
@@ -84,6 +85,10 @@ public final class CommandTreeNode {
 
         // parse arguments in as strings and ask suggestions
         for (CommandHandler handler : handlers) {
+            if ( !handler.available(source) ) {
+                continue;
+            }
+
             CommandInputReader reader = new CommandInputReader(handler.definition(), input, cursor);
             CommandInput ci = reader.read();
             suggestions.addAll(handler.suggestions(source, ci));
