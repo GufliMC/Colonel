@@ -1,4 +1,4 @@
-package com.guflimc.colonel.annotation.annotations.parameter;
+package com.guflimc.colonel.annotation.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

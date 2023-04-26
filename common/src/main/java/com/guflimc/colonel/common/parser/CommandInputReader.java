@@ -97,9 +97,6 @@ public class CommandInputReader {
     }
 
     private String readString() {
-        if (buffer.length() == 0)
-            throw new IllegalStateException("Cannot continue when there is no data.");
-
         // first try quotes
         Matcher mr = QUOTED.matcher(buffer);
         if (mr.find()) {

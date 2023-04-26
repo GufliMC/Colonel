@@ -21,4 +21,14 @@ public @interface Parameter {
      */
     CommandParameter.ReadMode read() default CommandParameter.ReadMode.STRING;
 
+    /**
+     * The name of the completer to use for this parameter.
+     */
+    String completer() default "";
+
+    /**
+     * The name of the parser to use for this parameter.
+     */
+    String parser() default "";
+
 }

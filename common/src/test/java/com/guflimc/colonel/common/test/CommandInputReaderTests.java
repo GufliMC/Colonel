@@ -83,6 +83,36 @@ public class CommandInputReaderTests {
     //
 
     @Test
+    public void empty() {
+        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.WORD);
+        CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1 });
+
+        CommandInputReader reader = new CommandInputReader(def, "");
+        CommandInput input = reader.read();
+
+        assertEquals("", input.argument(p1));
+        assertEquals(p1, input.cursor());
+        assertTrue(input.errors().isEmpty());
+        assertNull(input.excess());
+    }
+
+    @Test
+    public void space() {
+        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.WORD);
+        CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1 });
+
+        CommandInputReader reader = new CommandInputReader(def, " ");
+        CommandInput input = reader.read();
+
+        assertEquals("", input.argument(p1));
+        assertEquals(p1, input.cursor());
+        assertTrue(input.errors().isEmpty());
+        assertNull(input.excess());
+    }
+
+    //
+
+    @Test
     public void wordExcess() {
         CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.WORD);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1 });
