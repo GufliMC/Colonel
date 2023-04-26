@@ -111,26 +111,9 @@ public class AnnotationColonel<S> extends Colonel<S> {
 
         Map<Parameter, Function<CommandContext<S>, Object>> suppliers = new LinkedHashMap<>();
         for (Parameter param : method.getParameters()) {
-            if (param.isAnnotationPresent(Source.class)) {
-                Source sourceConf = param.getAnnotation(Source.class);
-                CommandSourceMapper<S> mapper;
-                if (sourceConf != null && !sourceConf.value().isEmpty()) {
-                    mapper = find(mappers, param.getType(), sourceConf.value()).orElse(null);
-                } else {
-                    mapper = find(mappers, param.getType(), null).orElse(null);
-                }
-                if (mapper != null) {
-                    suppliers.put(param, ctx -> mapper.map(ctx.source()));
-                    continue;
-                }
-
-                suppliers.put(param, ctx -> {
-                    if (param.getType().isInstance(ctx.source())) {
-                        return ctx.source();
-                    }
-                    throw new IllegalStateException(String.format("No source mapper found for parameter '%s' in method '%s' in class '%s'.",
-                            param.getName(), method.getName(), container.getClass().getSimpleName()));
-                });
+            if ( param.isAnnotationPresent(Source.class) ) {
+                CommandSourceMapper<S> mapper = sourceMapper(param);
+                suppliers.put(param, ctx -> mapper.map(ctx.source()));
                 continue;
             }
 
@@ -206,8 +189,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
         }
     }
 
-    protected void build(@NotNull Method method, @NotNull CommandHandlerBuilder<S> builder) {
-    }
+    protected void build(@NotNull Method method, @NotNull CommandHandlerBuilder<S> builder) {}
 
     //
 
@@ -218,19 +200,8 @@ public class AnnotationColonel<S> extends Colonel<S> {
             throw new IllegalArgumentException(String.format("Completer method '%s' in class '%s' must return a List.",
                     method.getName(), container.getClass().getSimpleName()));
         }
-        Map<Parameter, BiFunction<CommandContext<S>, String, Object>> suppliers = new LinkedHashMap<>();
-        for (Parameter param : method.getParameters()) {
-            if (param.getType().equals(CommandContext.class)) {
-                suppliers.put(param, (ctx, input) -> ctx);
-                continue;
-            }
-            if (param.getType().equals(String.class)) {
-                suppliers.put(param, (ctx, input) -> input);
-                continue;
-            }
-            throw new IllegalArgumentException(String.format("Completer method '%s' in class '%s' may only have a context and input parameter.",
-                    method.getName(), container.getClass().getSimpleName()));
-        }
+
+        Map<Parameter, BiFunction<CommandContext<S>, String, Object>> suppliers = suppliers(method);
 
         Completer completerConf = method.getAnnotation(Completer.class);
         String name = method.getName();
@@ -265,22 +236,11 @@ public class AnnotationColonel<S> extends Colonel<S> {
         method.setAccessible(true);
 
         if (method.getReturnType().equals(Void.TYPE)) {
-            throw new IllegalArgumentException(String.format("Parser method '%s' in class '%s' must return an something.",
+            throw new IllegalArgumentException(String.format("Parser method '%s' in class '%s' must return something.",
                     method.getName(), container.getClass().getSimpleName()));
         }
-        Map<Parameter, BiFunction<CommandContext<S>, String, Object>> suppliers = new LinkedHashMap<>();
-        for (Parameter param : method.getParameters()) {
-            if (param.getType().equals(CommandContext.class)) {
-                suppliers.put(param, (ctx, s) -> ctx);
-                continue;
-            }
-            if (param.getType().equals(String.class)) {
-                suppliers.put(param, (ctx, s) -> s);
-                continue;
-            }
-            throw new IllegalArgumentException(String.format("Parser method '%s' in class '%s' may only have a context and input parameter.",
-                    method.getName(), container.getClass().getSimpleName()));
-        }
+
+        Map<Parameter, BiFunction<CommandContext<S>, String, Object>> suppliers = suppliers(method);
 
         Parser parserConf = method.getAnnotation(Parser.class);
         String name = method.getName();
@@ -303,6 +263,70 @@ public class AnnotationColonel<S> extends Colonel<S> {
         };
 
         registerParameterParser(method.getReturnType(), name, parser);
+    }
+
+    private CommandSourceMapper<S> sourceMapper(@NotNull Parameter param) {
+        com.guflimc.colonel.annotation.annotations.parameter.Parameter paramConf = param
+                .getAnnotation(com.guflimc.colonel.annotation.annotations.parameter.Parameter.class);
+
+        // name
+        String name = param.getName();
+        if (paramConf != null && !paramConf.value().isEmpty()) {
+            name = paramConf.value();
+        }
+
+        Source sourceConf = param.getAnnotation(Source.class);
+        CommandSourceMapper<S> mapper;
+        if ( !sourceConf.value().isEmpty() ) {
+            // find for given name
+            mapper = find(mappers, param.getType(), sourceConf.value()).orElse(null);
+        } else {
+            // find for parameter name
+            mapper = find(mappers, param.getType(), name).orElse(null);
+
+            // fallback to type only
+            if ( mapper == null ) {
+                mapper = find(mappers, param.getType(), null).orElse(null);
+            }
+        }
+
+        if ( mapper == null ) {
+            mapper = s -> {
+                if (param.getType().isInstance(s)) {
+                    return s;
+                }
+                throw new IllegalStateException(String.format("No source mapper found for parameter '%s' in method '%s' in class '%s'.",
+                        param.getName(), param.getDeclaringExecutable().getName(), param.getDeclaringExecutable().getDeclaringClass().getSimpleName()));
+            };
+        }
+        return mapper;
+    }
+
+    private Map<Parameter, BiFunction<CommandContext<S>, String, Object>> suppliers(@NotNull Method method) {
+        Map<Parameter, BiFunction<CommandContext<S>, String, Object>> suppliers = new LinkedHashMap<>();
+        for (Parameter param : method.getParameters()) {
+
+            // parameter is annotated
+            if ( param.isAnnotationPresent(Source.class) ) {
+                CommandSourceMapper<S> mapper = sourceMapper(param);
+                suppliers.put(param, (ctx, input) -> mapper.map(ctx.source()));
+                continue;
+            }
+
+            // default values
+            if (param.getType().equals(CommandContext.class)) {
+                suppliers.put(param, (ctx, input) -> ctx);
+                continue;
+            }
+            if (param.getType().equals(String.class)) {
+                suppliers.put(param, (ctx, input) -> input);
+                continue;
+            }
+            throw new IllegalArgumentException(String.format("Utility method '%s' in class '%s' may only have a context and input parameter.",
+                    method.getName(), method.getDeclaringClass().getSimpleName()));
+        }
+
+        return suppliers;
     }
 
     //

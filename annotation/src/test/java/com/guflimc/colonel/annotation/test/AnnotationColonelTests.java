@@ -81,8 +81,8 @@ public class AnnotationColonelTests {
         colonel.registerSourceMapper(Integer.class, "age", Person::age);
         colonel.registerAll(new Object() {
             @Command("addage")
-            public void addage(@Source Person person, @Source int age, @Parameter int amount) {
-                person.setAge(age + amount);
+            public void addage(@Source Person person, @Source int fakeage, @Parameter int amount) {
+                person.setAge(fakeage + amount);
             }
         });
 
@@ -91,7 +91,6 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterWithStandardParser() {
-        colonel.registerSourceMapper(Integer.class, Person::age);
         colonel.registerAll(new Object() {
 
             @Parser("number")
@@ -111,7 +110,6 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterWithLessArgumentsParser() {
-        colonel.registerSourceMapper(Integer.class, Person::age);
         colonel.registerAll(new Object() {
 
             @Parser("number")
@@ -131,7 +129,6 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterWithNoArgumentsParser() {
-        colonel.registerSourceMapper(Integer.class, Person::age);
         colonel.registerAll(new Object() {
 
             @Parser("number")
@@ -151,7 +148,6 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterWithMoreArgumentsParser() {
-        colonel.registerSourceMapper(Integer.class, Person::age);
         assertThrows(Exception.class, () -> {
             colonel.registerAll(new Object() {
 
@@ -170,7 +166,6 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterWithStandardCompleter() {
-        colonel.registerSourceMapper(Integer.class, "age", Person::age);
         colonel.registerAll(new Object() {
 
             @Completer("number")
@@ -179,8 +174,8 @@ public class AnnotationColonelTests {
             }
 
             @Command("addage")
-            public void addage(@Source Person person, @Source int age, @Parameter(completer = "number") int amount) {
-                person.setAge(age + amount);
+            public void addage(@Source Person person, @Parameter(completer = "number") int amount) {
+                person.setAge(person.age() + amount);
             }
         });
 
@@ -190,7 +185,6 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterWithLessArgumentsCompleter() {
-        colonel.registerSourceMapper(Integer.class, "age", Person::age);
         colonel.registerAll(new Object() {
 
             @Completer("number")
@@ -199,8 +193,8 @@ public class AnnotationColonelTests {
             }
 
             @Command("addage")
-            public void addage(@Source Person person, @Source int age, @Parameter(completer = "number") int amount) {
-                person.setAge(age + amount);
+            public void addage(@Source Person person, @Parameter(completer = "number") int amount) {
+                person.setAge(person.age() + amount);
             }
         });
 
@@ -219,8 +213,8 @@ public class AnnotationColonelTests {
             }
 
             @Command("addage")
-            public void addage(@Source Person person, @Source int age, @Parameter(completer = "number") int amount) {
-                person.setAge(age + amount);
+            public void addage(@Source Person person, @Parameter(completer = "number") int amount) {
+                person.setAge(person.age() + amount);
             }
         });
 
@@ -245,6 +239,46 @@ public class AnnotationColonelTests {
                 }
             });
         });
+    }
+
+    @Test
+    public void singleParameterWithCustomCompleterWithSourceMapper() {
+        colonel.registerSourceMapper(Integer.class, Person::age);
+        colonel.registerAll(new Object() {
+
+            @Completer("number")
+            public List<Integer> numberCompleter(@Source int age) {
+                return List.of(age + 1, age + 2, age + 3);
+            }
+
+            @Command("addage")
+            public void addage(@Source Person person, @Parameter(completer = "number") int amount) {
+                person.setAge(person.age() + amount);
+            }
+        });
+
+        List<Suggestion> suggestions = colonel.suggestions(person, "addage ");
+        assertEquals(List.of(new Suggestion("11"), new Suggestion("12"), new Suggestion("13")), suggestions);
+    }
+
+    @Test
+    public void singleParameterWithCustomParserWithSourceMapper() {
+        colonel.registerSourceMapper(Integer.class, Person::age);
+        colonel.registerAll(new Object() {
+
+            @Parser("number")
+            public int numberParser(@Source int age, String input) {
+                return Integer.parseInt(input) + age;
+            }
+
+            @Command("addage")
+            public void addage(@Source Person person, @Parameter(parser = "number") int amount) {
+                person.setAge(person.age() + amount);
+            }
+        });
+
+        colonel.dispatch(person, "addage 10");
+        assertEquals(30, person.age());
     }
 
 }
