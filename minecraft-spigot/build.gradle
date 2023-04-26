@@ -1,0 +1,15 @@
+repositories {
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+}
+
+dependencies {
+    api project(':minecraft-common')
+
+    // platform dependency is provided
+    compileOnly 'org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT'
+    compileOnly 'com.guflimc.brick.i18n:spigot-api:+'
+
+    //
+    implementation 'net.kyori:adventure-platform-bukkit:4.+'
+    implementation 'com.guflimc.adventure:adventure-mixed-legacy-serializer:+'
+}

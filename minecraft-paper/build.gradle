@@ -5,8 +5,7 @@ repositories {
 }
 
 dependencies {
-    api project(':common')
-    api project(':spigot')
+    api project(':minecraft-spigot')
 
     // platform dependency is provided
     compileOnly 'org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT'

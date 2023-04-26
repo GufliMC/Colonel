@@ -16,6 +16,7 @@ subprojects {
 
     repositories {
         maven { url "https://libraries.minecraft.net" }
+        maven { url "https://repo.jorisg.com/snapshots" }
     }
 }
 

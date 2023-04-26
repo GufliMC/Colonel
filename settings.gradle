@@ -2,3 +2,7 @@ rootProject.name = 'Colonel'
 
 include 'common'
 include 'annotation'
+include 'minecraft-common'
+include 'minecraft-spigot'
+include 'minecraft-paper'
+
