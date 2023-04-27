@@ -36,7 +36,7 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterTypeSourceMapper() {
-        colonel.registerSourceMapper(Integer.class, Person::age);
+        colonel.registry().registerSourceMapper(Integer.class, Person::age);
         colonel.registerAll(new Object() {
             @Command("addage")
             public void addage(@Source Person person, @Source int age, @Parameter int amount) {
@@ -50,20 +50,19 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterFailTypeSourceMapper() {
-        colonel.registerSourceMapper(Integer.class, Person::age);
-        colonel.registerAll(new Object() {
+        colonel.registry().registerSourceMapper(Integer.class, Person::age);
+
+        assertThrows(Exception.class, () -> colonel.registerAll(new Object() {
             @Command("addage")
             public void addage(@Source Person person, @Source("unknown") int age, @Parameter int amount) {
                 person.setAge(age + amount);
             }
-        });
-
-        assertThrows(Exception.class, () -> colonel.dispatch(person, "addage 5"));
+        }));
     }
 
     @Test
     public void singleParameterNameSourceMapper() {
-        colonel.registerSourceMapper(Integer.class, "age", Person::age);
+        colonel.registry().registerSourceMapper(Integer.class, "age", Person::age);
 
         colonel.registerAll(new Object() {
             @Command("addage")
@@ -78,11 +77,10 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterFailNameSourceMapper() {
-        colonel.registerSourceMapper(Integer.class, "age", Person::age);
         colonel.registerAll(new Object() {
             @Command("addage")
-            public void addage(@Source Person person, @Source int fakeage, @Parameter int amount) {
-                person.setAge(fakeage + amount);
+            public void addage(@Source Person person, @Source boolean something, @Parameter int amount) {
+                person.setAge(person.age() + amount);
             }
         });
 
@@ -204,7 +202,7 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterWithNoArgumentsCompleter() {
-        colonel.registerSourceMapper(Integer.class, "age", Person::age);
+        colonel.registry().registerSourceMapper(Integer.class, "age", Person::age);
         colonel.registerAll(new Object() {
 
             @Completer("number")
@@ -224,7 +222,7 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterWithMoreArgumentsCompleter() {
-        colonel.registerSourceMapper(Integer.class, Person::age);
+        colonel.registry().registerSourceMapper(Integer.class, Person::age);
         assertThrows(Exception.class, () -> {
             colonel.registerAll(new Object() {
 
@@ -243,7 +241,7 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterWithCustomCompleterWithSourceMapper() {
-        colonel.registerSourceMapper(Integer.class, Person::age);
+        colonel.registry().registerSourceMapper(Integer.class, Person::age);
         colonel.registerAll(new Object() {
 
             @Completer("number")
@@ -263,7 +261,7 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterWithCustomParserWithSourceMapper() {
-        colonel.registerSourceMapper(Integer.class, Person::age);
+        colonel.registry().registerSourceMapper(Integer.class, Person::age);
         colonel.registerAll(new Object() {
 
             @Parser("number")

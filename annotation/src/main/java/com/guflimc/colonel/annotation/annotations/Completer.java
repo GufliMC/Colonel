@@ -12,6 +12,10 @@ public @interface Completer {
     /**
      * The name of the completer.
      */
-    String value();
+    String value() default "";
 
+    /**
+     * The type this completer applies to.
+     */
+    Class<?> type() default Void.class;
 }

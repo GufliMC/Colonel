@@ -18,7 +18,7 @@ public class SpigotCommand extends Command {
 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
-        String input = (commandLabel + " " + String.join(" ", args)).trim();
+        String input = (getName() + " " + String.join(" ", args));
         colonel.dispatch(sender, input);
         return true;
     }
@@ -26,7 +26,7 @@ public class SpigotCommand extends Command {
     @NotNull
     @Override
     public List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
-        String input = (alias + " " + String.join(" ", args)).trim();
+        String input = (getName() + " " + String.join(" ", args));
         return colonel.suggestions(sender, input).stream().map(Suggestion::value).toList();
     }
 }

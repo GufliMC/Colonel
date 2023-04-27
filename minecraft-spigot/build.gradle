@@ -1,5 +1,6 @@
 repositories {
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url 'https://repo.papermc.io/repository/maven-public/' }
 }
 
 dependencies {
@@ -12,4 +13,16 @@ dependencies {
     //
     implementation 'net.kyori:adventure-platform-bukkit:4.+'
     implementation 'com.guflimc.adventure:adventure-mixed-legacy-serializer:+'
+
+    // TESTS
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation 'com.github.seeseemelk:MockBukkit-v1.19:+'
 }
+
+test {
+    useJUnitPlatform()
+}
+
+compileJava.options.compilerArgs.add '-parameters'
+compileTestJava.options.compilerArgs.add '-parameters'

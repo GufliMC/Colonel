@@ -12,6 +12,12 @@ public @interface Parser {
     /**
      * The name of the parser
      */
-    String value();
+    String value() default "";
+
+
+    /**
+     * The type this parser applies to.
+     */
+    Class<?> type() default Void.class;
 
 }
