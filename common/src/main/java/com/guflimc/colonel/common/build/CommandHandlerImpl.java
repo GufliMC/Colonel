@@ -41,6 +41,7 @@ class CommandHandlerImpl<S> extends CommandHandler {
             // missing error
             if ( input.failure(param.parameter()) ) {
                 builder.fail(param.parameter(), input.error(param.parameter()));
+                if ( failure == null ) failure = () -> { throw new IllegalArgumentException("Missing argument: " + param.parameter().name()); }; // only first error
                 continue;
             }
 
@@ -54,10 +55,11 @@ class CommandHandlerImpl<S> extends CommandHandler {
                     builder.success(param.parameter(), as.value);
                 } else if ( arg instanceof Argument.ArgumentFailure af ) {
                     builder.fail(param.parameter(), CommandInputArgument.ArgumentFailureType.INVALID);
-                    failure = af.runnable;
+                    if ( failure == null ) failure = af.runnable; // only first error
                 }
             } catch (Exception ex) {
                 builder.fail(param.parameter(), CommandInputArgument.ArgumentFailureType.INVALID);
+                if ( failure == null ) failure = () -> { throw new RuntimeException("Error occured during argument parsing.", ex); }; // only first error
             }
         }
 

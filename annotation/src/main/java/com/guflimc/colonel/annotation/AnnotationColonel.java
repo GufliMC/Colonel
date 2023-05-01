@@ -17,18 +17,18 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class AnnotationColonel<S> extends Colonel<S> {
 
     protected final FunctionRegistry<S> registry = new FunctionRegistry<>();
+    protected final Class<S> sourceType;
 
-    public AnnotationColonel() {
+    public AnnotationColonel(Class<S> sourceType) {
+        this.sourceType = sourceType;
 
         // REGISTER DEFAULT JAVA TYPES
         registry.registerParameterParser(String.class, (ctx, value) -> Argument.success(value));
@@ -183,8 +183,14 @@ public class AnnotationColonel<S> extends Colonel<S> {
 
         // set executor
         builder.executor(ctx -> {
+            Object[] arguments = suppliers.values().stream()
+                    .map(f -> f.apply(ctx))
+                    .toArray();
+
             try {
-                method.invoke(container, suppliers.values().stream().map(f -> f.apply(ctx)).toArray());
+                method.invoke(container, arguments);
+            }  catch (IllegalArgumentException e) {
+                throw new RuntimeException(invocationErrorMessage(method, arguments), e);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -224,9 +230,15 @@ public class AnnotationColonel<S> extends Colonel<S> {
         }
 
         CommandParameterCompleter<S> completer = (context, input) -> {
+            Object[] arguments = suppliers.values().stream()
+                    .map(f -> f.apply(context, input))
+                    .toArray();
+
             List<?> result;
             try {
-                result = (List<?>) method.invoke(container, suppliers.values().stream().map(f -> f.apply(context, input)).toArray());
+                result = (List<?>) method.invoke(container, arguments);
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException(invocationErrorMessage(method, arguments), e);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -271,9 +283,15 @@ public class AnnotationColonel<S> extends Colonel<S> {
         }
 
         CommandParameterParser<S> parser = (context, input) -> {
+            Object[] arguments = suppliers.values().stream()
+                    .map(f -> f.apply(context, input))
+                    .toArray();
+
             Object value;
             try {
-                value = method.invoke(container, suppliers.values().stream().map(f -> f.apply(context, input)).toArray());
+                value = method.invoke(container, arguments);
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException(invocationErrorMessage(method, arguments), e);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -348,6 +366,8 @@ public class AnnotationColonel<S> extends Colonel<S> {
             mapper = registry.mapper(param.getType(), sourceConf.value(), false)
                     .orElseThrow(() -> new IllegalStateException(String.format("No source mapper found with name '%s' for parameter '%s' in method '%s' in class '%s'.",
                             sourceConf.value(), param.getName(), param.getDeclaringExecutable().getName(), param.getDeclaringExecutable().getDeclaringClass().getSimpleName())));
+        } else if ( sourceType.isAssignableFrom(param.getType()) ) {
+            return (source) -> source;
         } else {
             mapper = registry.mapper(param.getType(), name, true)
                     .orElse(null);
@@ -357,14 +377,23 @@ public class AnnotationColonel<S> extends Colonel<S> {
             return mapper;
         }
 
-        return (source) -> {
-            if (param.getType().isInstance(source)) {
-                return source;
-            }
-            throw new IllegalStateException(String.format("No source mapper found for parameter '%s' in method '%s' in class '%s'.",
-                    param.getName(), param.getDeclaringExecutable().getName(), param.getDeclaringExecutable().getDeclaringClass().getSimpleName()));
-        };
+        throw new IllegalArgumentException(String.format("Cannot find source mapper for parameter '%s' in method '%s' in class '%s'.",
+                param.getName(),
+                param.getDeclaringExecutable().getName(),
+                param.getDeclaringExecutable().getDeclaringClass().getSimpleName()));
     }
 
+    //
+
+    private String invocationErrorMessage(Method method, Object[] arguments) {
+        return String.format("Failed to invoke method %s with arguments of type: %s",
+                method.getName() + "(" + Arrays.stream(method.getParameters())
+                        .map(p -> p.getType().getSimpleName() + " " + p.getName())
+                        .collect(Collectors.joining(", ")) + ")",
+                Arrays.stream(arguments)
+                        .map(arg -> arg != null ? arg.getClass().getSimpleName() : null)
+                        .collect(Collectors.joining(", "))
+        );
+    }
 
 }

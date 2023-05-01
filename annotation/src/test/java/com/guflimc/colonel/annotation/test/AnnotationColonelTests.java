@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class AnnotationColonelTests {
 
     private final Person person = new Person("John Doe", 10);
-    private final AnnotationColonel<Person> colonel = new AnnotationColonel<>();
+    private final AnnotationColonel<Person> colonel = new AnnotationColonel<>(Person.class);
 
     @Test
     public void singleParameter() {
@@ -77,14 +77,14 @@ public class AnnotationColonelTests {
 
     @Test
     public void singleParameterFailNameSourceMapper() {
-        colonel.registerAll(new Object() {
-            @Command("addage")
-            public void addage(@Source Person person, @Source boolean something, @Parameter int amount) {
-                person.setAge(person.age() + amount);
-            }
+        assertThrows(Exception.class, () -> {
+            colonel.registerAll(new Object() {
+                @Command("addage")
+                public void addage(@Source Person person, @Source boolean something, @Parameter int amount) {
+                    person.setAge(person.age() + amount);
+                }
+            });
         });
-
-        assertThrows(Exception.class, () -> colonel.dispatch(person, "addage 5"));
     }
 
     @Test
@@ -279,4 +279,49 @@ public class AnnotationColonelTests {
         assertEquals(30, person.age());
     }
 
+    @Test
+    public void singleLiteralOverload() {
+        colonel.registry().registerSourceMapper(Integer.class, Person::age);
+        colonel.registerAll(new Object() {
+
+            @Command("addage")
+            public void addage(@Source Person person) {
+                person.setAge(person.age() + 1);
+            }
+
+            @Command("addage")
+            public void addage(@Source Person person, @Parameter int amount) {
+                person.setAge(person.age() + amount);
+            }
+        });
+
+        colonel.dispatch(person, "addage");
+        assertEquals(11, person.age());
+
+        colonel.dispatch(person, "addage 4");
+        assertEquals(15, person.age());
+    }
+
+    @Test
+    public void multiLiteralOverload() {
+        colonel.registry().registerSourceMapper(Integer.class, Person::age);
+        colonel.registerAll(new Object() {
+
+            @Command("add age")
+            public void addage(@Source Person person) {
+                person.setAge(person.age() + 1);
+            }
+
+            @Command("add age")
+            public void addage(@Source Person person, @Parameter int amount) {
+                person.setAge(person.age() + amount);
+            }
+        });
+
+        colonel.dispatch(person, "add age");
+        assertEquals(11, person.age());
+
+        colonel.dispatch(person, "add age 9");
+        assertEquals(20, person.age());
+    }
 }

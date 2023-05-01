@@ -8,7 +8,6 @@ import com.guflimc.colonel.common.suggestion.Suggestion;
 import com.guflimc.colonel.minecraft.spigot.SpigotColonel;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

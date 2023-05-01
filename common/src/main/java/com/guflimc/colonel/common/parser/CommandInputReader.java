@@ -44,9 +44,9 @@ public class CommandInputReader {
             int cc = cursor;
 
             CommandParameter param = definition.parameters()[index];
-            if ( param.parseMode() == CommandParameter.ReadMode.STRING ) {
+            if ( param.readMode() == CommandParameter.ReadMode.STRING ) {
                 builder.success(param, readString());
-            } else if ( param.parseMode() == CommandParameter.ReadMode.WORD ) {
+            } else if ( param.readMode() == CommandParameter.ReadMode.WORD ) {
                 builder.success(param, readWord());
             } else {
                 builder.success(param, readAll());

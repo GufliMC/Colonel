@@ -18,9 +18,17 @@ public class CommandParameter {
         return name;
     }
 
-    public ReadMode parseMode() {
+    public ReadMode readMode() {
         return readMode;
     }
+
+    //
+
+    @Override
+    public String toString() {
+        return "<" + name + ":" + readMode.name().toLowerCase() + ">";
+    }
+
 
     //
 
@@ -32,4 +40,5 @@ public class CommandParameter {
         /** Read the remaining input. **/
         GREEDY;
     }
+
 }

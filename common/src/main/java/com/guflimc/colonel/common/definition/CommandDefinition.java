@@ -1,7 +1,9 @@
 package com.guflimc.colonel.common.definition;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class CommandDefinition {
 
@@ -25,7 +27,7 @@ public class CommandDefinition {
 
         // check for greedy validity
         for ( int i = 0; i < parameters.length - 1; i++ ) {
-            if ( parameters[i].parseMode() == CommandParameter.ReadMode.GREEDY ) {
+            if ( parameters[i].readMode() == CommandParameter.ReadMode.GREEDY ) {
                 throw new IllegalArgumentException("There can only be one greedy parameter and it must be the last one.");
             }
         }
@@ -35,4 +37,12 @@ public class CommandDefinition {
         return parameters;
     }
 
+    //
+
+    @Override
+    public String toString() {
+        return Arrays.stream(parameters)
+                .map(CommandParameter::toString)
+                .collect(Collectors.joining(" "));
+    }
 }

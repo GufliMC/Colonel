@@ -29,6 +29,8 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
     final Set<RegisteredCommand> commands = new HashSet<>();
 
     public SpigotColonel(JavaPlugin plugin) {
+        super(CommandSender.class);
+
         this.plugin = plugin;
         this.audiences = BukkitAudiences.create(plugin);
 
