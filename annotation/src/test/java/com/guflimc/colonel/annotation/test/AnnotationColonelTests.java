@@ -324,4 +324,37 @@ public class AnnotationColonelTests {
         colonel.dispatch(person, "add age 9");
         assertEquals(20, person.age());
     }
+
+    @Test
+    public void similarLiteralsSuggestions() {
+        colonel.registry().registerSourceMapper(Integer.class, Person::age);
+        colonel.registerAll(new Object() {
+
+            @Completer(type = Integer.class)
+            public List<Integer> numberCompleter(@Source int age) {
+                return List.of(10, 20, 30);
+            }
+
+            @Command("age add")
+            public void addage(@Source Person person, @Parameter int amount) {
+                person.setAge(person.age() + amount);
+            }
+
+            @Command("age set")
+            public void setage(@Source Person person, @Parameter int amount) {
+                person.setAge(amount);
+            }
+
+            @Command("age reset")
+            public void resetage(@Source Person person) {
+                person.setAge(10);
+            }
+        });
+
+        List<Suggestion> suggestions = colonel.suggestions(person, "age ");
+        assertEquals(List.of(new Suggestion("add"), new Suggestion("set"), new Suggestion("reset")), suggestions);
+
+        suggestions = colonel.suggestions(person, "age set ");
+        assertEquals(List.of(new Suggestion("10"), new Suggestion("20"), new Suggestion("30")), suggestions);
+    }
 }

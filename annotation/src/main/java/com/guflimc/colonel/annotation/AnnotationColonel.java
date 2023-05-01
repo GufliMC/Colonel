@@ -171,7 +171,6 @@ public class AnnotationColonel<S> extends Colonel<S> {
                 completer = registry.completer(param.getType(), name, true)
                         .orElseGet(() -> (ctx, input) -> List.of());
             }
-            completer = CommandParameterCompleter.startsWith(completer);
 
             // register
             CommandParameter cp = new CommandParameter(name, mode);
@@ -254,6 +253,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
                 return new Suggestion(o.toString());
             }).toList();
         };
+        completer = CommandParameterCompleter.startsWith(completer);
 
         if (completerConf.type() != Void.class) {
             registry.registerParameterCompleter(completerConf.type(), name, completer);
