@@ -125,6 +125,8 @@ public class FunctionRegistry<S> {
                 .map(Map.Entry::getValue);
     }
 
+    //
+
     private <T> Optional<T> find(@NotNull Map<FunctionKey, T> map, @NotNull Class<?> type, @NotNull String name, boolean fallback) {
         T result = find(map, type, name).orElse(null);
         if (result != null) {
@@ -149,7 +151,7 @@ public class FunctionRegistry<S> {
         return (Class<T>) MethodType.methodType(c).wrap().returnType();
     }
 
-    //
+    // INTERNAL
 
     Optional<CommandParameterCompleter<S>> completer(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
         return find(completers, type, name, fallback);
@@ -161,6 +163,32 @@ public class FunctionRegistry<S> {
 
     Optional<CommandSourceMapper<S>> mapper(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
         return find(mappers, type, name, fallback);
+    }
+
+    // PUBLIC
+
+    public Optional<CommandParameterCompleter<S>> completer(@NotNull Class<?> type) {
+        return find(completers, type);
+    }
+
+    public Optional<CommandParameterCompleter<S>> completer(@NotNull Class<?> type, @NotNull String name) {
+        return find(completers, type, name);
+    }
+
+    public Optional<CommandParameterParser<S>> parser(@NotNull Class<?> type) {
+        return find(parsers, type);
+    }
+
+    public Optional<CommandParameterParser<S>> parser(@NotNull Class<?> type, @NotNull String name) {
+        return find(parsers, type, name);
+    }
+
+    public Optional<CommandSourceMapper<S>> mapper(@NotNull Class<?> type) {
+        return find(mappers, type);
+    }
+
+    public Optional<CommandSourceMapper<S>> mapper(@NotNull Class<?> type, @NotNull String name) {
+        return find(mappers, type, name);
     }
 
 }
