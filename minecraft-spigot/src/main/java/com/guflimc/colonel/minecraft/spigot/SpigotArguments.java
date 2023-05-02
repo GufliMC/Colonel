@@ -5,7 +5,7 @@ import com.guflimc.brick.i18n.spigot.api.SpigotI18nAPI;
 import com.guflimc.colonel.annotation.annotations.Completer;
 import com.guflimc.colonel.annotation.annotations.Parser;
 import com.guflimc.colonel.annotation.annotations.parameter.Source;
-import com.guflimc.colonel.common.build.Argument;
+import com.guflimc.colonel.common.ext.Argument;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;

@@ -1,7 +1,7 @@
 package com.guflimc.colonel.common.test;
 
 import com.guflimc.colonel.common.Colonel;
-import com.guflimc.colonel.common.build.Argument;
+import com.guflimc.colonel.common.ext.Argument;
 import com.guflimc.colonel.common.test.util.Person;
 import org.junit.jupiter.api.Test;
 
@@ -14,9 +14,11 @@ public class ColonelDispatchTests {
 
     @Test
     public void dispatchSingleLiteral() {
-        colonel.register("foo", b -> b.executor(ctx -> {
-            ctx.source().send("bar");
-        }));
+        colonel.builder().path("foo")
+                .executor(ctx -> {
+                    ctx.source().send("bar");
+                })
+                .register();
 
         colonel.dispatch(person, "foo");
         assertEquals("bar", person.read());
@@ -24,9 +26,11 @@ public class ColonelDispatchTests {
 
     @Test
     public void dispatchMultiLiteral() {
-        colonel.register("foo bar", b -> b.executor(ctx -> {
-            person.send("baz");
-        }));
+        colonel.builder().path("foo bar")
+                .executor(ctx -> {
+                    ctx.source().send("baz");
+                })
+                .register();
 
         colonel.dispatch(person, "foo bar");
         assertEquals("baz", person.read());
@@ -34,11 +38,12 @@ public class ColonelDispatchTests {
 
     @Test
     public void dispatchSingleArgument() {
-        colonel.register("foo", b -> b
-                .word("p1", (ctx, s) -> Argument.success(s))
+        colonel.builder().path("foo")
+                .string("p1", s -> s).done()
                 .executor(ctx -> {
-            person.send(ctx.argument("p1"));
-        }));
+                    person.send(ctx.argument("p1"));
+                })
+                .register();
 
         colonel.dispatch(person, "foo bar");
         assertEquals("bar", person.read());
@@ -46,13 +51,14 @@ public class ColonelDispatchTests {
 
     @Test
     public void dispatchMultiLiteralMultiArgument() {
-        colonel.register("foo bar", b -> b
-                .word("p1", (ctx, s) -> Argument.success(s))
-                .word("p2", (ctx, s) -> Argument.success(s))
+        colonel.builder().path("foo bar")
+                .string("p1", s -> s).done()
+                .string("p2", s -> s).done()
                 .executor(ctx -> {
                     person.send(ctx.argument("p1"));
                     person.send(ctx.argument("p2"));
-                }));
+                })
+                .register();
 
         colonel.dispatch(person, "foo bar baz fizz");
         assertEquals("baz", person.read());
@@ -61,20 +67,20 @@ public class ColonelDispatchTests {
 
     @Test
     public void dispatchSamePathDifferentArgumentLength() {
-        colonel.register("foo bar", b -> b
-                .word("p1", (ctx, s) -> Argument.success(s))
-                .word("p2", (ctx, s) -> Argument.success(s))
+        colonel.builder().path("foo bar")
+                .string("p1", s -> s).done()
+                .string("p2", s -> s).done()
                 .executor(ctx -> {
                     person.send("a");
-                }));
+                }).register();
 
-        colonel.register("foo bar", b -> b
-                .word("p1", (ctx, s) -> Argument.success(s))
-                .word("p2", (ctx, s) -> Argument.success(s))
-                .word("p3", (ctx, s) -> Argument.success(s))
+        colonel.builder().path("foo bar")
+                .string("p1", s -> s).done()
+                .string("p2", s -> s).done()
+                .string("p3", s -> s).done()
                 .executor(ctx -> {
                     person.send("b");
-                }));
+                }).register();
 
         colonel.dispatch(person, "foo bar baz fizz");
         assertEquals("a", person.read());
@@ -85,19 +91,19 @@ public class ColonelDispatchTests {
 
     @Test
     public void dispatchSamePathSameArgumentLength() {
-        colonel.register("foo bar", b -> b
-                .word("p1", (ctx, s) -> Argument.success(s))
-                .word("p2", (ctx, s) -> Argument.fail(() -> {}))
+        colonel.builder().path("foo bar")
+                .string("p1", s -> s).done()
+                .string("p2", (ctx, s) -> Argument.fail(() -> {})).done()
                 .executor(ctx -> {
                     person.send("a");
-                }));
+                }).register();
 
-        colonel.register("foo bar", b -> b
-                .word("p1", (ctx, s) -> Argument.success(s))
-                .word("p2", (ctx, s) -> Argument.success(s))
+        colonel.builder().path("foo bar")
+                .string("p1", s -> s).done()
+                .string("p2", s -> s).done()
                 .executor(ctx -> {
                     person.send("b");
-                }));
+                }).register();
 
         colonel.dispatch(person, "foo bar baz fizz");
         assertEquals("b", person.read());

@@ -9,7 +9,7 @@ public abstract class MinecraftColonel<S> extends AnnotationColonel<S> {
         super(sourceType);
 
         // audience
-        registry.registerSourceMapper(Audience.class, this::audience);
+        registry().registerSourceMapper(Audience.class, this::audience);
     }
 
     protected abstract Audience audience(S source);

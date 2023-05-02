@@ -1,6 +1,7 @@
 package com.guflimc.colonel.annotation.annotations.parameter;
 
-import com.guflimc.colonel.common.definition.CommandParameter;
+import com.guflimc.colonel.common.dispatch.definition.CommandParameter;
+import com.guflimc.colonel.common.dispatch.definition.ReadMode;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -19,7 +20,7 @@ public @interface Parameter {
     /**
      * How the argument value should be read from the input.
      */
-    CommandParameter.ReadMode read() default CommandParameter.ReadMode.STRING;
+    ReadMode read() default ReadMode.STRING;
 
     /**
      * The name of the completer to use for this parameter.

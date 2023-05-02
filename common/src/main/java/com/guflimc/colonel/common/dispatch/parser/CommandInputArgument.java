@@ -1,4 +1,4 @@
-package com.guflimc.colonel.common.parser;
+package com.guflimc.colonel.common.dispatch.parser;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

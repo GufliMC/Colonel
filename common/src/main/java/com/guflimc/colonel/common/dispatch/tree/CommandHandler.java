@@ -1,8 +1,8 @@
-package com.guflimc.colonel.common.tree;
+package com.guflimc.colonel.common.dispatch.tree;
 
-import com.guflimc.colonel.common.definition.CommandDefinition;
-import com.guflimc.colonel.common.parser.CommandInput;
-import com.guflimc.colonel.common.suggestion.Suggestion;
+import com.guflimc.colonel.common.dispatch.definition.CommandDefinition;
+import com.guflimc.colonel.common.dispatch.parser.CommandInput;
+import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

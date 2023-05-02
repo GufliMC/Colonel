@@ -4,7 +4,7 @@ import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.ServerMock;
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import com.guflimc.colonel.annotation.annotations.Command;
-import com.guflimc.colonel.common.suggestion.Suggestion;
+import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import com.guflimc.colonel.minecraft.spigot.SpigotColonel;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;

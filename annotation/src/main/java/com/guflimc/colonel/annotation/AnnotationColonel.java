@@ -6,17 +6,15 @@ import com.guflimc.colonel.annotation.annotations.Parser;
 import com.guflimc.colonel.annotation.annotations.parameter.Source;
 import com.guflimc.colonel.common.Colonel;
 import com.guflimc.colonel.common.build.*;
-import com.guflimc.colonel.common.definition.CommandParameter;
-import com.guflimc.colonel.common.suggestion.Suggestion;
-import com.guflimc.colonel.common.tree.CommandHandler;
+import com.guflimc.colonel.common.dispatch.definition.CommandParameter;
+import com.guflimc.colonel.common.dispatch.definition.ReadMode;
+import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
+import com.guflimc.colonel.common.dispatch.tree.CommandHandler;
+import com.guflimc.colonel.common.ext.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -24,64 +22,10 @@ import java.util.stream.Collectors;
 
 public class AnnotationColonel<S> extends Colonel<S> {
 
-    protected final FunctionRegistry<S> registry = new FunctionRegistry<>();
     protected final Class<S> sourceType;
 
     public AnnotationColonel(Class<S> sourceType) {
         this.sourceType = sourceType;
-
-        // REGISTER DEFAULT JAVA TYPES
-        registry.registerParameterParser(String.class, (ctx, value) -> Argument.success(value));
-        registry.registerParameterParser(Integer.class, wrap((ctx, value) -> Integer.parseInt(value)));
-        registry.registerParameterParser(Long.class, wrap((ctx, value) -> Long.parseLong(value)));
-        registry.registerParameterParser(Float.class, wrap((ctx, value) -> Float.parseFloat(value)));
-        registry.registerParameterParser(Double.class, wrap((ctx, value) -> Double.parseDouble(value)));
-        registry.registerParameterParser(Byte.class, wrap((ctx, value) -> Byte.parseByte(value)));
-        registry.registerParameterParser(Short.class, wrap((ctx, value) -> Short.parseShort(value)));
-        registry.registerParameterParser(Instant.class, wrap((ctx, value) -> Instant.parse(value)));
-        registry.registerParameterParser(LocalTime.class, wrap((ctx, value) -> LocalTime.parse(value)));
-        registry.registerParameterParser(LocalDate.class, wrap((ctx, value) -> LocalDate.parse(value)));
-        registry.registerParameterParser(LocalDateTime.class, wrap((ctx, value) -> LocalDateTime.parse(value)));
-        registry.registerParameterParser(UUID.class, wrap((ctx, value) -> UUID.fromString(value)));
-        registry.registerParameterParser(Boolean.class, (ctx, value) -> {
-            if (value.equalsIgnoreCase("true") || value.equals("1")
-                    || value.equalsIgnoreCase("y") || value.equalsIgnoreCase("yes")) {
-                return Argument.success(true);
-            }
-            if (value.equalsIgnoreCase("false") || value.equals("0")
-                    || value.equalsIgnoreCase("n") || value.equalsIgnoreCase("no")) {
-                return Argument.success(false);
-            }
-            return Argument.fail(() -> {
-                throw new IllegalArgumentException("Invalid boolean value: " + value);
-            });
-        });
-//        registry.registerParameterParser(Enum.class, (context, value) -> {
-//            Object result = Arrays.stream(type.getEnumConstants())
-//                    .filter(e -> e.toString().equalsIgnoreCase(value))
-//                    .findFirst().orElse(null);
-//            if ( result == null ) {
-//                return Argument.fail(() -> { throw new IllegalStateException(String
-//                        .format("Invalid value for enum '%s': '%s'", type.getSimpleName(), value)); });
-//            }
-//            return Argument.success(result);
-//        });
-    }
-
-    protected CommandParameterParser<S> wrap(@NotNull BiFunction<CommandContext<S>, String, Object> parser) {
-        return (ctx, value) -> {
-            try {
-                return Argument.success(parser.apply(ctx, value));
-            } catch (Throwable e) {
-                return Argument.fail(() -> {
-                    throw e;
-                });
-            }
-        };
-    }
-
-    public FunctionRegistry<S> registry() {
-        return registry;
     }
 
     //
@@ -111,74 +55,10 @@ public class AnnotationColonel<S> extends Colonel<S> {
     }
 
     private void registerCommands(@NotNull Method method, @NotNull Object container) {
-        method.setAccessible(true);
-
-        Command[] commands = method.getAnnotationsByType(Command.class);
-        for (Command cmd : commands) {
-            if (cmd == null || cmd.value().trim().length() == 0) {
-                throw new IllegalArgumentException(String.format("Command annotation is empty for method '%s' in class '%s'.",
-                        method.getName(), container.getClass().getSimpleName()));
-            }
-        }
-
-        CommandHandlerBuilder<S> builder = new CommandHandlerBuilder<>();
-
         Map<Parameter, Function<CommandContext<S>, Object>> suppliers = new LinkedHashMap<>();
-        for (Parameter param : method.getParameters()) {
 
-            // SOURCE
-            if (param.isAnnotationPresent(Source.class)) {
-                CommandSourceMapper<S> mapper = sourceMapper(param);
-                suppliers.put(param, ctx -> mapper.map(ctx.source()));
-                continue;
-            }
-
-            // PARAMETER
-            com.guflimc.colonel.annotation.annotations.parameter.Parameter paramConf =
-                    param.getAnnotation(com.guflimc.colonel.annotation.annotations.parameter.Parameter.class);
-
-            // name
-            String name = param.getName();
-            if (paramConf != null && !paramConf.value().isEmpty()) {
-                name = paramConf.value();
-            }
-
-            // read mode
-            CommandParameter.ReadMode mode = CommandParameter.ReadMode.STRING;
-            if (paramConf != null) {
-                mode = paramConf.read();
-            }
-
-            // parser
-            CommandParameterParser<S> parser;
-            if ( paramConf != null && !paramConf.parser().isEmpty() ) {
-                parser = registry.parser(param.getType(), paramConf.parser(), false)
-                        .orElseThrow(() -> new IllegalArgumentException(String.format("No parser found with name '%s' for parameter '%s' in method '%s' in class '%s'.",
-                                paramConf.parser(), param.getName(), method.getName(), container.getClass().getSimpleName())));
-            } else {
-                parser = registry.parser(param.getType(), name, true)
-                        .orElseThrow(() -> new IllegalArgumentException(String.format("No parser found for parameter '%s' in method '%s' in class '%s'.",
-                                param.getName(), method.getName(), container.getClass().getSimpleName())));
-            }
-
-            // completer
-            CommandParameterCompleter<S> completer;
-            if ( paramConf != null && !paramConf.completer().isEmpty() ) {
-                completer = registry.completer(param.getType(), paramConf.completer(), false)
-                        .orElseThrow(() -> new IllegalArgumentException(String.format("No completer found with name '%s' for parameter '%s' in method '%s' in class '%s'.",
-                                paramConf.completer(), param.getName(), method.getName(), container.getClass().getSimpleName())));
-            } else {
-                completer = registry.completer(param.getType(), name, true)
-                        .orElseGet(() -> (ctx, input) -> List.of());
-            }
-
-            // register
-            CommandParameter cp = new CommandParameter(name, mode);
-            builder.parameter(cp, parser, completer);
-            suppliers.put(param, ctx -> ctx.argument(cp));
-        }
-
-        build(method, builder);
+        CommandHandlerBuilder<S> builder = builder();
+        build(method, suppliers, builder);
 
         // set executor
         builder.executor(ctx -> {
@@ -195,16 +75,86 @@ public class AnnotationColonel<S> extends Colonel<S> {
             }
         });
 
-        // create handler
-        CommandHandler handler = builder.build();
+        // register
+        builder.register();
+    }
 
-        // register this handler at all given paths
+    protected void build(@NotNull Method method, @NotNull Map<Parameter, Function<CommandContext<S>, Object>> suppliers, @NotNull CommandHandlerBuilder<S> builder) {
+        method.setAccessible(true);
+
+        Command[] commands = method.getAnnotationsByType(Command.class);
         for (Command cmd : commands) {
-            register(cmd.value(), handler);
+            if (cmd == null || cmd.value().trim().length() == 0) {
+                throw new IllegalArgumentException(String.format("Command annotation is empty for method '%s' in class '%s'.",
+                        method.getName(), method.getDeclaringClass().getSimpleName()));
+            }
+
+            // path
+            builder.path(cmd.value());
+        }
+
+        for (Parameter param : method.getParameters()) {
+            // SOURCE
+            if (param.isAnnotationPresent(Source.class)) {
+                CommandSourceMapper<S> mapper = sourceMapper(param);
+                suppliers.put(param, ctx -> mapper.map(ctx.source()));
+                continue;
+            }
+
+            // PARAMETER
+            try {
+                CommandParameterBuilder<S> pb = builder.parameter();
+                build(param, suppliers, pb);
+                pb.done();
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("Error while building parameter '%s' in method '%s' in class '%s'.",
+                        param.getName(),
+                        method.getName(),
+                        method.getDeclaringClass().getSimpleName()), e);
+            }
         }
     }
 
-    protected void build(@NotNull Method method, @NotNull CommandHandlerBuilder<S> builder) {
+    protected void build(@NotNull Parameter parameter, @NotNull Map<Parameter, Function<CommandContext<S>, Object>> suppliers, int index) {
+
+    }
+    
+    protected void build(@NotNull Parameter parameter, @NotNull Map<Parameter, Function<CommandContext<S>, Object>> suppliers, @NotNull CommandParameterBuilder<S> builder) {
+        // PARAMETER
+        com.guflimc.colonel.annotation.annotations.parameter.Parameter paramConf =
+                parameter.getAnnotation(com.guflimc.colonel.annotation.annotations.parameter.Parameter.class);
+
+        // name
+        String name;
+        if (paramConf != null && !paramConf.value().isEmpty()) {
+            name = paramConf.value();
+        } else {
+            name = parameter.getName();
+        }
+        builder.name(name);
+
+        // set supplier
+        suppliers.put(parameter, ctx -> ctx.argument(name));
+
+        // read mode
+        ReadMode mode = ReadMode.STRING;
+        if (paramConf != null) {
+            builder.readMode(mode);
+        }
+
+        // parser
+        if ( paramConf != null && !paramConf.parser().isEmpty() ) {
+            builder.parser(parameter.getType(), paramConf.parser());
+        } else {
+            builder.parser(parameter.getType());
+        }
+
+        // completer
+        if ( paramConf != null && !paramConf.completer().isEmpty() ) {
+            builder.completer(parameter.getType(), paramConf.completer());
+        } else {
+            builder.completer(parameter.getType());
+        }
     }
 
     //
@@ -253,14 +203,14 @@ public class AnnotationColonel<S> extends Colonel<S> {
                 return new Suggestion(o.toString());
             }).toList();
         };
-        completer = CommandParameterCompleter.startsWith(completer);
+        completer = CommandParameterCompleter.withMatchCheck(completer);
 
         if (completerConf.type() != Void.class) {
-            registry.registerParameterCompleter(completerConf.type(), name, completer);
+            registry().registerParameterCompleter(completerConf.type(), name, completer);
             return;
         }
 
-        registry.registerParameterCompleter(Object.class, name, completer);
+        registry().registerParameterCompleter(Object.class, name, completer);
     }
 
     /**
@@ -303,12 +253,12 @@ public class AnnotationColonel<S> extends Colonel<S> {
         };
 
         if ( parserConf.type() != Void.class ) {
-            registry.registerParameterParser(parserConf.type(), name, parser);
+            registry().registerParameterParser(parserConf.type(), name, parser);
             return;
         }
 
         if ( method.getReturnType() != Argument.class ) {
-            registry.registerParameterParser(method.getReturnType(), name, parser);
+            registry().registerParameterParser(method.getReturnType(), name, parser);
             return;
         }
 
@@ -363,13 +313,13 @@ public class AnnotationColonel<S> extends Colonel<S> {
         Source sourceConf = param.getAnnotation(Source.class);
         CommandSourceMapper<S> mapper;
         if ( !sourceConf.value().isEmpty() ) {
-            mapper = registry.mapper(param.getType(), sourceConf.value(), false)
+            mapper = registry().mapper(param.getType(), sourceConf.value(), false)
                     .orElseThrow(() -> new IllegalStateException(String.format("No source mapper found with name '%s' for parameter '%s' in method '%s' in class '%s'.",
                             sourceConf.value(), param.getName(), param.getDeclaringExecutable().getName(), param.getDeclaringExecutable().getDeclaringClass().getSimpleName())));
         } else if ( sourceType.isAssignableFrom(param.getType()) ) {
             return (source) -> source;
         } else {
-            mapper = registry.mapper(param.getType(), name, true)
+            mapper = registry().mapper(param.getType(), name, true)
                     .orElse(null);
         }
 
@@ -386,10 +336,11 @@ public class AnnotationColonel<S> extends Colonel<S> {
     //
 
     private String invocationErrorMessage(Method method, Object[] arguments) {
-        return String.format("Failed to invoke method %s with arguments of type: %s",
+        return String.format("Failed to invoke method %s in class %s with arguments of type: %s",
                 method.getName() + "(" + Arrays.stream(method.getParameters())
                         .map(p -> p.getType().getSimpleName() + " " + p.getName())
                         .collect(Collectors.joining(", ")) + ")",
+                method.getDeclaringClass().getSimpleName(),
                 Arrays.stream(arguments)
                         .map(arg -> arg != null ? arg.getClass().getSimpleName() : null)
                         .collect(Collectors.joining(", "))

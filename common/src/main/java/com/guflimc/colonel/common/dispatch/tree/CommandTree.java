@@ -1,6 +1,6 @@
-package com.guflimc.colonel.common.tree;
+package com.guflimc.colonel.common.dispatch.tree;
 
-import com.guflimc.colonel.common.suggestion.Suggestion;
+import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 
 import java.util.ArrayList;
 import java.util.Arrays;

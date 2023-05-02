@@ -1,4 +1,4 @@
-package com.guflimc.colonel.common.build;
+package com.guflimc.colonel.common.ext;
 
 public sealed class Argument permits Argument.ArgumentSuccess, Argument.ArgumentFailure {
 

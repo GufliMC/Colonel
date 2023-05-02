@@ -1,7 +1,8 @@
-package com.guflimc.colonel.common.parser;
+package com.guflimc.colonel.common.dispatch.parser;
 
-import com.guflimc.colonel.common.definition.CommandDefinition;
-import com.guflimc.colonel.common.definition.CommandParameter;
+import com.guflimc.colonel.common.dispatch.definition.CommandDefinition;
+import com.guflimc.colonel.common.dispatch.definition.CommandParameter;
+import com.guflimc.colonel.common.dispatch.definition.ReadMode;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,10 +45,8 @@ public class CommandInputReader {
             int cc = cursor;
 
             CommandParameter param = definition.parameters()[index];
-            if ( param.readMode() == CommandParameter.ReadMode.STRING ) {
+            if ( param.readMode() == ReadMode.STRING ) {
                 builder.success(param, readString());
-            } else if ( param.readMode() == CommandParameter.ReadMode.WORD ) {
-                builder.success(param, readWord());
             } else {
                 builder.success(param, readAll());
             }

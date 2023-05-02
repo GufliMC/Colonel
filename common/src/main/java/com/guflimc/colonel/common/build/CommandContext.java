@@ -1,34 +1,41 @@
 package com.guflimc.colonel.common.build;
 
-import com.guflimc.colonel.common.definition.CommandDefinition;
-import com.guflimc.colonel.common.definition.CommandParameter;
-import com.guflimc.colonel.common.parser.CommandInput;
+import com.guflimc.colonel.common.dispatch.definition.CommandParameter;
+import com.guflimc.colonel.common.dispatch.parser.CommandInput;
+import com.guflimc.colonel.common.ext.ExtCommandContext;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-
+/**
+ * This is mostly just a proxy but gives type safety to the {@link #source} method;
+ */
 public class CommandContext<S> {
 
-    private final CommandDefinition definition;
-    private final S source;
-    final CommandInput input;
+    private final ExtCommandContext context;
 
-    public CommandContext(CommandDefinition definition, S source, CommandInput input) {
-        this.definition = definition;
-        this.source = source;
-        this.input = input;
+    public CommandContext(@NotNull ExtCommandContext context) {
+        this.context = context;
     }
+
+    public CommandInput input() {
+        return context.input();
+    }
+
+    public <T> T argument(@NotNull CommandParameter parameter) {
+        return context.argument(parameter);
+    }
+
+    public <T> T argument(@NotNull String parameter) {
+        return context.argument(parameter);
+    }
+
+    //
 
     public S source() {
-        return source;
+        return context.source();
     }
 
-    public <T> T argument(CommandParameter parameter) {
-        return (T) input.argument(parameter);
-    }
-
-    public <T> T argument(String parameter) {
-        return Arrays.stream(definition.parameters()).filter(p -> p.name().equals(parameter))
-                .findFirst().map(param -> (T) argument(param)).orElse(null);
+    public <T> T source(int index) {
+        return context.source(index);
     }
 
 }

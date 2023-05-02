@@ -1,93 +1,155 @@
 package com.guflimc.colonel.common.build;
 
-import com.guflimc.colonel.common.definition.CommandParameter;
-import com.guflimc.colonel.common.tree.CommandHandler;
+import com.guflimc.colonel.common.Colonel;
+import com.guflimc.colonel.common.dispatch.definition.ReadMode;
+import com.guflimc.colonel.common.dispatch.tree.CommandHandler;
+import com.guflimc.colonel.common.ext.ExtCommandHandlerBuilder;
+import com.guflimc.colonel.common.ext.ExtCommandParameterCompleter;
+import com.guflimc.colonel.common.ext.ExtCommandParameterParser;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class CommandHandlerBuilder<S> {
 
-    private final List<CommandParameterWrapper<S>> parameters = new ArrayList<>();
-    private CommandExecutor<S> executor;
-    private Predicate<S> condition;
+    protected final Colonel<S> colonel;
 
-    //
+    protected final List<String> paths = new ArrayList<>();
+    protected final ExtCommandHandlerBuilder builder = new ExtCommandHandlerBuilder();
 
-    public static <S> CommandHandlerBuilder<S> builder() {
-        return new CommandHandlerBuilder<>();
+    public CommandHandlerBuilder(Colonel<S> colonel) {
+        this.colonel = colonel;
     }
 
     //
 
-    public CommandHandlerBuilder<S> parameter(@NotNull CommandParameter param,
-                                              @NotNull CommandParameterParser<S> parser) {
-        parameters.add(new CommandParameterWrapper<>(param, parser));
-        return this;
-    }
-
-    public CommandHandlerBuilder<S> parameter(@NotNull CommandParameter param,
-                                              @NotNull CommandParameterParser<S> parser,
-                                              @NotNull CommandParameterCompleter<S> completer) {
-        parameters.add(new CommandParameterWrapper<>(param, parser, completer));
+    public CommandHandlerBuilder<S> path(String path) {
+        this.paths.add(path);
         return this;
     }
 
     //
 
-    public CommandHandlerBuilder<S> word(@NotNull String name,
-                                         @NotNull CommandParameterParser<S> parser) {
-        return parameter(new CommandParameter(name, CommandParameter.ReadMode.WORD), parser);
+    protected CommandHandlerBuilder<S> parameter(@NotNull String name,
+                                                 @NotNull ReadMode readMode,
+                                                 @NotNull ExtCommandParameterParser parser,
+                                                 @NotNull ExtCommandParameterCompleter completer) {
+        builder.parameter(name, readMode, parser, completer);
+        return this;
     }
 
-    public CommandHandlerBuilder<S> word(@NotNull String name,
-                                         @NotNull CommandParameterParser<S> parser,
-                                         @NotNull CommandParameterCompleter<S> completer) {
-        return parameter(new CommandParameter(name, CommandParameter.ReadMode.WORD), parser, completer);
+    //
+
+    public CommandParameterBuilder<S> parameter() {
+        return new CommandParameterBuilder<>(this);
     }
 
-    public CommandHandlerBuilder<S> string(@NotNull String name,
-                                           @NotNull CommandParameterParser<S> parser) {
-        return parameter(new CommandParameter(name, CommandParameter.ReadMode.STRING), parser);
+    public CommandParameterBuilder<S> string() {
+        return parameter().readString();
     }
 
-    public CommandHandlerBuilder<S> string(@NotNull String name,
-                                           @NotNull CommandParameterParser<S> parser,
-                                           @NotNull CommandParameterCompleter<S> completer) {
-        return parameter(new CommandParameter(name, CommandParameter.ReadMode.STRING), parser, completer);
+    public CommandParameterBuilder<S> greedy() {
+        return parameter().readGreedy();
     }
 
-    public CommandHandlerBuilder<S> greedy(@NotNull String name,
-                                           @NotNull CommandParameterParser<S> parser) {
-        return parameter(new CommandParameter(name, CommandParameter.ReadMode.GREEDY), parser);
+    //
+
+    public CommandParameterBuilder<S> parameter(@NotNull String name) {
+        return parameter().name(name);
     }
 
-    public CommandHandlerBuilder<S> greedy(@NotNull String name,
-                                           @NotNull CommandParameterParser<S> parser,
-                                           @NotNull CommandParameterCompleter<S> completer) {
-        return parameter(new CommandParameter(name, CommandParameter.ReadMode.GREEDY), parser, completer);
+    public CommandParameterBuilder<S> string(@NotNull String name) {
+        return parameter(name).readString();
+    }
+
+    public CommandParameterBuilder<S> greedy(@NotNull String name) {
+        return parameter(name).readGreedy();
+    }
+
+    //
+
+    public CommandParameterBuilder<S> parameter(@NotNull String name,
+                                                @NotNull CommandParameterParser<S> parser) {
+        return parameter(name).parser(parser);
+    }
+
+    public CommandParameterBuilder<S> string(@NotNull String name,
+                                             @NotNull CommandParameterParser<S> parser) {
+        return parameter(name, parser).readString();
+    }
+
+    public CommandParameterBuilder<S> greedy(@NotNull String name,
+                                             @NotNull CommandParameterParser<S> parser) {
+        return parameter(name, parser).readGreedy();
+    }
+
+    //
+
+    public CommandParameterBuilder<S> parameter(@NotNull String name,
+                                                @NotNull Function<String, Object> parser) {
+        return parameter(name).parser(parser);
+    }
+
+    public CommandParameterBuilder<S> string(@NotNull String name,
+                                             @NotNull Function<String, Object> parser) {
+        return parameter(name, parser).readString();
+    }
+
+    public CommandParameterBuilder<S> greedy(@NotNull String name,
+                                             @NotNull Function<String, Object> parser) {
+        return parameter(name, parser).readGreedy();
     }
 
     //
 
     public CommandHandlerBuilder<S> executor(CommandExecutor<S> executor) {
-        this.executor = executor;
+        builder.executor(context -> executor.execute(new CommandContext<>(context)));
         return this;
     }
 
     public CommandHandlerBuilder<S> condition(Predicate<S> condition) {
-        this.condition = condition;
+        builder.condition(source -> condition.test((S) source));
         return this;
     }
 
     //
 
-    public CommandHandler build() {
-        if ( executor == null ) {
-            throw new IllegalStateException("An executor must be provided before a handler can be built.");
-        }
-        return new CommandHandlerImpl<>(parameters, executor, condition);
+    public CommandHandlerBuilder<S> source(CommandSourceMapper<S> mapper) {
+        builder.source(source -> mapper.map((S) source));
+        return this;
     }
+
+    public CommandHandlerBuilder<S> source(@NotNull Class<?> type,
+                                           @Nullable String mapperName) {
+        CommandSourceMapper<S> mapper;
+        if (mapperName != null && !mapperName.isEmpty()) {
+            mapper = colonel.registry().mapper(type, mapperName, false)
+                    .orElseThrow(() -> new IllegalArgumentException(String.format("No mapper with name '%s' found for type %s.", mapperName, type.getName())));
+        } else {
+            mapper = colonel.registry().mapper(type)
+                    .orElseThrow(() -> new IllegalArgumentException(String.format("No mapper for type %s found.", type.getName())));
+        }
+        return source(mapper);
+    }
+
+    public CommandHandlerBuilder<S> source(@NotNull Class<?> type) {
+        return source(type, null);
+    }
+
+    //
+
+    public void register() {
+        if (paths.isEmpty()) {
+            throw new IllegalStateException("There must be at least 1 path to register a handler");
+        }
+
+        CommandHandler handler = builder.build();
+        paths.forEach(path -> colonel.register(path, handler));
+    }
+
 }
+

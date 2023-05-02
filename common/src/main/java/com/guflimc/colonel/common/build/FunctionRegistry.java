@@ -1,7 +1,5 @@
-package com.guflimc.colonel.annotation;
+package com.guflimc.colonel.common.build;
 
-import com.guflimc.colonel.common.build.CommandParameterCompleter;
-import com.guflimc.colonel.common.build.CommandParameterParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,30 +29,30 @@ public class FunctionRegistry<S> {
 
     public void registerParameterCompleter(@NotNull Class<?> type,
                                            @NotNull CommandParameterCompleter<S> completer) {
-        remove(mappers, type, DEFAULT);
+        remove(completers, type, DEFAULT);
         completers.put(new FunctionKey(type, DEFAULT), completer);
     }
 
     public void registerParameterCompleter(@NotNull Class<?> type,
                                            @NotNull String name,
                                            @NotNull CommandParameterCompleter<S> completer) {
-        remove(mappers, type, name);
+        remove(completers, type, name);
         completers.put(new FunctionKey(type, name), completer);
     }
 
     // Parsers
 
     public void registerParameterParser(@NotNull Class<?> type,
+                                        @NotNull CommandParameterParser<S> parser) {
+        remove(parsers, type, DEFAULT);
+        parsers.put(new FunctionKey(type, DEFAULT), parser);
+    }
+
+    public void registerParameterParser(@NotNull Class<?> type,
                                         @NotNull String name,
                                         @NotNull CommandParameterParser<S> parser) {
         remove(parsers, type, name);
         parsers.put(new FunctionKey(type, name), parser);
-    }
-
-    public void registerParameterParser(@NotNull Class<?> type,
-                                        @NotNull CommandParameterParser<S> parser) {
-        remove(parsers, type, DEFAULT);
-        parsers.put(new FunctionKey(type, DEFAULT), parser);
     }
 
     // Completers & Parsers
@@ -75,13 +73,13 @@ public class FunctionRegistry<S> {
     }
 
     public <T extends CommandParameterParser<S> & CommandParameterCompleter<S>> void registerParameterType(@NotNull Class<?> type,
-                                                                                                           @NotNull T handler) {
+                                                                                                                 @NotNull T handler) {
         registerParameterType(type, handler, handler);
     }
 
     public <T extends CommandParameterParser<S> & CommandParameterCompleter<S>> void registerParameterType(@NotNull Class<?> type,
-                                                                                                           @NotNull String name,
-                                                                                                           @NotNull T handler) {
+                                                                                                                 @NotNull String name,
+                                                                                                                 @NotNull T handler) {
         registerParameterType(type, name, handler, handler);
     }
 
@@ -151,21 +149,19 @@ public class FunctionRegistry<S> {
         return (Class<T>) MethodType.methodType(c).wrap().returnType();
     }
 
-    // INTERNAL
+    // PUBLIC
 
-    Optional<CommandParameterCompleter<S>> completer(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
+    public Optional<CommandParameterCompleter<S>> completer(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
         return find(completers, type, name, fallback);
     }
 
-    Optional<CommandParameterParser<S>> parser(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
+    public Optional<CommandParameterParser<S>> parser(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
         return find(parsers, type, name, fallback);
     }
 
-    Optional<CommandSourceMapper<S>> mapper(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
+    public Optional<CommandSourceMapper<S>> mapper(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
         return find(mappers, type, name, fallback);
     }
-
-    // PUBLIC
 
     public Optional<CommandParameterCompleter<S>> completer(@NotNull Class<?> type) {
         return find(completers, type);

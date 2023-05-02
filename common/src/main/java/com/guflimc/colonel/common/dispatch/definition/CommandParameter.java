@@ -1,16 +1,18 @@
-package com.guflimc.colonel.common.definition;
+package com.guflimc.colonel.common.dispatch.definition;
+
+import org.jetbrains.annotations.NotNull;
 
 public class CommandParameter {
 
     private final String name;
     private final ReadMode readMode;
 
-    public CommandParameter(String name, ReadMode readMode) {
+    public CommandParameter(@NotNull String name, @NotNull ReadMode readMode) {
         this.name = name;
         this.readMode = readMode;
     }
 
-    public CommandParameter(String name) {
+    public CommandParameter(@NotNull String name) {
         this(name, ReadMode.STRING);
     }
 
@@ -32,13 +34,6 @@ public class CommandParameter {
 
     //
 
-    public enum ReadMode {
-        /** Read a single word. **/
-        WORD,
-        /** Read a single word or a string with spaces if it is quoted. **/
-        STRING,
-        /** Read the remaining input. **/
-        GREEDY;
-    }
+
 
 }

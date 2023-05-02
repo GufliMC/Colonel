@@ -1,6 +1,6 @@
 package com.guflimc.colonel.minecraft.spigot;
 
-import com.guflimc.colonel.common.suggestion.Suggestion;
+import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;

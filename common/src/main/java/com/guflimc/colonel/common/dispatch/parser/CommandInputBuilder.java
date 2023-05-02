@@ -1,6 +1,6 @@
-package com.guflimc.colonel.common.parser;
+package com.guflimc.colonel.common.dispatch.parser;
 
-import com.guflimc.colonel.common.definition.CommandParameter;
+import com.guflimc.colonel.common.dispatch.definition.CommandParameter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;

@@ -1,6 +1,6 @@
-package com.guflimc.colonel.common.parser;
+package com.guflimc.colonel.common.dispatch.parser;
 
-import com.guflimc.colonel.common.definition.CommandParameter;
+import com.guflimc.colonel.common.dispatch.definition.CommandParameter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,11 +39,11 @@ public class CommandInput {
 
     //
 
-    public boolean failure(CommandParameter parameter) {
+    public boolean failure(@NotNull CommandParameter parameter) {
         return arguments.get(parameter) instanceof CommandInputArgument.ArgumentFailure;
     }
 
-    public CommandInputArgument.ArgumentFailureType error(CommandParameter parameter) {
+    public CommandInputArgument.ArgumentFailureType error(@NotNull CommandParameter parameter) {
         if ( arguments.get(parameter) instanceof CommandInputArgument.ArgumentFailure ) {
             return ((CommandInputArgument.ArgumentFailure) arguments.get(parameter)).type;
         }
@@ -57,7 +57,7 @@ public class CommandInput {
                 .collect(Collectors.toSet());
     }
 
-    public Collection<CommandParameter> errors(CommandInputArgument.ArgumentFailureType type) {
+    public Collection<CommandParameter> errors(@NotNull CommandInputArgument.ArgumentFailureType type) {
         return arguments.entrySet().stream()
                 .filter(e -> e.getValue() instanceof CommandInputArgument.ArgumentFailure)
                 .filter(e -> ((CommandInputArgument.ArgumentFailure) e.getValue()).type == type)
@@ -67,15 +67,23 @@ public class CommandInput {
 
     //
 
-    public boolean success(CommandParameter parameter) {
+    public boolean success(@NotNull CommandParameter parameter) {
         return arguments.get(parameter) instanceof CommandInputArgument.ArgumentSuccess;
     }
 
-    public Object argument(CommandParameter parameter) {
+    public Object argument(@NotNull CommandParameter parameter) {
         if ( arguments.get(parameter) instanceof CommandInputArgument.ArgumentSuccess ) {
             return ((CommandInputArgument.ArgumentSuccess) arguments.get(parameter)).value;
         }
         return null;
+    }
+
+    public Object argument(@NotNull String parameter) {
+        return arguments.keySet().stream()
+                .filter(k -> k.name().equals(parameter))
+                .findFirst()
+                .map(this::argument)
+                .orElse(null);
     }
 
     public Collection<CommandParameter> arguments() {

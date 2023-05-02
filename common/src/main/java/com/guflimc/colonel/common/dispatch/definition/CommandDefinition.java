@@ -1,4 +1,6 @@
-package com.guflimc.colonel.common.definition;
+package com.guflimc.colonel.common.dispatch.definition;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -9,7 +11,7 @@ public class CommandDefinition {
 
     private final CommandParameter[] parameters;
 
-    public CommandDefinition(CommandParameter[] parameters) {
+    public CommandDefinition(@NotNull CommandParameter[] parameters) {
         this.parameters = parameters;
 
         // check for name validity
@@ -27,7 +29,7 @@ public class CommandDefinition {
 
         // check for greedy validity
         for ( int i = 0; i < parameters.length - 1; i++ ) {
-            if ( parameters[i].readMode() == CommandParameter.ReadMode.GREEDY ) {
+            if ( parameters[i].readMode() == ReadMode.GREEDY ) {
                 throw new IllegalArgumentException("There can only be one greedy parameter and it must be the last one.");
             }
         }

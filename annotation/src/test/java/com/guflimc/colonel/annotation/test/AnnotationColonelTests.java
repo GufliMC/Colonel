@@ -8,10 +8,13 @@ import com.guflimc.colonel.annotation.annotations.parameter.Parameter;
 import com.guflimc.colonel.annotation.annotations.parameter.Source;
 import com.guflimc.colonel.annotation.test.util.Person;
 import com.guflimc.colonel.common.build.CommandContext;
-import com.guflimc.colonel.common.suggestion.Suggestion;
+import com.guflimc.colonel.common.ext.ExtCommandContext;
+import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -351,10 +354,10 @@ public class AnnotationColonelTests {
             }
         });
 
-        List<Suggestion> suggestions = colonel.suggestions(person, "age ");
-        assertEquals(List.of(new Suggestion("add"), new Suggestion("set"), new Suggestion("reset")), suggestions);
+        Set<Suggestion> suggestions = new HashSet<>(colonel.suggestions(person, "age "));
+        assertEquals(Set.of(new Suggestion("add"), new Suggestion("set"), new Suggestion("reset")), suggestions);
 
-        suggestions = colonel.suggestions(person, "age set ");
-        assertEquals(List.of(new Suggestion("10"), new Suggestion("20"), new Suggestion("30")), suggestions);
+        suggestions = new HashSet<>(colonel.suggestions(person, "age set "));
+        assertEquals(Set.of(new Suggestion("10"), new Suggestion("20"), new Suggestion("30")), suggestions);
     }
 }

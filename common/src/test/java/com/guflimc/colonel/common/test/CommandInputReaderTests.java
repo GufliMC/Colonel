@@ -1,9 +1,10 @@
 package com.guflimc.colonel.common.test;
 
-import com.guflimc.colonel.common.definition.CommandDefinition;
-import com.guflimc.colonel.common.definition.CommandParameter;
-import com.guflimc.colonel.common.parser.CommandInput;
-import com.guflimc.colonel.common.parser.CommandInputReader;
+import com.guflimc.colonel.common.dispatch.definition.CommandDefinition;
+import com.guflimc.colonel.common.dispatch.definition.CommandParameter;
+import com.guflimc.colonel.common.dispatch.definition.ReadMode;
+import com.guflimc.colonel.common.dispatch.parser.CommandInput;
+import com.guflimc.colonel.common.dispatch.parser.CommandInputReader;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -11,22 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CommandInputReaderTests {
 
     @Test
-    public void word() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.WORD);
-        CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1 });
-
-        CommandInputReader reader = new CommandInputReader(def, "foo");
-        CommandInput input = reader.read();
-
-        assertEquals("foo", input.argument(p1));
-        assertEquals(p1, input.cursor());
-        assertTrue(input.errors().isEmpty());
-        assertNull(input.excess());
-    }
-
-    @Test
     public void stringDoubleQuoted() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.STRING);
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.STRING);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1 });
 
         CommandInputReader reader = new CommandInputReader(def, "\"foo bar\"");
@@ -40,7 +27,7 @@ public class CommandInputReaderTests {
 
     @Test
     public void stringSingleQuoted() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.STRING);
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.STRING);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1 });
 
         CommandInputReader reader = new CommandInputReader(def, "'foo bar'");
@@ -54,7 +41,7 @@ public class CommandInputReaderTests {
 
     @Test
     public void stringUnquoted() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.STRING);
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.STRING);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1 });
 
         CommandInputReader reader = new CommandInputReader(def, "foo");
@@ -68,7 +55,7 @@ public class CommandInputReaderTests {
 
     @Test
     public void greedy() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.GREEDY);
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.GREEDY);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1 });
 
         CommandInputReader reader = new CommandInputReader(def, "foo bar");
@@ -84,7 +71,7 @@ public class CommandInputReaderTests {
 
     @Test
     public void empty() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.WORD);
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.STRING);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1 });
 
         CommandInputReader reader = new CommandInputReader(def, "");
@@ -98,7 +85,7 @@ public class CommandInputReaderTests {
 
     @Test
     public void space() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.WORD);
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.STRING);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1 });
 
         CommandInputReader reader = new CommandInputReader(def, " ");
@@ -113,21 +100,8 @@ public class CommandInputReaderTests {
     //
 
     @Test
-    public void wordExcess() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.WORD);
-        CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1 });
-
-        CommandInputReader reader = new CommandInputReader(def, "foo bar");
-        CommandInput input = reader.read();
-
-        assertEquals("foo", input.argument(p1));
-        assertEquals(input.excess(), "bar");
-        assertTrue(input.errors().isEmpty());
-    }
-
-    @Test
     public void stringQuotedExcess() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.STRING);
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.STRING);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1 });
 
         CommandInputReader reader = new CommandInputReader(def, "\"foo bar\" baz");
@@ -140,7 +114,7 @@ public class CommandInputReaderTests {
 
     @Test
     public void stringUnquotedExcess() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.STRING);
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.STRING);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1 });
 
         CommandInputReader reader = new CommandInputReader(def, "foo bar");
@@ -154,24 +128,9 @@ public class CommandInputReaderTests {
     //
 
     @Test
-    public void wordXstring() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.WORD);
-        CommandParameter p2 = new CommandParameter("p2", CommandParameter.ReadMode.STRING);
-        CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1, p2 });
-
-        CommandInputReader reader = new CommandInputReader(def, "foo \"bar baz\"");
-        CommandInput input = reader.read();
-
-        assertEquals("foo", input.argument(p1));
-        assertEquals("bar baz", input.argument(p2));
-        assertNull(input.excess());
-        assertTrue(input.errors().isEmpty());
-    }
-
-    @Test
     public void stringXgreedy() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.STRING);
-        CommandParameter p2 = new CommandParameter("p2", CommandParameter.ReadMode.GREEDY);
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.STRING);
+        CommandParameter p2 = new CommandParameter("p2", ReadMode.GREEDY);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1, p2 });
 
         CommandInputReader reader = new CommandInputReader(def, "\"foo bar\" baz fizz buzz");
@@ -184,9 +143,9 @@ public class CommandInputReaderTests {
     }
 
     @Test
-    public void greedyXword() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.GREEDY);
-        CommandParameter p2 = new CommandParameter("p2", CommandParameter.ReadMode.STRING);
+    public void greedyXstring() {
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.GREEDY);
+        CommandParameter p2 = new CommandParameter("p2", ReadMode.STRING);
         assertThrows(IllegalArgumentException.class, () -> new CommandDefinition(new CommandParameter[]{ p1, p2 }));
     }
 
@@ -194,10 +153,10 @@ public class CommandInputReaderTests {
 
     @Test
     public void cursorFront() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.WORD);
-        CommandParameter p2 = new CommandParameter("p2", CommandParameter.ReadMode.STRING);
-        CommandParameter p3 = new CommandParameter("p3", CommandParameter.ReadMode.WORD);
-        CommandParameter p4 = new CommandParameter("p4", CommandParameter.ReadMode.WORD);
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.STRING);
+        CommandParameter p2 = new CommandParameter("p2", ReadMode.STRING);
+        CommandParameter p3 = new CommandParameter("p3", ReadMode.STRING);
+        CommandParameter p4 = new CommandParameter("p4", ReadMode.STRING);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1, p2, p3, p4 });
 
         CommandInputReader reader = new CommandInputReader(def, "foo bar baz fizz", 8);
@@ -208,10 +167,10 @@ public class CommandInputReaderTests {
 
     @Test
     public void cursorMiddle() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.WORD);
-        CommandParameter p2 = new CommandParameter("p2", CommandParameter.ReadMode.STRING);
-        CommandParameter p3 = new CommandParameter("p3", CommandParameter.ReadMode.WORD);
-        CommandParameter p4 = new CommandParameter("p4", CommandParameter.ReadMode.WORD);
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.STRING);
+        CommandParameter p2 = new CommandParameter("p2", ReadMode.STRING);
+        CommandParameter p3 = new CommandParameter("p3", ReadMode.STRING);
+        CommandParameter p4 = new CommandParameter("p4", ReadMode.STRING);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1, p2, p3, p4 });
 
         CommandInputReader reader = new CommandInputReader(def, "foo bar baz fizz", 5);
@@ -222,10 +181,10 @@ public class CommandInputReaderTests {
 
     @Test
     public void cursorEnd() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.WORD);
-        CommandParameter p2 = new CommandParameter("p2", CommandParameter.ReadMode.STRING);
-        CommandParameter p3 = new CommandParameter("p3", CommandParameter.ReadMode.WORD);
-        CommandParameter p4 = new CommandParameter("p4", CommandParameter.ReadMode.WORD);
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.STRING);
+        CommandParameter p2 = new CommandParameter("p2", ReadMode.STRING);
+        CommandParameter p3 = new CommandParameter("p3", ReadMode.STRING);
+        CommandParameter p4 = new CommandParameter("p4", ReadMode.STRING);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1, p2, p3, p4 });
 
         CommandInputReader reader = new CommandInputReader(def, "foo bar baz fizz", 3);
@@ -236,10 +195,10 @@ public class CommandInputReaderTests {
 
     @Test
     public void cursorEmptyInput() {
-        CommandParameter p1 = new CommandParameter("p1", CommandParameter.ReadMode.WORD);
-        CommandParameter p2 = new CommandParameter("p2", CommandParameter.ReadMode.STRING);
-        CommandParameter p3 = new CommandParameter("p3", CommandParameter.ReadMode.WORD);
-        CommandParameter p4 = new CommandParameter("p4", CommandParameter.ReadMode.WORD);
+        CommandParameter p1 = new CommandParameter("p1", ReadMode.STRING);
+        CommandParameter p2 = new CommandParameter("p2", ReadMode.STRING);
+        CommandParameter p3 = new CommandParameter("p3", ReadMode.STRING);
+        CommandParameter p4 = new CommandParameter("p4", ReadMode.STRING);
         CommandDefinition def = new CommandDefinition(new CommandParameter[]{ p1, p2, p3, p4 });
 
         CommandInputReader reader = new CommandInputReader(def, "", 0);

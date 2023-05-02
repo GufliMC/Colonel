@@ -1,9 +1,9 @@
 package com.guflimc.colonel.common.test;
 
 import com.guflimc.colonel.common.Colonel;
-import com.guflimc.colonel.common.build.Argument;
 import com.guflimc.colonel.common.build.CommandParameterCompleter;
-import com.guflimc.colonel.common.suggestion.Suggestion;
+import com.guflimc.colonel.common.ext.Argument;
+import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import com.guflimc.colonel.common.test.util.Person;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +18,7 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestFirstNodeInTree() {
-        colonel.register("foo bar baz", b -> b.executor(ctx -> {}));
+        colonel.builder().path("foo bar baz").executor(ctx -> {}).register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "");
         assertEquals(List.of(new Suggestion("foo")), suggestions);
@@ -26,7 +26,7 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestMiddleNodeInTree() {
-        colonel.register("foo bar baz", b -> b.executor(ctx -> {}));
+        colonel.builder().path("foo bar baz").executor(ctx -> {}).register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "foo ");
         assertEquals(List.of(new Suggestion("bar")), suggestions);
@@ -34,7 +34,7 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestLastNodeInTree() {
-        colonel.register("foo bar baz", b -> b.executor(ctx -> {}));
+        colonel.builder().path("foo bar baz").executor(ctx -> {}).register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "foo bar ");
         assertEquals(List.of(new Suggestion("baz")), suggestions);
@@ -44,8 +44,8 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestForFirstMultiNodesInTree() {
-        colonel.register("foo bar baz", b -> b.executor(ctx -> {}));
-        colonel.register("fizz buzz", b -> b.executor(ctx -> {}));
+        colonel.builder().path("foo bar baz").executor(ctx -> {}).register();
+        colonel.builder().path("fizz buzz").executor(ctx -> {}).register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "");
         assertEquals(List.of(new Suggestion("foo"), new Suggestion("fizz")), suggestions);
@@ -53,8 +53,8 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestForFirstMultiNodesInTreeWithPrefix() {
-        colonel.register("foo bar baz", b -> b.executor(ctx -> {}));
-        colonel.register("fizz buzz", b -> b.executor(ctx -> {}));
+        colonel.builder().path("foo bar baz").executor(ctx -> {}).register();
+        colonel.builder().path("fizz buzz").executor(ctx -> {}).register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "f");
         assertEquals(List.of(new Suggestion("foo"), new Suggestion("fizz")), suggestions);
@@ -68,8 +68,8 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestForMiddleMultiNodesInTree() {
-        colonel.register("foo bar baz", b -> b.executor(ctx -> {}));
-        colonel.register("foo fizz baz", b -> b.executor(ctx -> {}));
+        colonel.builder().path("foo bar baz").executor(ctx -> {}).register();
+        colonel.builder().path("foo fizz baz").executor(ctx -> {}).register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "foo ");
         assertEquals(List.of(new Suggestion("bar"), new Suggestion("fizz")), suggestions);
@@ -77,8 +77,8 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestForMiddleMultiNodesInTreeWithPrefix() {
-        colonel.register("foo bar baz", b -> b.executor(ctx -> {}));
-        colonel.register("foo fizz buzz", b -> b.executor(ctx -> {}));
+        colonel.builder().path("foo bar baz").executor(ctx -> {}).register();
+        colonel.builder().path("foo fizz buzz").executor(ctx -> {}).register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "foo fi");
         assertEquals(List.of(new Suggestion("fizz")), suggestions);
@@ -89,8 +89,8 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestForLastMultiNodesInTree() {
-        colonel.register("foo bar baz", b -> b.executor(ctx -> {}));
-        colonel.register("foo bar fizz", b -> b.executor(ctx -> {}));
+        colonel.builder().path("foo bar baz").executor(ctx -> {}).register();
+        colonel.builder().path("foo bar fizz").executor(ctx -> {}).register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "foo bar ");
         assertEquals(List.of(new Suggestion("baz"), new Suggestion("fizz")), suggestions);
@@ -98,8 +98,8 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestForLastMultiNodesInTreeWithPrefix() {
-        colonel.register("foo bar baz", b -> b.executor(ctx -> {}));
-        colonel.register("foo bar fizz", b -> b.executor(ctx -> {}));
+        colonel.builder().path("foo bar baz").executor(ctx -> {}).register();
+        colonel.builder().path("foo bar fizz").executor(ctx -> {}).register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "foo bar b");
         assertEquals(List.of(new Suggestion("baz")), suggestions);
@@ -112,15 +112,12 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestFirstArgument() {
-        colonel.register("foo bar", b -> b
-                .word("p1", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                                List.of(new Suggestion("fizz"), new Suggestion("buzz"))))
-                .word("p2", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                                List.of(new Suggestion("hello"), new Suggestion("world"))))
-                .word("p3", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                                List.of(new Suggestion("hi"), new Suggestion("mom"))))
+        colonel.builder().path("foo bar")
+                .string("p1", s -> null).completer("fizz", "buzz").done()
+                .string("p2", s -> null).completer("hello", "world").done()
+                .string("p3", s -> null).completer("hi", "mom").done()
                 .executor(ctx -> {})
-        );
+                .register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "foo bar ");
         assertEquals(List.of(new Suggestion("fizz"), new Suggestion("buzz")), suggestions);
@@ -128,15 +125,12 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestFirstArgumentWithPrefix() {
-        colonel.register("foo bar", b -> b
-                .word("p1", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("fizz"), new Suggestion("buzz"))))
-                .word("p2", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("hello"), new Suggestion("world"))))
-                .word("p3", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("hi"), new Suggestion("mom"))))
+        colonel.builder().path("foo bar")
+                .string("p1", s -> null).completer("fizz", "buzz").done()
+                .string("p2", s -> null).completer("hello", "world").done()
+                .string("p3", s -> null).completer("hi", "mom").done()
                 .executor(ctx -> {})
-        );
+                .register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "foo bar buz");
         assertEquals(List.of(new Suggestion("buzz")), suggestions);
@@ -147,15 +141,12 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestMiddleArgument() {
-        colonel.register("foo bar", b -> b
-                .word("p1", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("fizz"), new Suggestion("buzz"))))
-                .word("p2", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("hello"), new Suggestion("world"))))
-                .word("p3", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("hi"), new Suggestion("mom"))))
+        colonel.builder().path("foo bar")
+                .string("p1", s -> null).completer("fizz", "buzz").done()
+                .string("p2", s -> null).completer("hello", "world").done()
+                .string("p3", s -> null).completer("hi", "mom").done()
                 .executor(ctx -> {})
-        );
+                .register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "foo bar fizz ");
         assertEquals(List.of(new Suggestion("hello"), new Suggestion("world")), suggestions);
@@ -163,15 +154,12 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestMiddleArgumentWithPrefix() {
-        colonel.register("foo bar", b -> b
-                .word("p1", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("fizz"), new Suggestion("buzz"))))
-                .word("p2", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("hello"), new Suggestion("world"))))
-                .word("p3", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("hi"), new Suggestion("mom"))))
+        colonel.builder().path("foo bar")
+                .string("p1", s -> null).completer("fizz", "buzz").done()
+                .string("p2", s -> null).completer("hello", "world").done()
+                .string("p3", s -> null).completer("hi", "mom").done()
                 .executor(ctx -> {})
-        );
+                .register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "foo bar fizz h");
         assertEquals(List.of(new Suggestion("hello")), suggestions);
@@ -182,15 +170,12 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestLastArgument() {
-        colonel.register("foo bar", b -> b
-                .word("p1", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("fizz"), new Suggestion("buzz"))))
-                .word("p2", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("hello"), new Suggestion("world"))))
-                .word("p3", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("hi"), new Suggestion("mom"))))
+        colonel.builder().path("foo bar")
+                .string("p1", s -> null).completer("fizz", "buzz").done()
+                .string("p2", s -> null).completer("hello", "world").done()
+                .string("p3", s -> null).completer("hi", "mom").done()
                 .executor(ctx -> {})
-        );
+                .register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "foo bar fizz hello ");
         assertEquals(List.of(new Suggestion("hi"), new Suggestion("mom")), suggestions);
@@ -198,15 +183,12 @@ public class ColonelSuggestionTests {
 
     @Test
     public void suggestLastArgumentWithPrefix() {
-        colonel.register("foo bar", b -> b
-                .word("p1", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("fizz"), new Suggestion("buzz"))))
-                .word("p2", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("hello"), new Suggestion("world"))))
-                .word("p3", (ctx, val) -> Argument.success(null), CommandParameterCompleter.startsWith((ctx, input) ->
-                        List.of(new Suggestion("hi"), new Suggestion("mom"))))
+        colonel.builder().path("foo bar")
+                .string("p1", s -> null).completer("fizz", "buzz").done()
+                .string("p2", s -> null).completer("hello", "world").done()
+                .string("p3", s -> null).completer("hi", "mom").done()
                 .executor(ctx -> {})
-        );
+                .register();
 
         List<Suggestion> suggestions = colonel.suggestions(person, "foo bar fizz hello mom");
         assertEquals(List.of(new Suggestion("mom")), suggestions);

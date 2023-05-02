@@ -1,7 +1,8 @@
 package com.guflimc.colonel.minecraft.spigot;
 
+import com.guflimc.colonel.common.build.CommandContext;
 import com.guflimc.colonel.common.build.CommandHandlerBuilder;
-import com.guflimc.colonel.common.tree.CommandHandler;
+import com.guflimc.colonel.common.dispatch.tree.CommandHandler;
 import com.guflimc.colonel.minecraft.common.MinecraftColonel;
 import com.guflimc.colonel.minecraft.common.annotations.Permission;
 import net.kyori.adventure.audience.Audience;
@@ -13,8 +14,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 public class SpigotColonel extends MinecraftColonel<CommandSender> {
 
@@ -68,13 +72,12 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
     }
 
     @Override
-    protected void build(@NotNull Method method, @NotNull CommandHandlerBuilder<CommandSender> builder) {
-        super.build(method, builder);
+    protected void build(@NotNull Method method, @NotNull Map<Parameter, Function<CommandContext<CommandSender>, Object>> suppliers, @NotNull CommandHandlerBuilder<CommandSender> builder) {
+        super.build(method, suppliers, builder);
 
         Permission permissionConf = method.getAnnotation(Permission.class);
         if (permissionConf != null) {
             builder.condition(s -> s.hasPermission(permissionConf.value()));
         }
     }
-
 }
