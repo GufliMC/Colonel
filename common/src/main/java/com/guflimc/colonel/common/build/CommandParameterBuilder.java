@@ -139,6 +139,20 @@ public class CommandParameterBuilder<S> {
 
     //
 
+    public <T> CommandParameterBuilder<S> type(@NotNull Class<T> type) {
+        return parser(type).completer(type);
+    }
+
+    public <T> CommandParameterBuilder<S> type(@NotNull Class<T> type, @NotNull String parserName, @NotNull String mapperName) {
+        return parser(type, parserName).completer(type, mapperName);
+    }
+
+    public <T> CommandParameterBuilder<S> type(@NotNull Class<T> type, @NotNull String parserMapperName) {
+        return type(type, parserMapperName, parserMapperName);
+    }
+
+    //
+
     public CommandHandlerBuilder<S> done() {
         if ( name == null ) {
             throw new IllegalStateException("Name is not set.");
