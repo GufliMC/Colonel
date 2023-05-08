@@ -1,154 +1,90 @@
 package com.guflimc.colonel.common.build;
 
-import com.guflimc.colonel.common.Colonel;
 import com.guflimc.colonel.common.dispatch.definition.ReadMode;
-import com.guflimc.colonel.common.dispatch.tree.CommandHandler;
-import com.guflimc.colonel.common.ext.ExtCommandHandlerBuilder;
-import com.guflimc.colonel.common.ext.ExtCommandParameterCompleter;
-import com.guflimc.colonel.common.ext.ExtCommandParameterParser;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class CommandHandlerBuilder<S> {
+public class CommandHandlerBuilder {
 
-    protected final Colonel<S> colonel;
+    private final List<CommandSourceMapper> mappers = new ArrayList<>();
+    private final List<CommandParameter> parameters = new ArrayList<>();
 
-    protected final List<String> paths = new ArrayList<>();
-    protected final ExtCommandHandlerBuilder builder = new ExtCommandHandlerBuilder();
+    private CommandExecutor executor;
+    private Predicate<Object> condition;
 
-    public CommandHandlerBuilder(Colonel<S> colonel) {
-        this.colonel = colonel;
+    //
+
+    public CommandHandlerBuilder parameter(@NotNull CommandParameter parameter) {
+        parameters.add(parameter);
+        return this;
+    }
+
+    public CommandHandlerBuilder parameter(@NotNull String name,
+                                           @NotNull ReadMode readMode,
+                                           @NotNull CommandParameterParser parser,
+                                           @NotNull CommandParameterCompleter completer) {
+        return parameter(CommandParameter.of(name, readMode, parser, completer));
+    }
+
+    public CommandHandlerBuilder parameter(@NotNull String name,
+                                           @NotNull ReadMode readMode,
+                                           @NotNull CommandParameterParser parser) {
+        return parameter(name, readMode, parser, (context, input) -> List.of());
     }
 
     //
 
-    public CommandHandlerBuilder<S> path(String path) {
-        this.paths.add(path);
+    public CommandHandlerBuilder string(@NotNull String name,
+                                        @NotNull CommandParameterParser parser) {
+        return parameter(name, ReadMode.STRING, parser);
+    }
+
+    public CommandHandlerBuilder string(@NotNull String name,
+                                        @NotNull CommandParameterParser parser,
+                                        @NotNull CommandParameterCompleter completer) {
+        return parameter(name, ReadMode.STRING, parser, completer);
+    }
+
+    public CommandHandlerBuilder greedy(@NotNull String name,
+                                        @NotNull CommandParameterParser parser) {
+        return parameter(name, ReadMode.GREEDY, parser);
+    }
+
+    public CommandHandlerBuilder greedy(@NotNull String name,
+                                        @NotNull CommandParameterParser parser,
+                                        @NotNull CommandParameterCompleter completer) {
+        return parameter(name, ReadMode.GREEDY, parser, completer);
+    }
+
+    //
+
+    public CommandHandlerBuilder executor(CommandExecutor executor) {
+        this.executor = executor;
+        return this;
+    }
+
+    public CommandHandlerBuilder condition(Predicate<Object> condition) {
+        this.condition = condition;
         return this;
     }
 
     //
 
-    protected CommandHandlerBuilder<S> parameter(@NotNull String name,
-                                                 @NotNull ReadMode readMode,
-                                                 @NotNull ExtCommandParameterParser parser,
-                                                 @NotNull ExtCommandParameterCompleter completer) {
-        builder.parameter(name, readMode, parser, completer);
+    public CommandHandlerBuilder source(CommandSourceMapper mapper) {
+        mappers.add(mapper);
         return this;
     }
 
     //
 
-    public CommandParameterBuilder<S> parameter() {
-        return new CommandParameterBuilder<>(this);
-    }
+    public com.guflimc.colonel.common.dispatch.tree.CommandHandler build() {
+        CommandParameter[] parameters = this.parameters.toArray(CommandParameter[]::new);
+        CommandSourceMapper[] mappers = this.mappers.toArray(CommandSourceMapper[]::new);
 
-    public CommandParameterBuilder<S> string() {
-        return parameter().readString();
-    }
-
-    public CommandParameterBuilder<S> greedy() {
-        return parameter().readGreedy();
-    }
-
-    //
-
-    public CommandParameterBuilder<S> parameter(@NotNull String name) {
-        return parameter().name(name);
-    }
-
-    public CommandParameterBuilder<S> string(@NotNull String name) {
-        return parameter(name).readString();
-    }
-
-    public CommandParameterBuilder<S> greedy(@NotNull String name) {
-        return parameter(name).readGreedy();
-    }
-
-    //
-
-    public CommandParameterBuilder<S> parameter(@NotNull String name,
-                                                @NotNull CommandParameterParser<S> parser) {
-        return parameter(name).parser(parser);
-    }
-
-    public CommandParameterBuilder<S> string(@NotNull String name,
-                                             @NotNull CommandParameterParser<S> parser) {
-        return parameter(name, parser).readString();
-    }
-
-    public CommandParameterBuilder<S> greedy(@NotNull String name,
-                                             @NotNull CommandParameterParser<S> parser) {
-        return parameter(name, parser).readGreedy();
-    }
-
-    //
-
-    public CommandParameterBuilder<S> parameter(@NotNull String name,
-                                                @NotNull Function<String, Object> parser) {
-        return parameter(name).parser(parser);
-    }
-
-    public CommandParameterBuilder<S> string(@NotNull String name,
-                                             @NotNull Function<String, Object> parser) {
-        return parameter(name, parser).readString();
-    }
-
-    public CommandParameterBuilder<S> greedy(@NotNull String name,
-                                             @NotNull Function<String, Object> parser) {
-        return parameter(name, parser).readGreedy();
-    }
-
-    //
-
-    public CommandHandlerBuilder<S> executor(CommandExecutor<S> executor) {
-        builder.executor(context -> executor.execute(new CommandContext<>(context)));
-        return this;
-    }
-
-    public CommandHandlerBuilder<S> condition(Predicate<S> condition) {
-        builder.condition(source -> condition.test((S) source));
-        return this;
-    }
-
-    //
-
-    public CommandHandlerBuilder<S> source(CommandSourceMapper<S> mapper) {
-        builder.source(source -> mapper.map((S) source));
-        return this;
-    }
-
-    public CommandHandlerBuilder<S> source(@NotNull Class<?> type,
-                                           @Nullable String mapperName) {
-        CommandSourceMapper<S> mapper;
-        if (mapperName != null && !mapperName.isEmpty()) {
-            mapper = colonel.registry().mapper(type, mapperName, false)
-                    .orElseThrow(() -> new IllegalArgumentException(String.format("No mapper with name '%s' found for type %s.", mapperName, type.getName())));
-        } else {
-            mapper = colonel.registry().mapper(type)
-                    .orElseThrow(() -> new IllegalArgumentException(String.format("No mapper for type %s found.", type.getName())));
-        }
-        return source(mapper);
-    }
-
-    public CommandHandlerBuilder<S> source(@NotNull Class<?> type) {
-        return source(type, null);
-    }
-
-    //
-
-    public void register() {
-        if (paths.isEmpty()) {
-            throw new IllegalStateException("There must be at least 1 path to register a handler");
-        }
-
-        CommandHandler handler = builder.build();
-        paths.forEach(path -> colonel.register(path, handler));
+        return new CommandHandler(parameters, executor, mappers, condition);
     }
 
 }

@@ -1,6 +1,6 @@
 package com.guflimc.colonel.common.dispatch.tree;
 
-import com.guflimc.colonel.common.ext.ExtCommandContext;
+import com.guflimc.colonel.common.build.CommandContext;
 import com.guflimc.colonel.common.dispatch.parser.CommandInputReader;
 import com.guflimc.colonel.common.dispatch.parser.CommandInput;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
@@ -60,7 +60,7 @@ public final class CommandTreeNode {
         CommandDelegate best = null;
         for (CommandHandler handler : parsed.keySet() ) {
             CommandDelegate delegate = handler.prepare(source, parsed.get(handler));
-            ExtCommandContext context = delegate.context();
+            CommandContext context = delegate.context();
             if ( context.input().errors().size() == 0 ) {
                 delegate.run(); // should actually execute
                 return true;

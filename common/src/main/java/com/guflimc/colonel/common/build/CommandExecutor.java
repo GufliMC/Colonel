@@ -1,8 +1,8 @@
 package com.guflimc.colonel.common.build;
 
 @FunctionalInterface
-public interface CommandExecutor<S> {
+public interface CommandExecutor {
 
-    void execute(CommandContext<S> context);
+    void execute(CommandContext context);
 
 }

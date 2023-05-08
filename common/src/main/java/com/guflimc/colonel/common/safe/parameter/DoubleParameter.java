@@ -1,10 +1,9 @@
-package com.guflimc.colonel.common.build.parameter;
+package com.guflimc.colonel.common.safe.parameter;
 
-import com.guflimc.colonel.common.ext.Argument;
-import com.guflimc.colonel.common.ext.ExtCommandContext;
-import com.guflimc.colonel.common.ext.ExtCommandParameter;
+import com.guflimc.colonel.common.build.CommandContext;
+import com.guflimc.colonel.common.build.CommandParameter;
 
-public class DoubleParameter extends ExtCommandParameter {
+public class DoubleParameter extends CommandParameter {
 
     private final double min;
     private final double max;
@@ -34,13 +33,11 @@ public class DoubleParameter extends ExtCommandParameter {
     //
 
     @Override
-    public Argument parse(ExtCommandContext context, String input) {
+    public Object parse(CommandContext context, String input) {
         double value = Double.parseDouble(input);
         if (value < min || value > max) {
-            return Argument.fail(() -> {
-                throw new IllegalArgumentException("Value out of range");
-            });
+            throw new IllegalArgumentException("Value out of range");
         }
-        return Argument.success(value);
+        return value;
     }
 }

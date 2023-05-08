@@ -1,10 +1,9 @@
-package com.guflimc.colonel.common.build.parameter;
+package com.guflimc.colonel.common.safe.parameter;
 
-import com.guflimc.colonel.common.ext.Argument;
-import com.guflimc.colonel.common.ext.ExtCommandContext;
-import com.guflimc.colonel.common.ext.ExtCommandParameter;
+import com.guflimc.colonel.common.build.CommandContext;
+import com.guflimc.colonel.common.build.CommandParameter;
 
-public class FloatParameter extends ExtCommandParameter {
+public class FloatParameter extends CommandParameter {
 
     private final float min;
     private final float max;
@@ -34,13 +33,11 @@ public class FloatParameter extends ExtCommandParameter {
     //
 
     @Override
-    public Argument parse(ExtCommandContext context, String input) {
+    public Object parse(CommandContext context, String input) {
         float value = Float.parseFloat(input);
         if (value < min || value > max) {
-            return Argument.fail(() -> {
-                throw new IllegalArgumentException("Value out of range");
-            });
+            throw new IllegalArgumentException("Value out of range");
         }
-        return Argument.success(value);
+        return value;
     }
 }

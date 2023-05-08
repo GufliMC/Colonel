@@ -1,12 +1,11 @@
-package com.guflimc.colonel.common.build.parameter;
+package com.guflimc.colonel.common.safe.parameter;
 
-import com.guflimc.colonel.common.ext.Argument;
-import com.guflimc.colonel.common.ext.ExtCommandContext;
-import com.guflimc.colonel.common.ext.ExtCommandParameter;
+import com.guflimc.colonel.common.build.CommandContext;
+import com.guflimc.colonel.common.build.CommandParameter;
 
 import java.time.LocalDate;
 
-public class LocalDateParameter extends ExtCommandParameter {
+public class LocalDateParameter extends CommandParameter {
 
     private final LocalDate min;
     private final LocalDate max;
@@ -36,13 +35,11 @@ public class LocalDateParameter extends ExtCommandParameter {
     //
 
     @Override
-    public Argument parse(ExtCommandContext context, String input) {
+    public Object parse(CommandContext context, String input) {
         LocalDate value = LocalDate.parse(input);
         if (value.isBefore(min) || value.isAfter(max)) {
-            return Argument.fail(() -> {
-                throw new IllegalArgumentException("Value out of range");
-            });
+            throw new IllegalArgumentException("Value out of range");
         }
-        return Argument.success(value);
+        return value;
     }
 }

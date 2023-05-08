@@ -5,10 +5,9 @@ import com.guflimc.colonel.annotation.annotations.Completer;
 import com.guflimc.colonel.annotation.annotations.Parser;
 import com.guflimc.colonel.annotation.annotations.parameter.Source;
 import com.guflimc.colonel.common.Colonel;
-import com.guflimc.colonel.common.build.*;
 import com.guflimc.colonel.common.dispatch.definition.ReadMode;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
-import com.guflimc.colonel.common.ext.Argument;
+import com.guflimc.colonel.common.safe.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
@@ -56,9 +55,9 @@ public class AnnotationColonel<S> extends Colonel<S> {
     }
 
     private void registerCommands(@NotNull Method method, @NotNull Object container) {
-        Map<Parameter, Function<CommandContext<S>, Object>> suppliers = new LinkedHashMap<>();
+        Map<Parameter, Function<SafeCommandContext<S>, Object>> suppliers = new LinkedHashMap<>();
 
-        CommandHandlerBuilder<S> builder = builder();
+        SafeCommandHandlerBuilder<S> builder = builder();
         build(method, suppliers, builder);
 
         // set executor
@@ -69,7 +68,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
 
             try {
                 method.invoke(container, arguments);
-            }  catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -80,7 +79,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
         builder.register();
     }
 
-    protected void build(@NotNull Method method, @NotNull Map<Parameter, Function<CommandContext<S>, Object>> suppliers, @NotNull CommandHandlerBuilder<S> builder) {
+    protected void build(@NotNull Method method, @NotNull Map<Parameter, Function<SafeCommandContext<S>, Object>> suppliers, @NotNull SafeCommandHandlerBuilder<S> builder) {
         method.setAccessible(true);
 
         Command[] commands = method.getAnnotationsByType(Command.class);
@@ -94,17 +93,19 @@ public class AnnotationColonel<S> extends Colonel<S> {
             builder.path(cmd.value());
         }
 
+        int mi = 0;
         for (Parameter param : method.getParameters()) {
             // SOURCE
             if (param.isAnnotationPresent(Source.class)) {
-                CommandSourceMapper<S> mapper = sourceMapper(param);
-                suppliers.put(param, ctx -> mapper.map(ctx.source()));
+                SafeCommandSourceMapper<S> mapper = sourceMapper(param);
+                builder.source(mapper);
+                build(param, suppliers, mi++);
                 continue;
             }
 
             // PARAMETER
             try {
-                CommandParameterBuilder<S> pb = builder.parameter();
+                SafeCommandParameterBuilder<S> pb = builder.parameter();
                 build(param, suppliers, pb);
                 pb.done();
             } catch (Exception e) {
@@ -116,11 +117,11 @@ public class AnnotationColonel<S> extends Colonel<S> {
         }
     }
 
-    protected void build(@NotNull Parameter parameter, @NotNull Map<Parameter, Function<CommandContext<S>, Object>> suppliers, int index) {
-
+    protected void build(@NotNull Parameter parameter, @NotNull Map<Parameter, Function<SafeCommandContext<S>, Object>> suppliers, int index) {
+        suppliers.put(parameter, ctx -> ctx.source(index));
     }
-    
-    protected void build(@NotNull Parameter parameter, @NotNull Map<Parameter, Function<CommandContext<S>, Object>> suppliers, @NotNull CommandParameterBuilder<S> builder) {
+
+    protected void build(@NotNull Parameter parameter, @NotNull Map<Parameter, Function<SafeCommandContext<S>, Object>> suppliers, @NotNull SafeCommandParameterBuilder<S> builder) {
         // PARAMETER
         com.guflimc.colonel.annotation.annotations.parameter.Parameter paramConf =
                 parameter.getAnnotation(com.guflimc.colonel.annotation.annotations.parameter.Parameter.class);
@@ -144,14 +145,14 @@ public class AnnotationColonel<S> extends Colonel<S> {
         }
 
         // parser
-        if ( paramConf != null && !paramConf.parser().isEmpty() ) {
+        if (paramConf != null && !paramConf.parser().isEmpty()) {
             builder.parser(parameter.getType(), paramConf.parser());
         } else {
             builder.parser(parameter.getType());
         }
 
         // completer
-        if ( paramConf != null && !paramConf.completer().isEmpty() ) {
+        if (paramConf != null && !paramConf.completer().isEmpty()) {
             builder.completer(parameter.getType(), paramConf.completer());
         } else {
             builder.completer(parameter.getType());
@@ -171,7 +172,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
                     method.getName(), container.getClass().getSimpleName()));
         }
 
-        Map<Parameter, BiFunction<CommandContext<S>, String, Object>> suppliers = suppliers(method);
+        Map<Parameter, BiFunction<SafeCommandContext<S>, String, Object>> suppliers = suppliers(method);
 
         Completer completerConf = method.getAnnotation(Completer.class);
         String name = method.getName();
@@ -179,7 +180,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
             name = completerConf.value();
         }
 
-        CommandParameterCompleter<S> completer = (context, input) -> {
+        SafeCommandParameterCompleter<S> completer = (context, input) -> {
             Object[] arguments = suppliers.values().stream()
                     .map(f -> f.apply(context, input))
                     .toArray();
@@ -204,7 +205,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
                 return new Suggestion(o.toString());
             }).toList();
         };
-        completer = CommandParameterCompleter.withMatchCheck(completer);
+        completer = SafeCommandParameterCompleter.withMatchCheck(completer);
 
         if (completerConf.type() != Void.class) {
             registry().registerParameterCompleter(completerConf.type(), name, completer);
@@ -225,7 +226,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
                     method.getName(), container.getClass().getSimpleName()));
         }
 
-        Map<Parameter, BiFunction<CommandContext<S>, String, Object>> suppliers = suppliers(method);
+        Map<Parameter, BiFunction<SafeCommandContext<S>, String, Object>> suppliers = suppliers(method);
 
         Parser parserConf = method.getAnnotation(Parser.class);
         String name = method.getName();
@@ -233,57 +234,45 @@ public class AnnotationColonel<S> extends Colonel<S> {
             name = parserConf.value();
         }
 
-        CommandParameterParser<S> parser = (context, input) -> {
+        SafeCommandParameterParser<S> parser = (context, input) -> {
             Object[] arguments = suppliers.values().stream()
                     .map(f -> f.apply(context, input))
                     .toArray();
 
-            Object value;
             try {
-                value = method.invoke(container, arguments);
+                return method.invoke(container, arguments);
             } catch (IllegalArgumentException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
-            } catch (Exception e) {
+            }catch (Exception e) {
                 throw new RuntimeException(e);
             }
-
-            if (value instanceof Argument arg) {
-                return arg;
-            }
-            return Argument.success(value);
         };
 
-        if ( parserConf.type() != Void.class ) {
+        if (parserConf.type() != Void.class) {
             registry().registerParameterParser(parserConf.type(), name, parser);
             return;
         }
 
-        if ( method.getReturnType() != Argument.class ) {
-            registry().registerParameterParser(method.getReturnType(), name, parser);
-            return;
-        }
-
-        throw new IllegalArgumentException(String.format("Parser method '%s' in class '%s' does not specify a type.",
-                method.getName(), container.getClass().getSimpleName()));
+        registry().registerParameterParser(method.getReturnType(), name, parser);
     }
 
     /**
      * Creates a map which defines for each parameter, how to retrieve the correct value. This only works for utility
      * methods like parsers and completers.
      */
-    private Map<Parameter, BiFunction<CommandContext<S>, String, Object>> suppliers(@NotNull Method method) {
-        Map<Parameter, BiFunction<CommandContext<S>, String, Object>> suppliers = new LinkedHashMap<>();
+    private Map<Parameter, BiFunction<SafeCommandContext<S>, String, Object>> suppliers(@NotNull Method method) {
+        Map<Parameter, BiFunction<SafeCommandContext<S>, String, Object>> suppliers = new LinkedHashMap<>();
         for (Parameter param : method.getParameters()) {
 
             // parameter is annotated
             if (param.isAnnotationPresent(Source.class)) {
-                CommandSourceMapper<S> mapper = sourceMapper(param);
+                SafeCommandSourceMapper<S> mapper = sourceMapper(param);
                 suppliers.put(param, (ctx, input) -> mapper.map(ctx.source()));
                 continue;
             }
 
             // default values
-            if (param.getType().equals(CommandContext.class)) {
+            if (param.getType().equals(SafeCommandContext.class)) {
                 suppliers.put(param, (ctx, input) -> ctx);
                 continue;
             }
@@ -301,7 +290,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
     /**
      * Returns a mapper for the given parameter based on it's {@link Source} annotation.
      */
-    private CommandSourceMapper<S> sourceMapper(@NotNull Parameter param) {
+    private SafeCommandSourceMapper<S> sourceMapper(@NotNull Parameter param) {
         com.guflimc.colonel.annotation.annotations.parameter.Parameter paramConf = param
                 .getAnnotation(com.guflimc.colonel.annotation.annotations.parameter.Parameter.class);
 
@@ -312,12 +301,12 @@ public class AnnotationColonel<S> extends Colonel<S> {
         }
 
         Source sourceConf = param.getAnnotation(Source.class);
-        CommandSourceMapper<S> mapper;
-        if ( !sourceConf.value().isEmpty() ) {
+        SafeCommandSourceMapper<S> mapper;
+        if (!sourceConf.value().isEmpty()) {
             mapper = registry().mapper(param.getType(), sourceConf.value(), false)
                     .orElseThrow(() -> new IllegalStateException(String.format("No source mapper found with name '%s' for parameter '%s' in method '%s' in class '%s'.",
                             sourceConf.value(), param.getName(), param.getDeclaringExecutable().getName(), param.getDeclaringExecutable().getDeclaringClass().getSimpleName())));
-        } else if ( sourceType.isAssignableFrom(param.getType()) ) {
+        } else if (sourceType.isAssignableFrom(param.getType())) {
             return (source) -> source;
         } else {
             mapper = registry().mapper(param.getType(), name, true)

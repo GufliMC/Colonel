@@ -1,7 +1,7 @@
 package com.guflimc.colonel.minecraft.spigot;
 
-import com.guflimc.colonel.common.build.CommandContext;
-import com.guflimc.colonel.common.build.CommandHandlerBuilder;
+import com.guflimc.colonel.common.safe.SafeCommandContext;
+import com.guflimc.colonel.common.safe.SafeCommandHandlerBuilder;
 import com.guflimc.colonel.common.dispatch.tree.CommandHandler;
 import com.guflimc.colonel.minecraft.common.MinecraftColonel;
 import com.guflimc.colonel.minecraft.common.annotations.Permission;
@@ -72,7 +72,7 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
     }
 
     @Override
-    protected void build(@NotNull Method method, @NotNull Map<Parameter, Function<CommandContext<CommandSender>, Object>> suppliers, @NotNull CommandHandlerBuilder<CommandSender> builder) {
+    protected void build(@NotNull Method method, @NotNull Map<Parameter, Function<SafeCommandContext<CommandSender>, Object>> suppliers, @NotNull SafeCommandHandlerBuilder<CommandSender> builder) {
         super.build(method, suppliers, builder);
 
         Permission permissionConf = method.getAnnotation(Permission.class);

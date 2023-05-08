@@ -1,6 +1,6 @@
-package com.guflimc.colonel.common.ext;
+package com.guflimc.colonel.common.build;
 
-public sealed class Argument permits Argument.ArgumentSuccess, Argument.ArgumentFailure {
+sealed class Argument permits Argument.ArgumentSuccess, Argument.ArgumentFailure {
 
     public static Argument success(Object value) {
         return new ArgumentSuccess(value);

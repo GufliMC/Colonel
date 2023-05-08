@@ -1,8 +1,6 @@
 package com.guflimc.colonel.common.test;
 
 import com.guflimc.colonel.common.Colonel;
-import com.guflimc.colonel.common.build.CommandParameterCompleter;
-import com.guflimc.colonel.common.ext.Argument;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import com.guflimc.colonel.common.test.util.Person;
 import org.junit.jupiter.api.Test;

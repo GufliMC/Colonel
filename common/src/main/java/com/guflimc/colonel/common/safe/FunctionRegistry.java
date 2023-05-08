@@ -1,4 +1,4 @@
-package com.guflimc.colonel.common.build;
+package com.guflimc.colonel.common.safe;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -10,9 +10,9 @@ public class FunctionRegistry<S> {
 
     private final static String DEFAULT = "__DEFAULT__";
 
-    private final Map<FunctionKey, CommandParameterCompleter<S>> completers = new HashMap<>();
-    private final Map<FunctionKey, CommandParameterParser<S>> parsers = new HashMap<>();
-    private final Map<FunctionKey, CommandSourceMapper<S>> mappers = new HashMap<>();
+    private final Map<FunctionKey, SafeCommandParameterCompleter<S>> completers = new HashMap<>();
+    private final Map<FunctionKey, SafeCommandParameterParser<S>> parsers = new HashMap<>();
+    private final Map<FunctionKey, SafeCommandSourceMapper<S>> mappers = new HashMap<>();
 
     //
 
@@ -28,14 +28,14 @@ public class FunctionRegistry<S> {
     // Completers
 
     public void registerParameterCompleter(@NotNull Class<?> type,
-                                           @NotNull CommandParameterCompleter<S> completer) {
+                                           @NotNull SafeCommandParameterCompleter<S> completer) {
         remove(completers, type, DEFAULT);
         completers.put(new FunctionKey(type, DEFAULT), completer);
     }
 
     public void registerParameterCompleter(@NotNull Class<?> type,
                                            @NotNull String name,
-                                           @NotNull CommandParameterCompleter<S> completer) {
+                                           @NotNull SafeCommandParameterCompleter<S> completer) {
         remove(completers, type, name);
         completers.put(new FunctionKey(type, name), completer);
     }
@@ -43,14 +43,14 @@ public class FunctionRegistry<S> {
     // Parsers
 
     public void registerParameterParser(@NotNull Class<?> type,
-                                        @NotNull CommandParameterParser<S> parser) {
+                                        @NotNull SafeCommandParameterParser<S> parser) {
         remove(parsers, type, DEFAULT);
         parsers.put(new FunctionKey(type, DEFAULT), parser);
     }
 
     public void registerParameterParser(@NotNull Class<?> type,
                                         @NotNull String name,
-                                        @NotNull CommandParameterParser<S> parser) {
+                                        @NotNull SafeCommandParameterParser<S> parser) {
         remove(parsers, type, name);
         parsers.put(new FunctionKey(type, name), parser);
     }
@@ -58,42 +58,42 @@ public class FunctionRegistry<S> {
     // Completers & Parsers
 
     public void registerParameterType(@NotNull Class<?> type,
-                                      @NotNull CommandParameterParser<S> parser,
-                                      @NotNull CommandParameterCompleter<S> completer) {
+                                      @NotNull SafeCommandParameterParser<S> parser,
+                                      @NotNull SafeCommandParameterCompleter<S> completer) {
         registerParameterParser(type, parser);
         registerParameterCompleter(type, completer);
     }
 
     public void registerParameterType(@NotNull Class<?> type,
                                       @NotNull String name,
-                                      @NotNull CommandParameterParser<S> parser,
-                                      @NotNull CommandParameterCompleter<S> completer) {
+                                      @NotNull SafeCommandParameterParser<S> parser,
+                                      @NotNull SafeCommandParameterCompleter<S> completer) {
         registerParameterParser(type, name, parser);
         registerParameterCompleter(type, name, completer);
     }
 
-    public <T extends CommandParameterParser<S> & CommandParameterCompleter<S>> void registerParameterType(@NotNull Class<?> type,
-                                                                                                                 @NotNull T handler) {
+    public <T extends SafeCommandParameterParser<S> & SafeCommandParameterCompleter<S>> void registerParameterType(@NotNull Class<?> type,
+                                                                                                                   @NotNull T handler) {
         registerParameterType(type, handler, handler);
     }
 
-    public <T extends CommandParameterParser<S> & CommandParameterCompleter<S>> void registerParameterType(@NotNull Class<?> type,
-                                                                                                                 @NotNull String name,
-                                                                                                                 @NotNull T handler) {
+    public <T extends SafeCommandParameterParser<S> & SafeCommandParameterCompleter<S>> void registerParameterType(@NotNull Class<?> type,
+                                                                                                                   @NotNull String name,
+                                                                                                                   @NotNull T handler) {
         registerParameterType(type, name, handler, handler);
     }
 
     // Source mappers
 
     public void registerSourceMapper(@NotNull Class<?> type,
-                                     @NotNull CommandSourceMapper<S> mapper) {
+                                     @NotNull SafeCommandSourceMapper<S> mapper) {
         remove(mappers, type, DEFAULT);
         mappers.put(new FunctionKey(type, DEFAULT), mapper);
     }
 
     public void registerSourceMapper(@NotNull Class<?> type,
                                      @Nullable String name,
-                                     @NotNull CommandSourceMapper<S> mapper) {
+                                     @NotNull SafeCommandSourceMapper<S> mapper) {
         remove(mappers, type, name);
         mappers.put(new FunctionKey(type, name), mapper);
     }
@@ -151,39 +151,39 @@ public class FunctionRegistry<S> {
 
     // PUBLIC
 
-    public Optional<CommandParameterCompleter<S>> completer(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
+    public Optional<SafeCommandParameterCompleter<S>> completer(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
         return find(completers, type, name, fallback);
     }
 
-    public Optional<CommandParameterParser<S>> parser(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
+    public Optional<SafeCommandParameterParser<S>> parser(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
         return find(parsers, type, name, fallback);
     }
 
-    public Optional<CommandSourceMapper<S>> mapper(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
+    public Optional<SafeCommandSourceMapper<S>> mapper(@NotNull Class<?> type, @NotNull String name, boolean fallback) {
         return find(mappers, type, name, fallback);
     }
 
-    public Optional<CommandParameterCompleter<S>> completer(@NotNull Class<?> type) {
+    public Optional<SafeCommandParameterCompleter<S>> completer(@NotNull Class<?> type) {
         return find(completers, type);
     }
 
-    public Optional<CommandParameterCompleter<S>> completer(@NotNull Class<?> type, @NotNull String name) {
+    public Optional<SafeCommandParameterCompleter<S>> completer(@NotNull Class<?> type, @NotNull String name) {
         return find(completers, type, name);
     }
 
-    public Optional<CommandParameterParser<S>> parser(@NotNull Class<?> type) {
+    public Optional<SafeCommandParameterParser<S>> parser(@NotNull Class<?> type) {
         return find(parsers, type);
     }
 
-    public Optional<CommandParameterParser<S>> parser(@NotNull Class<?> type, @NotNull String name) {
+    public Optional<SafeCommandParameterParser<S>> parser(@NotNull Class<?> type, @NotNull String name) {
         return find(parsers, type, name);
     }
 
-    public Optional<CommandSourceMapper<S>> mapper(@NotNull Class<?> type) {
+    public Optional<SafeCommandSourceMapper<S>> mapper(@NotNull Class<?> type) {
         return find(mappers, type);
     }
 
-    public Optional<CommandSourceMapper<S>> mapper(@NotNull Class<?> type, @NotNull String name) {
+    public Optional<SafeCommandSourceMapper<S>> mapper(@NotNull Class<?> type, @NotNull String name) {
         return find(mappers, type, name);
     }
 

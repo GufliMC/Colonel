@@ -1,10 +1,8 @@
 package com.guflimc.colonel.common.build;
 
-import com.guflimc.colonel.common.ext.Argument;
-
 @FunctionalInterface
-public interface CommandParameterParser<S> {
+public interface CommandParameterParser {
 
-    Argument parse(CommandContext<S> context, String input);
+    Object parse(CommandContext context, String input);
 
 }

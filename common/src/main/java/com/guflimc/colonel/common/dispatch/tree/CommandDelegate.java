@@ -1,9 +1,9 @@
 package com.guflimc.colonel.common.dispatch.tree;
 
-import com.guflimc.colonel.common.ext.ExtCommandContext;
+import com.guflimc.colonel.common.build.CommandContext;
 
 public interface CommandDelegate extends Runnable {
 
-    ExtCommandContext context();
+    CommandContext context();
 
 }

@@ -1,13 +1,13 @@
 package com.guflimc.colonel.common;
 
-import com.guflimc.colonel.common.build.CommandHandlerBuilder;
-import com.guflimc.colonel.common.build.CommandParameterCompleter;
-import com.guflimc.colonel.common.build.CommandParameterParser;
-import com.guflimc.colonel.common.build.FunctionRegistry;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import com.guflimc.colonel.common.dispatch.tree.CommandHandler;
 import com.guflimc.colonel.common.dispatch.tree.CommandTree;
-import com.guflimc.colonel.common.ext.Argument;
+import com.guflimc.colonel.common.exception.CommandMiddlewareException;
+import com.guflimc.colonel.common.safe.FunctionRegistry;
+import com.guflimc.colonel.common.safe.SafeCommandHandlerBuilder;
+import com.guflimc.colonel.common.safe.SafeCommandParameterCompleter;
+import com.guflimc.colonel.common.safe.SafeCommandParameterParser;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
@@ -36,8 +36,8 @@ public class Colonel<S> {
         tree.register(path, handler);
     }
 
-    public CommandHandlerBuilder<S> builder() {
-        return new CommandHandlerBuilder<>(this);
+    public SafeCommandHandlerBuilder<S> builder() {
+        return new SafeCommandHandlerBuilder<>(this);
     }
 
     //
@@ -77,29 +77,25 @@ public class Colonel<S> {
         registry.registerParameterParser(Boolean.class, (ctx, value) -> {
             if (value.equalsIgnoreCase("true") || value.equals("1")
                     || value.equalsIgnoreCase("y") || value.equalsIgnoreCase("yes")) {
-                return Argument.success(true);
+                return true;
             }
             if (value.equalsIgnoreCase("false") || value.equals("0")
                     || value.equalsIgnoreCase("n") || value.equalsIgnoreCase("no")) {
-                return Argument.success(false);
+                return false;
             }
-            return Argument.fail(() -> {
-                throw new IllegalArgumentException("Invalid boolean value: " + value);
-            });
+            throw new CommandMiddlewareException("Invalid boolean value: " + value);
         });
-        registry.registerParameterCompleter(Boolean.class, CommandParameterCompleter.withMatchCheck((ctx, input) -> Stream.of("true", "false")
+        registry.registerParameterCompleter(Boolean.class, SafeCommandParameterCompleter.withMatchCheck((ctx, input) -> Stream.of("true", "false")
                 .filter(s -> s.startsWith(input.toLowerCase()))
                 .map(Suggestion::new).toList()));
     }
 
-    private CommandParameterParser<S> wrap(@NotNull Function<String, Object> parser) {
+    private SafeCommandParameterParser<S> wrap(@NotNull Function<String, Object> parser) {
         return (ctx, input) -> {
             try {
-                return Argument.success(parser.apply(input));
+                return parser.apply(input);
             } catch (Throwable e) {
-                return Argument.fail(() -> {
-                    throw e;
-                });
+                throw new CommandMiddlewareException(e);
             }
         };
     }

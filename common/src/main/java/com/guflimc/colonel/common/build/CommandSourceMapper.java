@@ -1,8 +1,8 @@
 package com.guflimc.colonel.common.build;
 
 @FunctionalInterface
-public interface CommandSourceMapper<S> {
+public interface CommandSourceMapper {
 
-    Object map(S source);
+    Object map(Object source);
 
 }

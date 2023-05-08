@@ -1,7 +1,6 @@
 package com.guflimc.colonel.common.test;
 
 import com.guflimc.colonel.common.Colonel;
-import com.guflimc.colonel.common.ext.Argument;
 import com.guflimc.colonel.common.test.util.Person;
 import org.junit.jupiter.api.Test;
 
@@ -93,7 +92,7 @@ public class ColonelDispatchTests {
     public void dispatchSamePathSameArgumentLength() {
         colonel.builder().path("foo bar")
                 .string("p1", s -> s).done()
-                .string("p2", (ctx, s) -> Argument.fail(() -> {})).done()
+                .string("p2", (ctx, s) -> { throw new RuntimeException(); }).done()
                 .executor(ctx -> {
                     person.send("a");
                 }).register();

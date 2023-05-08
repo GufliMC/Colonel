@@ -2,40 +2,41 @@ package com.guflimc.colonel.common.build;
 
 import com.guflimc.colonel.common.dispatch.definition.CommandParameter;
 import com.guflimc.colonel.common.dispatch.parser.CommandInput;
-import com.guflimc.colonel.common.ext.ExtCommandContext;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * This is mostly just a proxy but gives type safety to the {@link #source} method;
- */
-public class CommandContext<S> {
+public class CommandContext {
 
-    private final ExtCommandContext context;
+    private final CommandInput input;
 
-    public CommandContext(@NotNull ExtCommandContext context) {
-        this.context = context;
+    private final Object source;
+    private final Object[] sources;
+
+    public CommandContext(@NotNull CommandInput input, @NotNull Object source, @NotNull Object[] sources) {
+        this.input = input;
+        this.source = source;
+        this.sources = sources;
     }
 
     public CommandInput input() {
-        return context.input();
+        return input;
     }
 
     public <T> T argument(@NotNull CommandParameter parameter) {
-        return context.argument(parameter);
+        return (T) input.argument(parameter);
     }
 
     public <T> T argument(@NotNull String parameter) {
-        return context.argument(parameter);
+        return (T) input.argument(parameter);
     }
 
     //
 
-    public S source() {
-        return context.source();
+    public <T> T source() {
+        return (T) source;
     }
 
     public <T> T source(int index) {
-        return context.source(index);
+        return (T) sources[index];
     }
 
 }

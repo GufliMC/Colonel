@@ -7,8 +7,7 @@ import com.guflimc.colonel.annotation.annotations.Parser;
 import com.guflimc.colonel.annotation.annotations.parameter.Parameter;
 import com.guflimc.colonel.annotation.annotations.parameter.Source;
 import com.guflimc.colonel.annotation.test.util.Person;
-import com.guflimc.colonel.common.build.CommandContext;
-import com.guflimc.colonel.common.ext.ExtCommandContext;
+import com.guflimc.colonel.common.safe.SafeCommandContext;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import org.junit.jupiter.api.Test;
 
@@ -95,7 +94,7 @@ public class AnnotationColonelTests {
         colonel.registerAll(new Object() {
 
             @Parser("number")
-            public int numberParser(CommandContext<Person> ctx, String input) {
+            public int numberParser(SafeCommandContext<Person> ctx, String input) {
                 return Integer.parseInt(input) * 2;
             }
 
@@ -170,7 +169,7 @@ public class AnnotationColonelTests {
         colonel.registerAll(new Object() {
 
             @Completer("number")
-            public List<Integer> numberCompleter(CommandContext<Person> ctx, String input) {
+            public List<Integer> numberCompleter(SafeCommandContext<Person> ctx, String input) {
                 return List.of(0, 5, 10, 15, 20, 25, 30);
             }
 
