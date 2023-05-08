@@ -1,0 +1,16 @@
+com.guflimc.colonel.annotation
+com.guflimc.colonel.annotation.annotations
+com.guflimc.colonel.annotation.annotations.parameter
+com.guflimc.colonel.common
+com.guflimc.colonel.common.build
+com.guflimc.colonel.common.dispatch.definition
+com.guflimc.colonel.common.dispatch.parser
+com.guflimc.colonel.common.dispatch.suggestion
+com.guflimc.colonel.common.dispatch.tree
+com.guflimc.colonel.common.exception
+com.guflimc.colonel.common.safe
+com.guflimc.colonel.common.safe.parameter
+com.guflimc.colonel.minecraft.common
+com.guflimc.colonel.minecraft.common.annotations
+com.guflimc.colonel.minecraft.paper
+com.guflimc.colonel.minecraft.spigot
