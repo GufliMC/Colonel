@@ -1,10 +1,14 @@
 package com.guflimc.colonel.common.safe;
 
+import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodType;
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class FunctionRegistry<S> {
 
@@ -34,10 +38,55 @@ public class FunctionRegistry<S> {
     }
 
     public void registerParameterCompleter(@NotNull Class<?> type,
+                                           @NotNull Function<String, List<?>> completer) {
+        registerParameterCompleter(type, SafeCommandParameterCompleter.withMatchCheck((context, input) -> {
+            List<?> result = completer.apply(input);
+            return result.stream().map(v -> v instanceof Suggestion s ? s : new Suggestion(v.toString())).toList();
+        }));
+    }
+
+    public void registerParameterCompleter(@NotNull Class<?> type,
+                                           @NotNull Supplier<List<?>> completer) {
+        registerParameterCompleter(type, (context, input) -> {
+            List<?> result = completer.get();
+            return result.stream().map(v -> v instanceof Suggestion s ? s : new Suggestion(v.toString())).toList();
+        });
+    }
+
+    public void registerParameterCompleter(@NotNull Class<?> type,
+                                           @NotNull List<?> values) {
+        registerParameterCompleter(type, () -> values);
+    }
+
+    public void registerParameterCompleter(@NotNull Class<?> type,
                                            @NotNull String name,
                                            @NotNull SafeCommandParameterCompleter<S> completer) {
         remove(completers, type, name);
         completers.put(new FunctionKey(type, name), completer);
+    }
+
+    public void registerParameterCompleter(@NotNull Class<?> type,
+                                           @NotNull String name,
+                                           @NotNull Function<String, List<?>> completer) {
+        registerParameterCompleter(type, name, SafeCommandParameterCompleter.withMatchCheck((context, input) -> {
+            List<?> result = completer.apply(input);
+            return result.stream().map(v -> v instanceof Suggestion s ? s : new Suggestion(v.toString())).toList();
+        }));
+    }
+
+    public void registerParameterCompleter(@NotNull Class<?> type,
+                                           @NotNull String name,
+                                           @NotNull Supplier<List<?>> completer) {
+        registerParameterCompleter(type, name, (context, input) -> {
+            List<?> result = completer.get();
+            return result.stream().map(v -> v instanceof Suggestion s ? s : new Suggestion(v.toString())).toList();
+        });
+    }
+
+    public void registerParameterCompleter(@NotNull Class<?> type,
+                                           @NotNull String name,
+                                           @NotNull List<?> values) {
+        registerParameterCompleter(type, name, () -> values);
     }
 
     // Parsers
@@ -49,10 +98,21 @@ public class FunctionRegistry<S> {
     }
 
     public void registerParameterParser(@NotNull Class<?> type,
+                                        @NotNull Function<String, Object> parser) {
+        registerParameterParser(type, (context, input) -> parser.apply(input));
+    }
+
+    public void registerParameterParser(@NotNull Class<?> type,
                                         @NotNull String name,
                                         @NotNull SafeCommandParameterParser<S> parser) {
         remove(parsers, type, name);
         parsers.put(new FunctionKey(type, name), parser);
+    }
+
+    public void registerParameterParser(@NotNull Class<?> type,
+                                        @NotNull String name,
+                                        @NotNull Function<String, Object> parser) {
+        registerParameterParser(type, name, (context, input) -> parser.apply(input));
     }
 
     // Completers & Parsers

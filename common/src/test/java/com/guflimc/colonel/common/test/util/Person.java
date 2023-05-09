@@ -32,8 +32,8 @@ public class Person {
 
     //
 
-    public void send(String message) {
-        inbox.add(message);
+    public void send(Object message) {
+        inbox.add(message.toString());
     }
 
     public String read() {

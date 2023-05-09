@@ -194,25 +194,12 @@ public class AnnotationColonel<S> extends Colonel<S> {
                 throw new RuntimeException(e);
             }
 
-            if (result.isEmpty()) {
-                return List.of();
-            }
-
-            return result.stream().map(o -> {
-                if (o instanceof Suggestion s) {
-                    return s;
-                }
-                return new Suggestion(o.toString());
-            }).toList();
+            return result.stream().map(v -> v instanceof Suggestion s ? s : new Suggestion(v.toString())).toList();
         };
         completer = SafeCommandParameterCompleter.withMatchCheck(completer);
 
-        if (completerConf.type() != Void.class) {
-            registry().registerParameterCompleter(completerConf.type(), name, completer);
-            return;
-        }
-
-        registry().registerParameterCompleter(Object.class, name, completer);
+        Class<?> type = completerConf.type() != Void.class ? completerConf.type() : Object.class;
+        registry().registerParameterCompleter(type, name, completer);
     }
 
     /**
@@ -243,7 +230,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
                 return method.invoke(container, arguments);
             } catch (IllegalArgumentException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
-            }catch (Exception e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         };

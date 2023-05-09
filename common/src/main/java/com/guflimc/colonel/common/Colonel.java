@@ -64,40 +64,26 @@ public class Colonel<S> {
     // INTERNAL
 
     private void registerDefaultTypes() {
-        registry.registerParameterParser(String.class, wrap(s -> s));
-        registry.registerParameterParser(Integer.class, wrap(Integer::parseInt));
-        registry.registerParameterParser(Long.class, wrap(Long::parseLong));
-        registry.registerParameterParser(Float.class, wrap(Float::parseFloat));
-        registry.registerParameterParser(Double.class, wrap(Double::parseDouble));
-        registry.registerParameterParser(Byte.class, wrap(Byte::parseByte));
-        registry.registerParameterParser(Short.class, wrap(Short::parseShort));
-        registry.registerParameterParser(LocalTime.class, wrap(LocalTime::parse));
-        registry.registerParameterParser(LocalDate.class, wrap(LocalDate::parse));
-        registry.registerParameterParser(LocalDateTime.class, wrap(LocalDateTime::parse));
+        registry.registerParameterParser(String.class, s -> s);
+        registry.registerParameterParser(Integer.class, s -> Integer.parseInt(s));
+        registry.registerParameterParser(Long.class, s -> Long.parseLong(s));
+        registry.registerParameterParser(Float.class, Float::parseFloat);
+        registry.registerParameterParser(Double.class, Double::parseDouble);
+        registry.registerParameterParser(Byte.class, s -> Byte.parseByte(s));
+        registry.registerParameterParser(Short.class, s -> Short.parseShort(s));
+        registry.registerParameterParser(LocalTime.class, s -> LocalTime.parse(s));
+        registry.registerParameterParser(LocalDate.class, s -> LocalDate.parse(s));
+        registry.registerParameterParser(LocalDateTime.class, s -> LocalDateTime.parse(s));
         registry.registerParameterParser(Boolean.class, (ctx, value) -> {
-            if (value.equalsIgnoreCase("true") || value.equals("1")
-                    || value.equalsIgnoreCase("y") || value.equalsIgnoreCase("yes")) {
+            if (value.equalsIgnoreCase("true")) {
                 return true;
             }
-            if (value.equalsIgnoreCase("false") || value.equals("0")
-                    || value.equalsIgnoreCase("n") || value.equalsIgnoreCase("no")) {
+            if (value.equalsIgnoreCase("false")) {
                 return false;
             }
             throw new CommandMiddlewareException("Invalid boolean value: " + value);
         });
-        registry.registerParameterCompleter(Boolean.class, SafeCommandParameterCompleter.withMatchCheck((ctx, input) -> Stream.of("true", "false")
-                .filter(s -> s.startsWith(input.toLowerCase()))
-                .map(Suggestion::new).toList()));
-    }
-
-    private SafeCommandParameterParser<S> wrap(@NotNull Function<String, Object> parser) {
-        return (ctx, input) -> {
-            try {
-                return parser.apply(input);
-            } catch (Throwable e) {
-                throw new CommandMiddlewareException(e);
-            }
-        };
+        registry.registerParameterCompleter(Boolean.class, () -> List.of("true", "false"));
     }
 
 }

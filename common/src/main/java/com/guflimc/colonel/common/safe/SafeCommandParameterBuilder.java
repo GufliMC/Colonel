@@ -74,6 +74,17 @@ public class SafeCommandParameterBuilder<S> {
         if (name != null && !name.isEmpty()) {
             parser = builder.colonel.registry().parser(type, name, false)
                     .orElseThrow(() -> new IllegalArgumentException(String.format("No parser with name '%s' found for type %s.", name, type.getName())));
+        } else if ( type.isEnum() ) {
+            parser = builder.colonel.registry().parser(type, this.name, true)
+                    .orElse(null);
+
+            // ENUM DEFAULT PARSER
+            if ( parser == null ) {
+                parser = (context, input) -> Arrays.stream(type.getEnumConstants())
+                        .filter(con -> ((Enum<?>) con).name().equalsIgnoreCase(input))
+                        .findFirst()
+                        .orElseThrow(() -> new CommandMiddlewareException("No enum constant " + input + " found for type " + type.getName()));
+            }
         } else {
             parser = builder.colonel.registry().parser(type, this.name, true)
                     .orElseThrow(() -> new IllegalArgumentException("No parser for type " + type.getName() + " found."));
@@ -85,7 +96,7 @@ public class SafeCommandParameterBuilder<S> {
     public <T> SafeCommandParameterBuilder<S> parser(@NotNull Class<T> type) {
         return parser(type, null);
     }
-    
+
     //
 
     public SafeCommandParameterBuilder<S> completer(SafeCommandParameterCompleter<S> completer) {
@@ -123,6 +134,20 @@ public class SafeCommandParameterBuilder<S> {
         if (name != null && !name.isEmpty()) {
             completer = builder.colonel.registry().completer(type, name, false)
                     .orElseThrow(() -> new IllegalArgumentException(String.format("No completer with name '%s' found for type %s.", name, type.getName())));
+        } else if ( type.isEnum() ) {
+            completer = builder.colonel.registry().completer(type, this.name, true).orElse(null);
+
+            if ( completer == null ) {
+                completer = (context, input) -> {
+                    String linput = input.toLowerCase();
+                    return Arrays.stream(type.getEnumConstants())
+                            .map(con -> (Enum<?>) con)
+                            .map(Enum::name)
+                            .filter(n -> n.toLowerCase().startsWith(linput))
+                            .map(Suggestion::new)
+                            .toList();
+                };
+            }
         } else {
             completer = builder.colonel.registry().completer(type, this.name, true)
                     .orElseGet(() -> (ctx, input) -> List.of());
