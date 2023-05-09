@@ -106,6 +106,17 @@ public class SafeCommandHandlerBuilder<S> {
 
     //
 
+    public SafeCommandHandlerBuilder<S> literal(@NotNull String literal) {
+        return parameter(literal).completer(literal).parser(input -> {
+            if ( input.equalsIgnoreCase(literal) ) {
+                return literal;
+            }
+            throw new IllegalArgumentException(String.format("Expected literal '%s', got '%s'", literal, input));
+        }).done();
+    }
+
+    //
+
     public SafeCommandHandlerBuilder<S> executor(SafeCommandExecutor<S> executor) {
         builder.executor(context -> executor.execute(new SafeCommandContext<>(context)));
         return this;

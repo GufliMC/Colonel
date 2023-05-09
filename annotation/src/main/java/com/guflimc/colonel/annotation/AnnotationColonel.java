@@ -7,9 +7,11 @@ import com.guflimc.colonel.annotation.annotations.parameter.Source;
 import com.guflimc.colonel.common.Colonel;
 import com.guflimc.colonel.common.dispatch.definition.ReadMode;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
+import com.guflimc.colonel.common.exception.CommandMiddlewareException;
 import com.guflimc.colonel.common.safe.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
@@ -68,10 +70,13 @@ public class AnnotationColonel<S> extends Colonel<S> {
 
             try {
                 method.invoke(container, arguments);
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                if ( e.getCause() instanceof CommandMiddlewareException cme) {
+                    throw cme;
+                }
+                throw new CommandMiddlewareException(e.getCause());
             }
         });
 
@@ -188,10 +193,13 @@ public class AnnotationColonel<S> extends Colonel<S> {
             List<?> result;
             try {
                 result = (List<?>) method.invoke(container, arguments);
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                if ( e.getCause() instanceof CommandMiddlewareException cme) {
+                    throw cme;
+                }
+                throw new CommandMiddlewareException(e.getCause());
             }
 
             return result.stream().map(v -> v instanceof Suggestion s ? s : new Suggestion(v.toString())).toList();
@@ -228,10 +236,13 @@ public class AnnotationColonel<S> extends Colonel<S> {
 
             try {
                 return method.invoke(container, arguments);
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                if ( e.getCause() instanceof CommandMiddlewareException cme) {
+                    throw cme;
+                }
+                throw new CommandMiddlewareException(e.getCause());
             }
         };
 
