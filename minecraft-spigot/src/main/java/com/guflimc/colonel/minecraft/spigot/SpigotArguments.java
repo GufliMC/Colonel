@@ -1,11 +1,10 @@
 package com.guflimc.colonel.minecraft.spigot;
 
 import com.guflimc.adventure.MixedLegacyComponentSerializer;
-import com.guflimc.brick.i18n.spigot.api.SpigotI18nAPI;
 import com.guflimc.colonel.annotation.annotations.Completer;
 import com.guflimc.colonel.annotation.annotations.Parser;
 import com.guflimc.colonel.annotation.annotations.parameter.Source;
-import com.guflimc.colonel.common.exception.CommandMiddlewareException;
+import com.guflimc.colonel.common.build.HandleFailure;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
@@ -25,25 +24,15 @@ import java.util.List;
 
 public class SpigotArguments {
 
+    private final SpigotColonel colonel;
+
     private final JavaPlugin plugin;
     private final BukkitAudiences audiences;
 
-    public SpigotArguments(@NotNull JavaPlugin plugin, @NotNull BukkitAudiences audiences) {
-        this.plugin = plugin;
-        this.audiences = audiences;
-    }
-
-    private void sendError(CommandSender source, String i18n, String fallback, Object... args) {
-        if (plugin.getServer().getPluginManager().isPluginEnabled("BrickI18n")) {
-            SpigotI18nAPI.get(plugin).send(source, "global:" + i18n, args);
-            return;
-        }
-
-        String str = fallback;
-        for (int i = 0; i < args.length; i++) {
-            str = str.replace("{" + i + "}", args[i].toString());
-        }
-        source.sendMessage(ChatColor.RED + str);
+    public SpigotArguments(@NotNull SpigotColonel colonel) {
+        this.colonel = colonel;
+        this.plugin = colonel.plugin;
+        this.audiences = colonel.audiences;
     }
 
     // PLAYER
@@ -54,8 +43,7 @@ public class SpigotArguments {
         if (player != null) {
             return player;
         }
-        throw new CommandMiddlewareException(() ->
-                sendError(source, "cmd.error.player.notfound", "Player not found: {0}", input));
+        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.player.notfound", "Player not found: {0}", input));
     }
 
     @Completer(value = "player", type = Player.class)
@@ -73,8 +61,7 @@ public class SpigotArguments {
         if (player != null) {
             return audiences.player(player);
         }
-        throw new CommandMiddlewareException(() ->
-                sendError(source, "cmd.error.player.notfound", "Player not found: {0}", input));
+        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.player.notfound", ChatColor.RED + "Player not found: {0}", input));
     }
 
     @Completer(value = "audience", type = Audience.class)
@@ -92,8 +79,7 @@ public class SpigotArguments {
         if (world != null) {
             return world;
         }
-        throw new CommandMiddlewareException(() ->
-                sendError(source, "cmd.error.world.notfound", "World not found: {0}", input));
+        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.world.notfound", ChatColor.RED + "World not found: {0}", input));
     }
 
     @Completer(value = "world", type = World.class)
@@ -111,8 +97,7 @@ public class SpigotArguments {
         if (material != null) {
             return material;
         }
-        throw new CommandMiddlewareException(() ->
-                sendError(source, "cmd.error.material.notfound", "Material not found: {0}", input));
+        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.material.notfound", ChatColor.RED + "Material not found: {0}", input));
     }
 
     @Completer(value = "material", type = Material.class)
@@ -132,8 +117,7 @@ public class SpigotArguments {
         if (sound != null) {
             return sound;
         }
-        throw new CommandMiddlewareException(() ->
-                sendError(source, "cmd.error.sound.notfound", "Sound not found: {0}", input));
+        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.sound.notfound", ChatColor.RED + "Sound not found: {0}", input));
     }
 
     @Completer(value = "sound", type = Sound.class)
@@ -153,8 +137,7 @@ public class SpigotArguments {
         if (entityType != null) {
             return entityType;
         }
-        throw new CommandMiddlewareException(() ->
-                sendError(source, "cmd.error.entitytype.notfound", "Entity type not found: {0}", input));
+        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.entitytype.notfound", ChatColor.RED + "Entity type not found: {0}", input));
     }
 
     @Completer(value = "entityType", type = EntityType.class)
@@ -174,8 +157,7 @@ public class SpigotArguments {
         if (potionEffectType != null) {
             return potionEffectType;
         }
-        throw new CommandMiddlewareException(() ->
-                sendError(source, "cmd.error.potioneffecttype.notfound", "Potion effect type not found: {0}", input));
+        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.potioneffecttype.notfound", ChatColor.RED + "Potion effect type not found: {0}", input));
     }
 
     @Completer(value = "potioneEffectType", type = PotionEffectType.class)
@@ -195,8 +177,7 @@ public class SpigotArguments {
         if (enchantment != null) {
             return enchantment;
         }
-        throw new CommandMiddlewareException(() ->
-                sendError(source, "cmd.error.enchantment.notfound", "Enchantment not found: {0}", input));
+        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.enchantment.notfound", ChatColor.RED + "Enchantment not found: {0}", input));
     }
 
     @Completer(value = "enchantment", type = Enchantment.class)

@@ -1,16 +1,15 @@
 package com.guflimc.colonel.common.safe;
 
-import com.guflimc.colonel.common.dispatch.definition.ReadMode;
-import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import com.guflimc.colonel.common.build.CommandParameterCompleter;
 import com.guflimc.colonel.common.build.CommandParameterParser;
-import com.guflimc.colonel.common.exception.CommandMiddlewareException;
+import com.guflimc.colonel.common.build.HandleFailure;
+import com.guflimc.colonel.common.dispatch.definition.ReadMode;
+import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class SafeCommandParameterBuilder<S> {
@@ -55,18 +54,8 @@ public class SafeCommandParameterBuilder<S> {
         return this;
     }
 
-    public SafeCommandParameterBuilder<S> parser(@NotNull BiFunction<SafeCommandContext<S>, String, Object> parser) {
-        return parser((SafeCommandParameterParser<S>) (context, input) -> {
-            try {
-                return parser.apply(context, input);
-            } catch (Throwable e) {
-                throw new CommandMiddlewareException(e);
-            }
-        });
-    }
-
     public SafeCommandParameterBuilder<S> parser(@NotNull Function<String, Object> parser) {
-        return parser((BiFunction<SafeCommandContext<S>, String, Object>) (context, input) -> parser.apply(input));
+        return parser((context, input) -> parser.apply(input));
     }
 
     public <T> SafeCommandParameterBuilder<S> parser(@NotNull Class<T> type, @Nullable String name) {
@@ -74,22 +63,22 @@ public class SafeCommandParameterBuilder<S> {
         if (name != null && !name.isEmpty()) {
             parser = builder.colonel.registry().parser(type, name, false)
                     .orElseThrow(() -> new IllegalArgumentException(String.format("No parser with name '%s' found for type %s.", name, type.getName())));
-        } else if ( type.isEnum() ) {
+        } else if (type.isEnum()) {
             parser = builder.colonel.registry().parser(type, this.name, true)
                     .orElse(null);
 
             // ENUM DEFAULT PARSER
-            if ( parser == null ) {
+            if (parser == null) {
                 parser = (context, input) -> Arrays.stream(type.getEnumConstants())
                         .filter(con -> ((Enum<?>) con).name().equalsIgnoreCase(input))
-                        .findFirst()
-                        .orElseThrow(() -> new CommandMiddlewareException("No enum constant " + input + " found for type " + type.getName()));
+                        .findFirst().map(con -> (Object) con)
+                        .orElseGet(() -> HandleFailure.of("No enum constant " + input + " found for type " + type.getName()));
             }
         } else {
             parser = builder.colonel.registry().parser(type, this.name, true)
                     .orElseThrow(() -> new IllegalArgumentException("No parser for type " + type.getName() + " found."));
         }
-        
+
         return parser(parser);
     }
 
@@ -134,10 +123,10 @@ public class SafeCommandParameterBuilder<S> {
         if (name != null && !name.isEmpty()) {
             completer = builder.colonel.registry().completer(type, name, false)
                     .orElseThrow(() -> new IllegalArgumentException(String.format("No completer with name '%s' found for type %s.", name, type.getName())));
-        } else if ( type.isEnum() ) {
+        } else if (type.isEnum()) {
             completer = builder.colonel.registry().completer(type, this.name, true).orElse(null);
 
-            if ( completer == null ) {
+            if (completer == null) {
                 completer = (context, input) -> {
                     String linput = input.toLowerCase();
                     return Arrays.stream(type.getEnumConstants())
@@ -177,10 +166,10 @@ public class SafeCommandParameterBuilder<S> {
     //
 
     public SafeCommandHandlerBuilder<S> done() {
-        if ( name == null ) {
+        if (name == null) {
             throw new IllegalStateException("Name is not set.");
         }
-        if ( parser == null ) {
+        if (parser == null) {
             throw new IllegalStateException("Parser is not set.");
         }
 

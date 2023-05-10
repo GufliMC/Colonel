@@ -1,21 +1,18 @@
 package com.guflimc.colonel.common;
 
+import com.guflimc.colonel.common.build.HandleFailure;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import com.guflimc.colonel.common.dispatch.tree.CommandHandler;
 import com.guflimc.colonel.common.dispatch.tree.CommandTree;
-import com.guflimc.colonel.common.exception.CommandMiddlewareException;
+import com.guflimc.colonel.common.exception.CommandNotFoundException;
 import com.guflimc.colonel.common.safe.FunctionRegistry;
 import com.guflimc.colonel.common.safe.SafeCommandHandlerBuilder;
-import com.guflimc.colonel.common.safe.SafeCommandParameterCompleter;
-import com.guflimc.colonel.common.safe.SafeCommandParameterParser;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 public class Colonel<S> {
 
@@ -47,8 +44,7 @@ public class Colonel<S> {
             return;
         }
 
-        // TODO handler not found
-        System.out.println("not found");
+        throw new CommandNotFoundException("Command not found: " + input);
     }
 
     //
@@ -81,7 +77,7 @@ public class Colonel<S> {
             if (value.equalsIgnoreCase("false")) {
                 return false;
             }
-            throw new CommandMiddlewareException("Invalid boolean value: " + value);
+            throw HandleFailure.of("Invalid boolean value: " + value);
         });
         registry.registerParameterCompleter(Boolean.class, () -> List.of("true", "false"));
     }

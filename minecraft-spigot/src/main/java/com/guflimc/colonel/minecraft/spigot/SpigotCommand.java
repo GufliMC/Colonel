@@ -1,6 +1,10 @@
 package com.guflimc.colonel.minecraft.spigot;
 
+import com.guflimc.colonel.common.build.exception.CommandHandleException;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
+import com.guflimc.colonel.common.exception.CommandDispatchException;
+import com.guflimc.colonel.common.exception.CommandNotFoundException;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +23,16 @@ public class SpigotCommand extends Command {
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
         String input = (getName() + " " + String.join(" ", args));
-        colonel.dispatch(sender, input);
+        try {
+            colonel.dispatch(sender, input);
+        } catch (CommandNotFoundException e) {
+            colonel.sendMessage(sender, "cmd.error.notfound", ChatColor.RED + e.getMessage(), input);
+        } catch (CommandDispatchException | CommandHandleException e) {
+            sender.sendMessage(ChatColor.RED + e.getMessage());
+            if ( e.getCause() != null ) {
+                e.getCause().printStackTrace();
+            }
+        }
         return true;
     }
 

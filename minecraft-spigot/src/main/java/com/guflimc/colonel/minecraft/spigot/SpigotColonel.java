@@ -1,5 +1,6 @@
 package com.guflimc.colonel.minecraft.spigot;
 
+import com.guflimc.brick.i18n.spigot.api.SpigotI18nAPI;
 import com.guflimc.colonel.common.safe.SafeCommandContext;
 import com.guflimc.colonel.common.safe.SafeCommandHandlerBuilder;
 import com.guflimc.colonel.common.dispatch.tree.CommandHandler;
@@ -7,6 +8,7 @@ import com.guflimc.colonel.minecraft.common.MinecraftColonel;
 import com.guflimc.colonel.minecraft.common.annotations.Permission;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -22,8 +24,8 @@ import java.util.function.Function;
 
 public class SpigotColonel extends MinecraftColonel<CommandSender> {
 
-    private final JavaPlugin plugin;
-    private final BukkitAudiences audiences;
+    final JavaPlugin plugin;
+    final BukkitAudiences audiences;
 
     private final SimpleCommandMap commandMap;
 
@@ -45,7 +47,7 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
             throw new RuntimeException(e);
         }
 
-        registerAll(new SpigotArguments(plugin, audiences));
+        registerAll(new SpigotArguments(this));
     }
 
     @Override
@@ -79,5 +81,20 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
         if (permissionConf != null) {
             builder.condition(s -> s.hasPermission(permissionConf.value()));
         }
+    }
+
+    //
+
+    void sendMessage(CommandSender source, String i18n, String fallback, Object... args) {
+        if (plugin.getServer().getPluginManager().isPluginEnabled("BrickI18n")) {
+            SpigotI18nAPI.get(plugin).send(source, i18n, args);
+            return;
+        }
+
+        String str = fallback;
+        for (int i = 0; i < args.length; i++) {
+            str = str.replace("{" + i + "}", args[i].toString());
+        }
+        source.sendMessage(str);
     }
 }

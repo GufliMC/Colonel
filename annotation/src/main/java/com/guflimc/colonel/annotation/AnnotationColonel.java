@@ -5,9 +5,9 @@ import com.guflimc.colonel.annotation.annotations.Completer;
 import com.guflimc.colonel.annotation.annotations.Parser;
 import com.guflimc.colonel.annotation.annotations.parameter.Source;
 import com.guflimc.colonel.common.Colonel;
+import com.guflimc.colonel.common.build.exception.CommandHandleException;
 import com.guflimc.colonel.common.dispatch.definition.ReadMode;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
-import com.guflimc.colonel.common.exception.CommandMiddlewareException;
 import com.guflimc.colonel.common.safe.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -73,10 +73,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
             } catch (InvocationTargetException e) {
-                if ( e.getCause() instanceof CommandMiddlewareException cme) {
-                    throw cme;
-                }
-                throw new CommandMiddlewareException(e.getCause());
+                throw new CommandHandleException(e.getCause());
             }
         });
 
@@ -196,10 +193,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
             } catch (InvocationTargetException e) {
-                if ( e.getCause() instanceof CommandMiddlewareException cme) {
-                    throw cme;
-                }
-                throw new CommandMiddlewareException(e.getCause());
+                throw new CommandHandleException(e.getCause());
             }
 
             return result.stream().map(v -> v instanceof Suggestion s ? s : new Suggestion(v.toString())).toList();
@@ -239,19 +233,12 @@ public class AnnotationColonel<S> extends Colonel<S> {
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
             } catch (InvocationTargetException e) {
-                if ( e.getCause() instanceof CommandMiddlewareException cme) {
-                    throw cme;
-                }
-                throw new CommandMiddlewareException(e.getCause());
+                throw new CommandHandleException(e.getCause());
             }
         };
 
-        if (parserConf.type() != Void.class) {
-            registry().registerParameterParser(parserConf.type(), name, parser);
-            return;
-        }
-
-        registry().registerParameterParser(method.getReturnType(), name, parser);
+        Class<?> type = parserConf.type() != Void.class ? parserConf.type() : method.getReturnType();
+        registry().registerParameterParser(type, name, parser);
     }
 
     /**
