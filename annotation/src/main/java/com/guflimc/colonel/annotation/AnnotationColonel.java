@@ -3,6 +3,7 @@ package com.guflimc.colonel.annotation;
 import com.guflimc.colonel.annotation.annotations.Command;
 import com.guflimc.colonel.annotation.annotations.Completer;
 import com.guflimc.colonel.annotation.annotations.Parser;
+import com.guflimc.colonel.annotation.annotations.parameter.Input;
 import com.guflimc.colonel.annotation.annotations.parameter.Source;
 import com.guflimc.colonel.common.Colonel;
 import com.guflimc.colonel.common.build.exception.CommandHandleException;
@@ -247,26 +248,31 @@ public class AnnotationColonel<S> extends Colonel<S> {
      */
     private Map<Parameter, BiFunction<SafeCommandContext<S>, String, Object>> suppliers(@NotNull Method method) {
         Map<Parameter, BiFunction<SafeCommandContext<S>, String, Object>> suppliers = new LinkedHashMap<>();
-        for (Parameter param : method.getParameters()) {
 
-            // parameter is annotated
+        for (Parameter param : method.getParameters()) {
+            // source
             if (param.isAnnotationPresent(Source.class)) {
                 SafeCommandSourceMapper<S> mapper = sourceMapper(param);
                 suppliers.put(param, (ctx, input) -> mapper.map(ctx.source()));
                 continue;
             }
 
-            // default values
-            if (param.getType().equals(SafeCommandContext.class)) {
-                suppliers.put(param, (ctx, input) -> ctx);
-                continue;
-            }
-            if (param.getType().equals(String.class)) {
+            // input
+            if ( param.isAnnotationPresent(Input.class) || param.getName().equals("input") ) { // TODO remove this later, remains for backwards compatibility
                 suppliers.put(param, (ctx, input) -> input);
                 continue;
             }
-            throw new IllegalArgumentException(String.format("Utility method '%s' in class '%s' has an invalid parameter '%s' of type '%s'.",
-                    method.getName(), method.getDeclaringClass().getSimpleName(), param.getName(), param.getType().getSimpleName()));
+
+            // parameter
+            com.guflimc.colonel.annotation.annotations.parameter.Parameter paramConf = param
+                    .getAnnotation(com.guflimc.colonel.annotation.annotations.parameter.Parameter.class);
+            String name;
+            if ( paramConf != null && !paramConf.value().isEmpty() ) {
+                name = paramConf.value();
+            } else {
+                name = param.getName();
+            }
+            suppliers.put(param, (ctx, input) -> ctx.argument(name));
         }
 
         return suppliers;

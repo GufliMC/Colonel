@@ -4,6 +4,7 @@ import com.guflimc.colonel.annotation.AnnotationColonel;
 import com.guflimc.colonel.annotation.annotations.Command;
 import com.guflimc.colonel.annotation.annotations.Completer;
 import com.guflimc.colonel.annotation.annotations.Parser;
+import com.guflimc.colonel.annotation.annotations.parameter.Input;
 import com.guflimc.colonel.annotation.annotations.parameter.Parameter;
 import com.guflimc.colonel.annotation.annotations.parameter.Source;
 import com.guflimc.colonel.annotation.test.util.Person;
@@ -94,7 +95,7 @@ public class AnnotationColonelTests {
         colonel.registerAll(new Object() {
 
             @Parser("number")
-            public int numberParser(SafeCommandContext<Person> ctx, String input) {
+            public int numberParser(@Input String input) {
                 return Integer.parseInt(input) * 2;
             }
 
@@ -113,7 +114,7 @@ public class AnnotationColonelTests {
         colonel.registerAll(new Object() {
 
             @Parser("number")
-            public int numberParser(String input) {
+            public int numberParser(@Input String input) {
                 return Integer.parseInt(input) * 2;
             }
 
@@ -147,28 +148,10 @@ public class AnnotationColonelTests {
     }
 
     @Test
-    public void singleParameterWithMoreArgumentsParser() {
-        assertThrows(Exception.class, () -> {
-            colonel.registerAll(new Object() {
-
-                @Parser("number")
-                public int numberParser(int x, String y, Object z) {
-                    return 20;
-                }
-
-                @Command("addage")
-                public void addage(@Source Person person, @Parameter(parser = "number") int amount) {
-                    person.setAge(person.age() + amount);
-                }
-            });
-        });
-    }
-
-    @Test
     public void singleParameterWithStandardCompleter() {
         colonel.registerAll(new Object() {
 
-            @Completer("number")
+            @Completer(value = "number", type = Integer.class)
             public List<Integer> numberCompleter(SafeCommandContext<Person> ctx, String input) {
                 return List.of(0, 5, 10, 15, 20, 25, 30);
             }
@@ -187,7 +170,7 @@ public class AnnotationColonelTests {
     public void singleParameterWithLessArgumentsCompleter() {
         colonel.registerAll(new Object() {
 
-            @Completer("number")
+            @Completer(value = "number", type = Integer.class)
             public List<Integer> numberCompleter(String input) {
                 return List.of(1, 2, 3);
             }
@@ -207,7 +190,7 @@ public class AnnotationColonelTests {
         colonel.registry().registerSourceMapper(Integer.class, "age", Person::age);
         colonel.registerAll(new Object() {
 
-            @Completer("number")
+            @Completer(value = "number", type = Integer.class)
             public List<Integer> numberCompleter() {
                 return List.of(0, 5, 10, 15, 20, 25, 30);
             }
@@ -223,30 +206,11 @@ public class AnnotationColonelTests {
     }
 
     @Test
-    public void singleParameterWithMoreArgumentsCompleter() {
-        colonel.registry().registerSourceMapper(Integer.class, Person::age);
-        assertThrows(Exception.class, () -> {
-            colonel.registerAll(new Object() {
-
-                @Completer("number")
-                public List<Integer> numberCompleter(int x, String y, Object z) {
-                    return List.of(0, 5, 10, 15, 20, 25, 30);
-                }
-
-                @Command("addage")
-                public void addage(@Source Person person, @Parameter(completer = "number") int amount) {
-                    person.setAge(person.age() + amount);
-                }
-            });
-        });
-    }
-
-    @Test
     public void singleParameterWithCustomCompleterWithSourceMapper() {
         colonel.registry().registerSourceMapper(Integer.class, Person::age);
         colonel.registerAll(new Object() {
 
-            @Completer("number")
+            @Completer(value = "number", type = Integer.class)
             public List<Integer> numberCompleter(@Source int age) {
                 return List.of(age + 1, age + 2, age + 3);
             }
@@ -267,7 +231,7 @@ public class AnnotationColonelTests {
         colonel.registerAll(new Object() {
 
             @Parser("number")
-            public int numberParser(@Source int age, String input) {
+            public int numberParser(@Source int age, @Input String input) {
                 return Integer.parseInt(input) + age;
             }
 

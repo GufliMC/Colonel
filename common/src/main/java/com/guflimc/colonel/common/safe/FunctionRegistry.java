@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodType;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -161,13 +160,13 @@ public class FunctionRegistry<S> {
     //
 
     /**
-     * Check for best matching type.
+     * Check for exact type.
      */
     private <T> Optional<T> find(@NotNull Map<FunctionKey, T> map, @NotNull Class<?> type) {
         Class<?> rtype = wrap(type);
         return map.entrySet().stream()
-                .filter(e -> e.getKey().type.isAssignableFrom(rtype))
-                .min(Comparator.comparingInt(e -> e.getKey().name.equals("DEFAULT") ? 0 : 1))
+                .filter(e -> rtype.equals(e.getKey().type))
+                .min(Comparator.comparingInt(e -> e.getKey().name.equals(DEFAULT) ? 0 : 1))
                 .map(Map.Entry::getValue);
     }
 
@@ -178,7 +177,7 @@ public class FunctionRegistry<S> {
         Class<?> rtype = wrap(type);
         return map.entrySet().stream()
                 .filter(e -> Objects.equals(name, e.getKey().name))
-                .filter(e -> e.getKey().type.isAssignableFrom(rtype))
+                .filter(e -> rtype.isAssignableFrom(e.getKey().type))
                 .findFirst()
                 .map(Map.Entry::getValue);
     }
@@ -190,7 +189,7 @@ public class FunctionRegistry<S> {
         if (result != null) {
             return Optional.of(result);
         }
-        if ( !fallback ) {
+        if (!fallback) {
             return Optional.empty();
         }
         return find(map, type);

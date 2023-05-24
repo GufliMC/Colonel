@@ -5,13 +5,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Should only be used on parameters of parser and completer methods to indicate the input string value.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface Suggestions {
-
-    /**
-     * The array of fixed suggestions to use for this parameter.
-     */
-    String[] value();
-
+public @interface Input {
 }
