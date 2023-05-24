@@ -69,6 +69,8 @@ loadScripts(document, 'script');</script>
 <div class="type-signature"><span class="annotations"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/Retention.html" title="class or interface in java.lang.annotation" class="external-link">@Retention</a>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/RetentionPolicy.html#RUNTIME" title="class or interface in java.lang.annotation" class="external-link">RUNTIME</a>)
 <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/Target.html" title="class or interface in java.lang.annotation" class="external-link">@Target</a>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/ElementType.html#PARAMETER" title="class or interface in java.lang.annotation" class="external-link">PARAMETER</a>)
 </span><span class="modifiers">public @interface </span><span class="element-name type-name-label">Parameter</span></div>
+<div class="block">This can be used on the parameters of commands, parsers and completers.
+ Only <a href="#value()"><code>value()</code></a> will have affect on parsers and completers, other values are ignored.</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -128,7 +130,8 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="read()">
 <h3>read</h3>
 <div class="member-signature"><span class="return-type"><a href="../../../common/dispatch/definition/ReadMode.html" title="enum class in com.guflimc.colonel.common.dispatch.definition">ReadMode</a></span>&nbsp;<span class="element-name">read</span></div>
-<div class="block">How the argument value should be read from the input.</div>
+<div class="block">How the argument value should be read from the input.
+ This only affects parameters of a <a href="../Command.html" title="annotation interface in com.guflimc.colonel.annotation.annotations"><code>Command</code></a> method.</div>
 <dl class="notes">
 <dt>Default:</dt>
 <dd>STRING</dd>
@@ -139,7 +142,8 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="completer()">
 <h3>completer</h3>
 <div class="member-signature"><span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">completer</span></div>
-<div class="block">The name of the completer to use for this parameter.</div>
+<div class="block">The name of the completer to use for this parameter.
+ This only affects parameters of a <a href="../Command.html" title="annotation interface in com.guflimc.colonel.annotation.annotations"><code>Command</code></a> method.</div>
 <dl class="notes">
 <dt>Default:</dt>
 <dd>""</dd>
@@ -150,7 +154,8 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="parser()">
 <h3>parser</h3>
 <div class="member-signature"><span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">parser</span></div>
-<div class="block">The name of the parser to use for this parameter.</div>
+<div class="block">The name of the parser to use for this parameter.
+ This only affects parameters of a <a href="../Command.html" title="annotation interface in com.guflimc.colonel.annotation.annotations"><code>Command</code></a> method.</div>
 <dl class="notes">
 <dt>Default:</dt>
 <dd>""</dd>
