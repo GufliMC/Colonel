@@ -12,10 +12,13 @@ import org.jetbrains.annotations.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Colonel<S> {
 
+    private final Map<String, String> placeholders = new HashMap<>();
     private final FunctionRegistry<S> registry = new FunctionRegistry<>();
     private final CommandTree tree = new CommandTree();
 
@@ -29,7 +32,17 @@ public class Colonel<S> {
 
     //
 
+    public void placeholder(String placeholder, String value) {
+        placeholders.put(placeholder, value);
+    }
+
+    //
+
     public void register(@NotNull String path, @NotNull CommandHandler handler) {
+        for ( String placeholder : placeholders.keySet() ) {
+            path = path.replace("%" + placeholder + "%", placeholders.get(placeholder));
+        }
+
         tree.register(path, handler);
     }
 
