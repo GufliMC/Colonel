@@ -55,7 +55,6 @@ loadScripts(document, 'script');</script>
 <li><a href="com/guflimc/colonel/annotation/annotations/parameter/package-tree.html">com.guflimc.colonel.annotation.annotations.parameter</a>, </li>
 <li><a href="com/guflimc/colonel/common/package-tree.html">com.guflimc.colonel.common</a>, </li>
 <li><a href="com/guflimc/colonel/common/build/package-tree.html">com.guflimc.colonel.common.build</a>, </li>
-<li><a href="com/guflimc/colonel/common/build/exception/package-tree.html">com.guflimc.colonel.common.build.exception</a>, </li>
 <li><a href="com/guflimc/colonel/common/dispatch/definition/package-tree.html">com.guflimc.colonel.common.dispatch.definition</a>, </li>
 <li><a href="com/guflimc/colonel/common/dispatch/parser/package-tree.html">com.guflimc.colonel.common.dispatch.parser</a>, </li>
 <li><a href="com/guflimc/colonel/common/dispatch/suggestion/package-tree.html">com.guflimc.colonel.common.dispatch.suggestion</a>, </li>
@@ -146,19 +145,28 @@ loadScripts(document, 'script');</script>
 <ul>
 <li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/RuntimeException.html" class="type-name-link external-link" title="class or interface in java.lang">RuntimeException</a>
 <ul>
-<li class="circle">com.guflimc.colonel.common.exception.<a href="com/guflimc/colonel/common/exception/CommandDispatchException.html" class="type-name-link" title="class in com.guflimc.colonel.common.exception">CommandDispatchException</a>
+<li class="circle">com.guflimc.colonel.common.exception.<a href="com/guflimc/colonel/common/exception/CommandFailure.html" class="type-name-link" title="class in com.guflimc.colonel.common.exception">CommandFailure</a>
 <ul>
-<li class="circle">com.guflimc.colonel.common.exception.<a href="com/guflimc/colonel/common/exception/CommandNotFoundException.html" class="type-name-link" title="class in com.guflimc.colonel.common.exception">CommandNotFoundException</a></li>
+<li class="circle">com.guflimc.colonel.common.exception.<a href="com/guflimc/colonel/common/exception/CommandDispatchFailure.html" class="type-name-link" title="class in com.guflimc.colonel.common.exception">CommandDispatchFailure</a>
+<ul>
+<li class="circle">com.guflimc.colonel.common.exception.<a href="com/guflimc/colonel/common/exception/CommandHandleFailure.html" class="type-name-link" title="class in com.guflimc.colonel.common.exception">CommandHandleFailure</a>
+<ul>
+<li class="circle">com.guflimc.colonel.common.exception.<a href="com/guflimc/colonel/common/exception/CommandExecutionFailure.html" class="type-name-link" title="class in com.guflimc.colonel.common.exception">CommandExecutionFailure</a></li>
+<li class="circle">com.guflimc.colonel.common.exception.<a href="com/guflimc/colonel/common/exception/CommandParameterFailure.html" class="type-name-link" title="class in com.guflimc.colonel.common.exception">CommandParameterFailure</a>
+<ul>
+<li class="circle">com.guflimc.colonel.common.exception.<a href="com/guflimc/colonel/common/exception/CommandCompleteFailure.html" class="type-name-link" title="class in com.guflimc.colonel.common.exception">CommandCompleteFailure</a></li>
+<li class="circle">com.guflimc.colonel.common.exception.<a href="com/guflimc/colonel/common/exception/CommandPrepareParameterFailure.html" class="type-name-link" title="class in com.guflimc.colonel.common.exception">CommandPrepareParameterFailure</a></li>
 </ul>
 </li>
-<li class="circle">com.guflimc.colonel.common.build.exception.<a href="com/guflimc/colonel/common/build/exception/CommandHandleException.html" class="type-name-link" title="class in com.guflimc.colonel.common.build.exception">CommandHandleException</a>
-<ul>
-<li class="circle">com.guflimc.colonel.common.build.exception.<a href="com/guflimc/colonel/common/build/exception/CommandParameterCompleteException.html" class="type-name-link" title="class in com.guflimc.colonel.common.build.exception">CommandParameterCompleteException</a></li>
-<li class="circle">com.guflimc.colonel.common.build.exception.<a href="com/guflimc/colonel/common/build/exception/CommandParameterParseException.html" class="type-name-link" title="class in com.guflimc.colonel.common.build.exception">CommandParameterParseException</a></li>
-<li class="circle">com.guflimc.colonel.common.build.exception.<a href="com/guflimc/colonel/common/build/exception/CommandSourceMapException.html" class="type-name-link" title="class in com.guflimc.colonel.common.build.exception">CommandSourceMapException</a></li>
+<li class="circle">com.guflimc.colonel.common.exception.<a href="com/guflimc/colonel/common/exception/CommandPrepareSourceFailure.html" class="type-name-link" title="class in com.guflimc.colonel.common.exception">CommandPrepareSourceFailure</a></li>
 </ul>
 </li>
-<li class="circle">com.guflimc.colonel.common.build.<a href="com/guflimc/colonel/common/build/HandleFailure.html" class="type-name-link" title="class in com.guflimc.colonel.common.build">HandleFailure</a></li>
+</ul>
+</li>
+<li class="circle">com.guflimc.colonel.common.exception.<a href="com/guflimc/colonel/common/exception/CommandNotFoundFailure.html" class="type-name-link" title="class in com.guflimc.colonel.common.exception">CommandNotFoundFailure</a></li>
+</ul>
+</li>
+<li class="circle">com.guflimc.colonel.common.build.<a href="com/guflimc/colonel/common/build/FailureHandler.html" class="type-name-link" title="class in com.guflimc.colonel.common.build">FailureHandler</a></li>
 </ul>
 </li>
 </ul>

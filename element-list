@@ -3,7 +3,6 @@ com.guflimc.colonel.annotation.annotations
 com.guflimc.colonel.annotation.annotations.parameter
 com.guflimc.colonel.common
 com.guflimc.colonel.common.build
-com.guflimc.colonel.common.build.exception
 com.guflimc.colonel.common.dispatch.definition
 com.guflimc.colonel.common.dispatch.parser
 com.guflimc.colonel.common.dispatch.suggestion
