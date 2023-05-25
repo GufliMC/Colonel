@@ -1,5 +1,7 @@
 package com.guflimc.colonel.common.build;
 
+import com.guflimc.colonel.common.exception.CommandExecutionFailure;
+import com.guflimc.colonel.common.exception.CommandFailure;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -7,9 +9,9 @@ public class CommandDelegate implements com.guflimc.colonel.common.dispatch.tree
 
     private final CommandContext context;
     private final CommandExecutor executor;
-    private final Runnable failure;
+    private final CommandFailure failure;
 
-    CommandDelegate(@NotNull CommandContext context, @NotNull CommandExecutor executor, @Nullable Runnable failure) {
+    CommandDelegate(@NotNull CommandContext context, @NotNull CommandExecutor executor, @Nullable CommandFailure failure) {
         this.context = context;
         this.executor = executor;
         this.failure = failure;
@@ -22,11 +24,14 @@ public class CommandDelegate implements com.guflimc.colonel.common.dispatch.tree
 
     @Override
     public void run() {
-        if ( failure != null ) {
-            failure.run();
-            return;
+        if (failure != null) {
+            throw failure;
         }
 
-        executor.execute(context);
+        try {
+            executor.execute(context);
+        } catch (Throwable t) {
+            throw new CommandExecutionFailure(t);
+        }
     }
 }

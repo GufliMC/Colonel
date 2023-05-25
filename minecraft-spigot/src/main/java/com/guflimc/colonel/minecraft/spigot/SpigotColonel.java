@@ -1,9 +1,11 @@
 package com.guflimc.colonel.minecraft.spigot;
 
 import com.guflimc.brick.i18n.spigot.api.SpigotI18nAPI;
+import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
+import com.guflimc.colonel.common.dispatch.tree.CommandHandler;
+import com.guflimc.colonel.common.exception.*;
 import com.guflimc.colonel.common.safe.SafeCommandContext;
 import com.guflimc.colonel.common.safe.SafeCommandHandlerBuilder;
-import com.guflimc.colonel.common.dispatch.tree.CommandHandler;
 import com.guflimc.colonel.minecraft.common.MinecraftColonel;
 import com.guflimc.colonel.minecraft.common.annotations.Permission;
 import net.kyori.adventure.audience.Audience;
@@ -18,8 +20,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class SpigotColonel extends MinecraftColonel<CommandSender> {
@@ -28,6 +32,7 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
     final BukkitAudiences audiences;
 
     private final SimpleCommandMap commandMap;
+    private BiConsumer<CommandSender, CommandFailure> errorHandler;
 
     record RegisteredCommand(@NotNull String path, @NotNull CommandHandler handler, @NotNull SpigotCommand command) {
     }
@@ -79,7 +84,66 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
 
         Permission permissionConf = method.getAnnotation(Permission.class);
         if (permissionConf != null) {
-            builder.condition(s -> s.hasPermission(permissionConf.value()));
+            builder.condition(s -> s.hasPermission(replacePlaceholders(permissionConf.value())));
+        }
+    }
+
+    @Override
+    public void dispatch(CommandSender source, String input) {
+        try {
+            super.dispatch(source, input);
+        } catch (CommandFailure failure) {
+            handle(source, failure);
+        }
+    }
+
+    @Override
+    public List<Suggestion> suggestions(CommandSender source, String input, int cursor) {
+        try {
+            return super.suggestions(source, input, cursor);
+        } catch (CommandFailure failure) {
+            handle(source, failure);
+        }
+        return List.of();
+    }
+
+    //
+
+    public void setErrorHandler(BiConsumer<CommandSender, CommandFailure> errorHandler) {
+        this.errorHandler = errorHandler;
+    }
+
+    //
+
+    private void handle(CommandSender source, CommandFailure failure) {
+        if (errorHandler != null) {
+            errorHandler.accept(source, failure);
+            return;
+        }
+
+        // USER FACING ERRORS
+
+        if (failure instanceof CommandNotFoundFailure) {
+            sendMessage(source, "cmd.error.notfound",
+                    ChatColor.RED + "Command not found: " + ChatColor.DARK_RED + "{0}", failure.command());
+            return;
+        }
+
+        if (failure instanceof CommandPrepareParameterFailure pf
+                && pf.getCause() instanceof IllegalArgumentException) {
+            sendMessage(source, "cmd.error.parameter",
+                    ChatColor.RED + "The value " + ChatColor.DARK_RED + "{0}" +
+                            ChatColor.RED + " is invalid for parameter " + ChatColor.DARK_RED + "{1}" +
+                            ChatColor.RED + ".", pf.input(), pf.parameter().name());
+            return;
+        }
+
+        // INTERNAL ERRORS FOR THE DEVELOPER
+
+        sendMessage(source, "cmd.error.unexpected", ChatColor.RED + "An unexpected error occured, check the console for more information.");
+
+        if ( failure.getCause() != null ) {
+            failure.getCause().printStackTrace();
         }
     }
 

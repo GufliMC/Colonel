@@ -4,7 +4,7 @@ import com.guflimc.adventure.MixedLegacyComponentSerializer;
 import com.guflimc.colonel.annotation.annotations.Completer;
 import com.guflimc.colonel.annotation.annotations.Parser;
 import com.guflimc.colonel.annotation.annotations.parameter.Source;
-import com.guflimc.colonel.common.build.HandleFailure;
+import com.guflimc.colonel.common.build.FailureHandler;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
@@ -43,7 +43,7 @@ public class SpigotArguments {
         if (player != null) {
             return player;
         }
-        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.player.notfound", "Player not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.player.notfound", "Player not found: {0}", input));
     }
 
     @Completer(value = "player", type = Player.class)
@@ -61,7 +61,7 @@ public class SpigotArguments {
         if (player != null) {
             return audiences.player(player);
         }
-        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.player.notfound", ChatColor.RED + "Player not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.player.notfound", ChatColor.RED + "Player not found: {0}", input));
     }
 
     @Completer(value = "audience", type = Audience.class)
@@ -79,7 +79,7 @@ public class SpigotArguments {
         if (world != null) {
             return world;
         }
-        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.world.notfound", ChatColor.RED + "World not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.world.notfound", ChatColor.RED + "World not found: {0}", input));
     }
 
     @Completer(value = "world", type = World.class)
@@ -97,7 +97,7 @@ public class SpigotArguments {
         if (material != null) {
             return material;
         }
-        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.material.notfound", ChatColor.RED + "Material not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.material.notfound", ChatColor.RED + "Material not found: {0}", input));
     }
 
     @Completer(value = "material", type = Material.class)
@@ -117,7 +117,7 @@ public class SpigotArguments {
         if (sound != null) {
             return sound;
         }
-        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.sound.notfound", ChatColor.RED + "Sound not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.sound.notfound", ChatColor.RED + "Sound not found: {0}", input));
     }
 
     @Completer(value = "sound", type = Sound.class)
@@ -137,7 +137,7 @@ public class SpigotArguments {
         if (entityType != null) {
             return entityType;
         }
-        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.entitytype.notfound", ChatColor.RED + "Entity type not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.entitytype.notfound", ChatColor.RED + "Entity type not found: {0}", input));
     }
 
     @Completer(value = "entityType", type = EntityType.class)
@@ -157,7 +157,7 @@ public class SpigotArguments {
         if (potionEffectType != null) {
             return potionEffectType;
         }
-        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.potioneffecttype.notfound", ChatColor.RED + "Potion effect type not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.potioneffecttype.notfound", ChatColor.RED + "Potion effect type not found: {0}", input));
     }
 
     @Completer(value = "potioneEffectType", type = PotionEffectType.class)
@@ -177,7 +177,7 @@ public class SpigotArguments {
         if (enchantment != null) {
             return enchantment;
         }
-        return HandleFailure.of(() -> colonel.sendMessage(source, "cmd.error.enchantment.notfound", ChatColor.RED + "Enchantment not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.enchantment.notfound", ChatColor.RED + "Enchantment not found: {0}", input));
     }
 
     @Completer(value = "enchantment", type = Enchantment.class)

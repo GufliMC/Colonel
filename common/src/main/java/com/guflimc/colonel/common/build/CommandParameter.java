@@ -17,7 +17,7 @@ public abstract class CommandParameter extends com.guflimc.colonel.common.dispat
     }
 
     @Override
-    public List<Suggestion> suggestions(CommandContext context, String input) {
+    public List<Suggestion> suggestions(CommandContext context, String input) throws Exception {
         return List.of();
     }
 
@@ -45,12 +45,12 @@ public abstract class CommandParameter extends com.guflimc.colonel.common.dispat
         }
 
         @Override
-        public Object parse(CommandContext context, String input) {
+        public Object parse(CommandContext context, String input) throws Exception {
             return parser.parse(context, input);
         }
 
         @Override
-        public List<Suggestion> suggestions(CommandContext context, String input) {
+        public List<Suggestion> suggestions(CommandContext context, String input) throws Exception {
             return completer.suggestions(context, input);
         }
 

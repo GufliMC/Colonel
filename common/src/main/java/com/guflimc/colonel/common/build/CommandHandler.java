@@ -1,13 +1,14 @@
 package com.guflimc.colonel.common.build;
 
-import com.guflimc.colonel.common.build.exception.CommandParameterCompleteException;
-import com.guflimc.colonel.common.build.exception.CommandParameterParseException;
-import com.guflimc.colonel.common.build.exception.CommandSourceMapException;
 import com.guflimc.colonel.common.dispatch.definition.CommandDefinition;
 import com.guflimc.colonel.common.dispatch.parser.CommandInput;
 import com.guflimc.colonel.common.dispatch.parser.CommandInputArgument;
 import com.guflimc.colonel.common.dispatch.parser.CommandInputBuilder;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
+import com.guflimc.colonel.common.exception.CommandCompleteFailure;
+import com.guflimc.colonel.common.exception.CommandFailure;
+import com.guflimc.colonel.common.exception.CommandPrepareParameterFailure;
+import com.guflimc.colonel.common.exception.CommandPrepareSourceFailure;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -39,39 +40,27 @@ public class CommandHandler extends com.guflimc.colonel.common.dispatch.tree.Com
     @Override
     public CommandDelegate prepare(Object source, CommandInput input) {
         CommandInputBuilder builder = CommandInputBuilder.builder();
-        Runnable failure = null;
+        CommandFailure failure = null;
 
         // sources
         Object[] sources = new Object[mappers.length];
-        for ( int i = 0; i < mappers.length; i++ ) {
+        for (int i = 0; i < mappers.length; i++) {
             CommandSourceMapper csm = mappers[i];
             try {
-                Object value = csm.map(source);
-                if ( value instanceof HandleFailure f ) {
-                    throw f;
-                }
-
-                sources[i] = value;
-            } catch (HandleFailure f) {
-                if ( failure == null ) {
-                    failure = f.handler();
-                }
-            } catch (Exception ex) {
-                int index = i;
-                failure = () -> {
-                    throw new CommandSourceMapException(String
-                            .format("Error occured while source mapping for index %s.", index), ex);
-                };
+                sources[i] = csm.map(source);
+            } catch (Throwable f) {
+                failure = new CommandPrepareSourceFailure(f).withSourceMapperIndex(i);
             }
         }
 
         // arguments
-        for ( CommandParameter param : parameters ) {
+        for (CommandParameter param : parameters) {
             // missing error
-            if ( input.failure(param) ) {
+            if (input.failure(param)) {
                 builder.fail(param, input.error(param));
-                if ( failure == null ) {
-                    failure = () -> { throw new CommandParameterParseException("Missing argument: " + param.name()); };
+                if (failure == null) {
+                    failure = new CommandPrepareParameterFailure(null)
+                            .withParameter(param);
                 }
                 continue;
             }
@@ -81,23 +70,17 @@ public class CommandHandler extends com.guflimc.colonel.common.dispatch.tree.Com
             try {
                 CommandContext ctx = context(source, sources, builder);
                 Object parsed = param.parse(ctx, value);
-                if ( parsed instanceof HandleFailure f ) {
+                if (parsed instanceof FailureHandler f) {
                     throw f;
                 }
 
                 builder.success(param, param.parse(ctx, value));
-            } catch (HandleFailure f) {
+            } catch (Throwable f) {
                 builder.fail(param, CommandInputArgument.ArgumentFailureType.INVALID);
-                if ( failure == null ) {
-                    failure = f.handler();
-                }
-            } catch (Exception ex) {
-                builder.fail(param, CommandInputArgument.ArgumentFailureType.INVALID);
-                if ( failure == null ) {
-                    failure = () -> {
-                        throw new CommandParameterParseException(String
-                                .format("Error occured while parsing argument %s with input '%s'.", param.name(), value), ex);
-                    };
+                if (failure == null) {
+                    failure = new CommandPrepareParameterFailure(f)
+                            .withParameter(param)
+                            .withInput(value);
                 }
             }
         }
@@ -113,7 +96,7 @@ public class CommandHandler extends com.guflimc.colonel.common.dispatch.tree.Com
     @Override
     public List<Suggestion> suggestions(Object source, CommandInput input) {
         CommandDelegate delegate = prepare(source, input);
-        if ( delegate.context().input().cursor() == null ) {
+        if (delegate.context().input().cursor() == null) {
             return List.of();
         }
 
@@ -124,9 +107,10 @@ public class CommandHandler extends com.guflimc.colonel.common.dispatch.tree.Com
         String str = (String) input.argument(param);
         try {
             return param.suggestions(delegate.context(), str);
-        } catch (Exception ex) {
-            throw new CommandParameterCompleteException(String
-                    .format("Error during parameter completion of %s with input '%s'.", param.name(), str), ex);
+        } catch (Throwable t) {
+            throw new CommandCompleteFailure(t)
+                    .withParameter(param)
+                    .withInput(str);
         }
     }
 

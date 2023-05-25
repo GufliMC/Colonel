@@ -1,10 +1,11 @@
 package com.guflimc.colonel.common;
 
-import com.guflimc.colonel.common.build.HandleFailure;
+import com.guflimc.colonel.common.build.FailureHandler;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import com.guflimc.colonel.common.dispatch.tree.CommandHandler;
 import com.guflimc.colonel.common.dispatch.tree.CommandTree;
-import com.guflimc.colonel.common.exception.CommandNotFoundException;
+import com.guflimc.colonel.common.exception.CommandFailure;
+import com.guflimc.colonel.common.exception.CommandNotFoundFailure;
 import com.guflimc.colonel.common.safe.FunctionRegistry;
 import com.guflimc.colonel.common.safe.SafeCommandHandlerBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -36,12 +37,17 @@ public class Colonel<S> {
         placeholders.put(placeholder, value);
     }
 
+    protected String replacePlaceholders(String value) {
+        for (String placeholder : placeholders.keySet()) {
+            value = value.replace("%" + placeholder + "%", placeholders.get(placeholder));
+        }
+        return value;
+    }
+
     //
 
     public void register(@NotNull String path, @NotNull CommandHandler handler) {
-        for ( String placeholder : placeholders.keySet() ) {
-            path = path.replace("%" + placeholder + "%", placeholders.get(placeholder));
-        }
+        path = replacePlaceholders(path);
 
         tree.register(path, handler);
     }
@@ -53,11 +59,21 @@ public class Colonel<S> {
     //
 
     public void dispatch(S source, String input) {
-        if (tree.apply(source, input)) {
-            return;
+        try {
+            if (tree.apply(source, input)) {
+                return;
+            }
+        } catch (CommandFailure f) {
+            if ( f.getCause() instanceof FailureHandler fh ) {
+                fh.handler().run();
+                return;
+            }
+
+            throw f.withCommand(input);
         }
 
-        throw new CommandNotFoundException("Command not found: " + input);
+        throw new CommandNotFoundFailure()
+                .withCommand(input);
     }
 
     //
@@ -83,15 +99,7 @@ public class Colonel<S> {
         registry.registerParameterParser(LocalTime.class, s -> LocalTime.parse(s));
         registry.registerParameterParser(LocalDate.class, s -> LocalDate.parse(s));
         registry.registerParameterParser(LocalDateTime.class, s -> LocalDateTime.parse(s));
-        registry.registerParameterParser(Boolean.class, (ctx, value) -> {
-            if (value.equalsIgnoreCase("true")) {
-                return true;
-            }
-            if (value.equalsIgnoreCase("false")) {
-                return false;
-            }
-            throw HandleFailure.of("Invalid boolean value: " + value);
-        });
+        registry.registerParameterParser(Boolean.class, Boolean::parseBoolean);
         registry.registerParameterCompleter(Boolean.class, () -> List.of("true", "false"));
     }
 

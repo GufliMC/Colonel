@@ -2,7 +2,6 @@ package com.guflimc.colonel.common.safe;
 
 import com.guflimc.colonel.common.build.CommandParameterCompleter;
 import com.guflimc.colonel.common.build.CommandParameterParser;
-import com.guflimc.colonel.common.build.HandleFailure;
 import com.guflimc.colonel.common.dispatch.definition.ReadMode;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import org.jetbrains.annotations.NotNull;
@@ -69,10 +68,11 @@ public class SafeCommandParameterBuilder<S> {
 
             // ENUM DEFAULT PARSER
             if (parser == null) {
-                parser = (context, input) -> Arrays.stream(type.getEnumConstants())
-                        .filter(con -> ((Enum<?>) con).name().equalsIgnoreCase(input))
-                        .findFirst().map(con -> (Object) con)
-                        .orElseGet(() -> HandleFailure.of("No enum constant " + input + " found for type " + type.getName()));
+                parser = (context, input) ->
+                        Arrays.stream(type.getEnumConstants())
+                                .filter(con -> ((Enum<?>) con).name().equalsIgnoreCase(input))
+                                .findFirst().map(con -> (Object) con)
+                                .orElseThrow(() -> new IllegalArgumentException("No enum constant " + input + " found for type " + type.getName() + "."));
             }
         } else {
             parser = builder.colonel.registry().parser(type, this.name, true)

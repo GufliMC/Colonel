@@ -6,13 +6,11 @@ import com.guflimc.colonel.annotation.annotations.Parser;
 import com.guflimc.colonel.annotation.annotations.parameter.Input;
 import com.guflimc.colonel.annotation.annotations.parameter.Source;
 import com.guflimc.colonel.common.Colonel;
-import com.guflimc.colonel.common.build.exception.CommandHandleException;
 import com.guflimc.colonel.common.dispatch.definition.ReadMode;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import com.guflimc.colonel.common.safe.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
@@ -73,8 +71,6 @@ public class AnnotationColonel<S> extends Colonel<S> {
                 method.invoke(container, arguments);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
-            } catch (InvocationTargetException e) {
-                throw new CommandHandleException(e.getCause());
             }
         });
 
@@ -193,8 +189,6 @@ public class AnnotationColonel<S> extends Colonel<S> {
                 result = (List<?>) method.invoke(container, arguments);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
-            } catch (InvocationTargetException e) {
-                throw new CommandHandleException(e.getCause());
             }
 
             return result.stream().map(v -> v instanceof Suggestion s ? s : new Suggestion(v.toString())).toList();
@@ -233,8 +227,6 @@ public class AnnotationColonel<S> extends Colonel<S> {
                 return method.invoke(container, arguments);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
-            } catch (InvocationTargetException e) {
-                throw new CommandHandleException(e.getCause());
             }
         };
 
@@ -258,7 +250,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
             }
 
             // input
-            if ( param.isAnnotationPresent(Input.class) || param.getName().equals("input") ) { // TODO remove this later, remains for backwards compatibility
+            if (param.isAnnotationPresent(Input.class) || param.getName().equals("input")) { // TODO remove this later, remains for backwards compatibility
                 suppliers.put(param, (ctx, input) -> input);
                 continue;
             }
@@ -267,7 +259,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
             com.guflimc.colonel.annotation.annotations.parameter.Parameter paramConf = param
                     .getAnnotation(com.guflimc.colonel.annotation.annotations.parameter.Parameter.class);
             String name;
-            if ( paramConf != null && !paramConf.value().isEmpty() ) {
+            if (paramConf != null && !paramConf.value().isEmpty()) {
                 name = paramConf.value();
             } else {
                 name = param.getName();

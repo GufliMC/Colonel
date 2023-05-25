@@ -1,6 +1,7 @@
 package com.guflimc.colonel.common.dispatch.tree;
 
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
+import com.guflimc.colonel.common.exception.CommandDispatchFailure;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,7 +18,7 @@ public final class CommandTree {
     //
 
     public void register(String path, CommandHandler handler) {
-        if ( path.length() == 0 ) {
+        if (path.length() == 0) {
             throw new IllegalArgumentException("The path must not be empty.");
         }
 
@@ -49,13 +50,19 @@ public final class CommandTree {
     }
 
     private boolean apply(Object source, String[] input, int cursor, List<CommandTreeNode> nodes) {
-        return recursive(source, input, cursor, nodes, (s, i, c, n) -> n.apply(s, String.join(" ", i)));
+        return recursive(source, "", input, cursor, nodes, (s, p, i, c, n) -> {
+            try {
+                return n.apply(s, String.join(" ", i));
+            } catch (CommandDispatchFailure e) {
+                throw e.withPath(p);
+            }
+        });
     }
 
     //
 
     public List<Suggestion> suggestions(Object source, String input, int cursor) {
-        if ( cursor > input.length() ) {
+        if (cursor > input.length()) {
             throw new IllegalArgumentException("The cursor must not exceed the input length.");
         }
         return suggestions(source, input.split(SPACE), cursor, nodes);
@@ -66,9 +73,13 @@ public final class CommandTree {
         List<Suggestion> suggestions = new ArrayList<>(suggestions(input, cursor));
 
         // suggest arguments
-        recursive(source, input, cursor, nodes, (s, j, c, n) -> {
-            suggestions.addAll(n.suggestions(s, String.join(" ", j), c));
-            return false;
+        recursive(source, "", input, cursor, nodes, (s, p, j, c, n) -> {
+            try {
+                suggestions.addAll(n.suggestions(s, String.join(" ", j), c));
+                return false;
+            } catch (CommandDispatchFailure e) {
+                throw e.withPath(p);
+            }
         });
         return suggestions;
     }
@@ -78,9 +89,9 @@ public final class CommandTree {
 
         // argcursor = which index of input contains the cursor, may exceed bounds of input
         int length = 0, argcursor = 0;
-        for ( int i = 0; i < input.length; i++ ) {
+        for (int i = 0; i < input.length; i++) {
             length += input[i].length() + 1;
-            if ( cursor <= length ) {
+            if (cursor <= length) {
                 argcursor = cursor == length ? i + 1 : i;
                 break;
             }
@@ -89,11 +100,11 @@ public final class CommandTree {
         // traverse tree until node that matches with the argcursor
         List<CommandTreeNode> pool = nodes;
         CommandTreeNode node;
-        for ( int i = 0; i < Math.min(input.length, argcursor); i++ ) {
+        for (int i = 0; i < Math.min(input.length, argcursor); i++) {
             int index = i;
             node = pool.stream().filter(n -> n.name().equalsIgnoreCase(input[index]))
                     .findFirst().orElse(null);
-            if ( node == null ) {
+            if (node == null) {
                 return List.of(); // no match found for input before cursor
             }
 
@@ -111,29 +122,30 @@ public final class CommandTree {
 
     //
 
-    private boolean recursive(Object source, String[] input, int cursor, List<CommandTreeNode> nodes, RecursiveHandler run) {
-        if ( input.length == 0 || cursor < 0 ) {
+    private boolean recursive(Object source, String path, String[] input, int cursor, List<CommandTreeNode> nodes, RecursiveHandler run) {
+        if (input.length == 0 || cursor < 0) {
             return false;
         }
 
-        for ( CommandTreeNode node : nodes ) {
-            if ( !node.name().equalsIgnoreCase(input[0]) ) {
+        for (CommandTreeNode node : nodes) {
+            if (!node.name().equalsIgnoreCase(input[0])) {
                 continue;
             }
 
             int nc = cursor - input[0].length() - 1;
+            path = (path + " " + input[0]).stripLeading();
             String[] ni = Arrays.copyOfRange(input, 1, input.length);
-            if ( recursive(source, ni, nc, node.children(), run) ) {
+            if (recursive(source, path, ni, nc, node.children(), run)) {
                 return true;
             }
 
-            return run.apply(source, ni, nc, node); // execute for current node
+            return run.apply(source, path, ni, nc, node); // execute for current node
         }
         return false;
     }
 
     @FunctionalInterface
     private interface RecursiveHandler {
-        boolean apply(Object source, String[] input, int cursor, CommandTreeNode node);
+        boolean apply(Object source, String path, String[] input, int cursor, CommandTreeNode node);
     }
 }
