@@ -11,6 +11,7 @@ import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import com.guflimc.colonel.common.safe.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
@@ -71,6 +72,8 @@ public class AnnotationColonel<S> extends Colonel<S> {
                 method.invoke(container, arguments);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
+            } catch (InvocationTargetException e) {
+                throw e.getCause();
             }
         });
 
@@ -189,6 +192,8 @@ public class AnnotationColonel<S> extends Colonel<S> {
                 result = (List<?>) method.invoke(container, arguments);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
+            } catch (InvocationTargetException e) {
+                throw e.getCause();
             }
 
             return result.stream().map(v -> v instanceof Suggestion s ? s : new Suggestion(v.toString())).toList();
@@ -227,6 +232,8 @@ public class AnnotationColonel<S> extends Colonel<S> {
                 return method.invoke(container, arguments);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RuntimeException(invocationErrorMessage(method, arguments), e);
+            } catch (InvocationTargetException e) {
+                throw e.getCause();
             }
         };
 

@@ -7,6 +7,6 @@ import java.util.List;
 @FunctionalInterface
 public interface CommandParameterCompleter {
 
-    List<Suggestion> suggestions(CommandContext context, String input) throws Exception;
+    List<Suggestion> suggestions(CommandContext context, String input) throws Throwable;
 
 }

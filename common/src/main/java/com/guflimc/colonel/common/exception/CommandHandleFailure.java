@@ -10,7 +10,7 @@ public class CommandHandleFailure extends CommandDispatchFailure {
         super(cause);
     }
 
-    CommandHandleFailure withDefinition(CommandDefinition definition) {
+    public CommandHandleFailure withDefinition(CommandDefinition definition) {
         this.definition = definition;
         return this;
     }

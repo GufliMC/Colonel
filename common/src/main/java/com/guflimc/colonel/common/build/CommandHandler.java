@@ -71,7 +71,7 @@ public class CommandHandler extends com.guflimc.colonel.common.dispatch.tree.Com
                 CommandContext ctx = context(source, sources, builder);
                 Object parsed = param.parse(ctx, value);
                 if (parsed instanceof FailureHandler f) {
-                    throw f;
+                    throw f; // TODO remove this, only here for backwards compatibility
                 }
 
                 builder.success(param, param.parse(ctx, value));

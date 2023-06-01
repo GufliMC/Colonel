@@ -8,7 +8,7 @@ import java.util.List;
 @FunctionalInterface
 public interface SafeCommandParameterCompleter<S> {
 
-    List<Suggestion> suggestions(SafeCommandContext<S> context, String input) throws Exception;
+    List<Suggestion> suggestions(SafeCommandContext<S> context, String input) throws Throwable;
 
     static <S> SafeCommandParameterCompleter<S> withMatchCheck(@NotNull SafeCommandParameterCompleter<S> completer) {
         return (context, input) -> {

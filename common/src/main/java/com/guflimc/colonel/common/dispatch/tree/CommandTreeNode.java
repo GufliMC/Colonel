@@ -1,9 +1,11 @@
 package com.guflimc.colonel.common.dispatch.tree;
 
 import com.guflimc.colonel.common.build.CommandContext;
+import com.guflimc.colonel.common.dispatch.definition.CommandDefinition;
 import com.guflimc.colonel.common.dispatch.parser.CommandInputReader;
 import com.guflimc.colonel.common.dispatch.parser.CommandInput;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
+import com.guflimc.colonel.common.exception.CommandHandleFailure;
 
 import java.util.*;
 
@@ -48,7 +50,7 @@ public final class CommandTreeNode {
             parsed.put(handler, ci);
         }
 
-        // remove handlers with errors from possible targets
+        // remove handlers that don't match or have too many errors
         for ( CommandHandler handler : new HashSet<>(parsed.keySet())) {
             if ( parsed.get(handler).errors().size() > min )  // exceeds max error count
                 parsed.remove(handler);
@@ -56,26 +58,35 @@ public final class CommandTreeNode {
                 parsed.remove(handler);
         }
 
-        // execute the best handler
+        // find the best handler
         CommandDelegate best = null;
+        CommandDefinition def = null;
+
         for (CommandHandler handler : parsed.keySet() ) {
             CommandDelegate delegate = handler.prepare(source, parsed.get(handler));
             CommandContext context = delegate.context();
             if ( context.input().errors().size() == 0 ) {
-                delegate.run(); // should actually execute
-                return true;
+                best = delegate;
+                def = handler.definition();
+                break;
             }
 
-            if ( best == null || best.context().input().errors().size() > context.input().errors().size() )
+            if ( best == null || best.context().input().errors().size() > context.input().errors().size() ) {
                 best = delegate;
+                def = handler.definition();
+            }
         }
 
-        if ( best != null ) {
-            best.run(); // should provide information about errors
+        if ( best == null ) {
+            return false;
+        }
+
+        try {
+            best.run(); // executes the command or throws an exception with more information
             return true;
+        } catch (CommandHandleFailure ex) {
+            throw ex.withDefinition(def);
         }
-
-        return false;
     }
 
     public List<Suggestion> suggestions(Object source, String input, int cursor) {
@@ -93,7 +104,12 @@ public final class CommandTreeNode {
 
             CommandInputReader reader = new CommandInputReader(handler.definition(), input, cursor);
             CommandInput ci = reader.read();
-            suggestions.addAll(handler.suggestions(source, ci));
+
+            try {
+                suggestions.addAll(handler.suggestions(source, ci));
+            } catch (CommandHandleFailure ex) {
+                throw ex.withDefinition(handler.definition());
+            }
         }
 
         return suggestions;
