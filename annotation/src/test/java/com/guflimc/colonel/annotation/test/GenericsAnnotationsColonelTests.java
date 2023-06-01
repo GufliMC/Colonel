@@ -64,4 +64,55 @@ public class GenericsAnnotationsColonelTests {
         assertEquals(15, person.age());
     }
 
+    @Test
+    public void singleGenericSourceNoMapper() {
+        assertThrows(RuntimeException.class, () -> {
+            colonel.registerAll(new Object() {
+                @Command("addage")
+                public <T> void addage(@Source Person person, @Source T amount) {
+                    person.setAge(person.age() + (int) amount);
+                }
+            });
+        });
+    }
+
+    @Test
+    public void singleGenericSourceWithMapper() {
+        colonel.registry().registerSourceMapper(Integer.class, "age", Person::age);
+
+        colonel.registerAll(new Object() {
+            @Command("addage")
+            public <T> void addage(@Source T age, @Parameter int amount) {
+                person.setAge((int) age + amount);
+            }
+        });
+    }
+
+    @Test
+    public void singleGenericSourceWithMapperSpecificName() {
+        colonel.registry().registerSourceMapper(Integer.class, "age", Person::age);
+
+        colonel.registerAll(new Object() {
+            @Command("addage")
+            public <T> void addage(@Source("age") T num, @Parameter int amount) {
+                person.setAge((int) num + amount);
+            }
+        });
+    }
+
+    @Test
+    public void complexGenericSourceWithMapper() {
+        colonel.registry().registerSourceMapper(Integer.class, "age", Person::age);
+
+        colonel.registerAll(new Object() {
+            @Command("addage")
+            public <T extends Number & Comparable<T>> void addage(@Source T age, @Parameter int amount) {
+                System.out.println(this.getClass().getDeclaredMethods()[0].getParameters()[0].getType().getName());
+                person.setAge((Integer) age + amount);
+            }
+        });
+
+        colonel.dispatch(person, "addage 5");
+    }
+
 }

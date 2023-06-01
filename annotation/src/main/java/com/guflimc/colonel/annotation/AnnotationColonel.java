@@ -166,7 +166,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
     private void registerCompleter(@NotNull Method method, @NotNull Object container) {
         method.setAccessible(true);
 
-        if (!method.getReturnType().equals(List.class)) {
+        if (!List.class.isAssignableFrom(method.getReturnType())) {
             throw new IllegalArgumentException(String.format("Completer method '%s' in class '%s' must return a List.",
                     method.getName(), container.getClass().getSimpleName()));
         }
@@ -287,8 +287,9 @@ public class AnnotationColonel<S> extends Colonel<S> {
         SafeCommandSourceMapper<S> mapper;
         if (!sourceConf.value().isEmpty()) {
             mapper = registry().mapper(param.getType(), sourceConf.value(), false)
-                    .orElseThrow(() -> new IllegalStateException(String.format("No source mapper found with name '%s' for parameter '%s' in method '%s' in class '%s'.",
-                            sourceConf.value(), param.getName(), param.getDeclaringExecutable().getName(), param.getDeclaringExecutable().getDeclaringClass().getSimpleName())));
+                    .orElseThrow(() -> new IllegalStateException(String.format("No source mapper found with name '%s' for parameter '%s' of type %s in method '%s' in class '%s'.",
+                            sourceConf.value(), param.getName(), param.getType().getSimpleName(), param.getDeclaringExecutable().getName(),
+                            param.getDeclaringExecutable().getDeclaringClass().getSimpleName())));
         } else if (sourceType.isAssignableFrom(param.getType())) {
             return (source) -> source;
         } else {
@@ -300,8 +301,9 @@ public class AnnotationColonel<S> extends Colonel<S> {
             return mapper;
         }
 
-        throw new IllegalArgumentException(String.format("Cannot find source mapper for parameter '%s' in method '%s' in class '%s'.",
+        throw new IllegalArgumentException(String.format("Cannot find source mapper for parameter '%s' of type %s in method '%s' in class '%s'.",
                 param.getName(),
+                param.getType().getSimpleName(),
                 param.getDeclaringExecutable().getName(),
                 param.getDeclaringExecutable().getDeclaringClass().getSimpleName()));
     }
@@ -309,13 +311,13 @@ public class AnnotationColonel<S> extends Colonel<S> {
     //
 
     private String invocationErrorMessage(Method method, Object[] arguments) {
-        return String.format("Failed to invoke method %s in class %s with arguments of type: %s",
+        return String.format("Failed to invoke method %s in class %s with arguments: %s",
                 method.getName() + "(" + Arrays.stream(method.getParameters())
                         .map(p -> p.getType().getSimpleName() + " " + p.getName())
                         .collect(Collectors.joining(", ")) + ")",
                 method.getDeclaringClass().getSimpleName(),
                 Arrays.stream(arguments)
-                        .map(arg -> arg != null ? arg.getClass().getSimpleName() : null)
+                        .map(arg -> arg != null ? arg + " (" + arg.getClass().getSimpleName() + ")" : null)
                         .collect(Collectors.joining(", "))
         );
     }

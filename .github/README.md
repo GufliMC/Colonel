@@ -5,8 +5,8 @@ Yet another command framework? Yes, but this one is different.
 This framework was created with commands for _Minecraft: Java Edition_ in mind, but it can extend to other platforms as well.
 The main issue with alternative command frameworks is their lack of flexibility and/or huge amounts of setup work.
 
-Colonel tries to be fast to setup, easy to use and most importantly still give YOU control. While we have some opiniated tools to help you,
-you can always fall back to the basics. You have full control over the argument parsing and command execution.
+Colonel tries to give you an awesome developer experience with lots of features but still give YOU control. While we have some opiniated tools to help you,
+you can always fall back to the basics. You can have full control over the argument parsing and command execution.
 
 ## Let's get started
 
@@ -20,16 +20,17 @@ Colonel<Person> colonel = new Colonel<>();
 
 colonel.builder()
     .path("ping")
-    .executes((ctx) -> ctx.source().sendMessage("pong!"));
+    .executes((ctx) -> ctx.source().sendMessage("pong!"))
+    .register();
 ```
 
 You don't need to use the builder, you can also register your own `CommandHandler` whith all the horns and bells 
 you need directly at a given path with
 ```
-colonel.register("ping", new MyPingHandler());
+colonel.register("foo bar", new MyPingHandler());
 ```
 
-The path may also contain spaces for sub-commands and these will be efficiently registered in the command tree.
+The path may also contain spaces (useful for sub-commands) and colonel will build an optimal tree structure.
 
 ### Executing a command
 
@@ -85,7 +86,7 @@ or with
 class CommandContainer {
 
     @Parser("shape")
-    public Shape shape(CommandContext<Person> ctx, String input) {
+    public Shape shape(@Input String input) {
         return Shape.parse(input)
     }
 
@@ -98,9 +99,9 @@ You can put multiple commands, parsers and completers all in the same class. The
 
 ## What if the input can't be parsed?
 
-If something goes wrong, just throw an exception. If you need some fallback execution use this
+If something goes wrong, just throw an exception and colonel handles it. If you want to handle it yourself, for example by sending the user a message, throw a `FailureHandler`.
 ```
-throw new CommandMiddlewareException(() -> {
+throw new FailureHandler(() -> {
     ctx.source().sendMessage("The input 'foo' cannot be parsed to an integer.");
 });
 ```
