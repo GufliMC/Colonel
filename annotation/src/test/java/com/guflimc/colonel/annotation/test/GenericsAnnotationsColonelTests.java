@@ -107,7 +107,6 @@ public class GenericsAnnotationsColonelTests {
         colonel.registerAll(new Object() {
             @Command("addage")
             public <T extends Number & Comparable<T>> void addage(@Source T age, @Parameter int amount) {
-                System.out.println(this.getClass().getDeclaredMethods()[0].getParameters()[0].getType().getName());
                 person.setAge((Integer) age + amount);
             }
         });

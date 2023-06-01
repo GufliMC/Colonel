@@ -28,7 +28,7 @@ public class CommandParameter {
 
     @Override
     public String toString() {
-        return "<" + name + ":" + readMode.name().toLowerCase() + ">";
+        return "<" + name + ">";
     }
 
 

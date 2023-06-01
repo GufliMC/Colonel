@@ -3,7 +3,9 @@ package com.guflimc.colonel.minecraft.spigot;
 import com.guflimc.brick.i18n.spigot.api.SpigotI18nAPI;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import com.guflimc.colonel.common.dispatch.tree.CommandHandler;
-import com.guflimc.colonel.common.exception.*;
+import com.guflimc.colonel.common.exception.CommandFailure;
+import com.guflimc.colonel.common.exception.CommandNotFoundFailure;
+import com.guflimc.colonel.common.exception.CommandPrepareParameterFailure;
 import com.guflimc.colonel.common.safe.SafeCommandContext;
 import com.guflimc.colonel.common.safe.SafeCommandHandlerBuilder;
 import com.guflimc.colonel.minecraft.common.MinecraftColonel;
@@ -129,20 +131,28 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
             return;
         }
 
-        if (failure instanceof CommandPrepareParameterFailure pf
-                && pf.getCause() instanceof IllegalArgumentException) {
-            sendMessage(source, "cmd.error.parameter",
-                    ChatColor.RED + "The value " + ChatColor.DARK_RED + "{0}" +
-                            ChatColor.RED + " is invalid for parameter " + ChatColor.DARK_RED + "{1}" +
-                            ChatColor.RED + ".", pf.input(), pf.parameter().name());
-            return;
+        if (failure instanceof CommandPrepareParameterFailure pf) {
+            if (pf.input() == null) {
+                sendMessage(source, "cmd.error.parameter.missing",
+                        ChatColor.RED + "The parameter " + ChatColor.DARK_RED + "{0}" +
+                                ChatColor.RED + " is missing. Expected syntax: " + ChatColor.DARK_RED + "{1}" +
+                                ChatColor.RED + ".", pf.parameter().name(), pf.path() + " " + pf.definition().toString());
+                return;
+            }
+            if (pf.getCause() instanceof IllegalArgumentException) {
+                sendMessage(source, "cmd.error.parameter",
+                        ChatColor.RED + "The value " + ChatColor.DARK_RED + "{0}" +
+                                ChatColor.RED + " is invalid for parameter " + ChatColor.DARK_RED + "{1}" +
+                                ChatColor.RED + ".", pf.input(), pf.parameter().name());
+                return;
+            }
         }
 
         // INTERNAL ERRORS FOR THE DEVELOPER
 
         sendMessage(source, "cmd.error.unexpected", ChatColor.RED + "An unexpected error occured, check the console for more information.");
 
-        if ( failure.getCause() != null ) {
+        if (failure.getCause() != null) {
             failure.getCause().printStackTrace();
         }
     }
