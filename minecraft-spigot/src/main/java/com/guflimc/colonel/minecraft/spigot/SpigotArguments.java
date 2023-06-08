@@ -10,6 +10,7 @@ import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
@@ -191,7 +192,7 @@ public class SpigotArguments {
 
     @Parser(value = "component", type = Component.class)
     public Object componentParser(String input) {
-        return MixedLegacyComponentSerializer.deserialize(input);
+        return LegacyComponentSerializer.legacyAmpersand().deserialize(input);
     }
 
     // COLOR
