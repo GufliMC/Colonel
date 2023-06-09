@@ -45,7 +45,13 @@ public final class CommandTreeNode {
             }
 
             CommandInputReader reader = new CommandInputReader(handler.definition(), input);
-            CommandInput ci = reader.read();
+            CommandInput ci;
+            try {
+                ci = reader.read();
+            } catch (IllegalArgumentException ignored) {
+                continue;
+            }
+
             min = Math.min(min, ci.errors().size());
             parsed.put(handler, ci);
         }
@@ -103,7 +109,12 @@ public final class CommandTreeNode {
             }
 
             CommandInputReader reader = new CommandInputReader(handler.definition(), input, cursor);
-            CommandInput ci = reader.read();
+            CommandInput ci;
+            try {
+                ci = reader.read();
+            } catch (IllegalArgumentException ignored) {
+                continue;
+            }
 
             try {
                 suggestions.addAll(handler.suggestions(source, ci));
