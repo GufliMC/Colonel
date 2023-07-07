@@ -55,8 +55,8 @@ public class CommandHandler extends com.guflimc.colonel.common.dispatch.tree.Com
 
         // arguments
         for (CommandParameter param : parameters) {
-            // missing error
-            if (input.failure(param)) {
+            // missing or empty error
+            if ( input.failure(param) || input.argument(param).equals("") ) {
                 builder.fail(param, input.error(param));
                 if (failure == null) {
                     failure = new CommandPrepareParameterFailure(null)
