@@ -105,7 +105,7 @@ public class SpigotArguments {
     @Completer(value = "material", type = Material.class)
     public List<String> materialCompleter(@Input String input) {
         return Arrays.stream(Material.values())
-                .map(m -> m.getKey().toString())
+                .map(m -> m.getKey().getKey())
                 .toList();
     }
 
