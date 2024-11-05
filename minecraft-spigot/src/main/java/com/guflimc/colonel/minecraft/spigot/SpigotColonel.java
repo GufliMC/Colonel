@@ -1,6 +1,6 @@
 package com.guflimc.colonel.minecraft.spigot;
 
-import com.guflimc.brick.i18n.spigot.api.SpigotI18nAPI;
+import com.guflimc.brick.i18n.spigot.api.SpigotTranslator;
 import com.guflimc.colonel.common.dispatch.suggestion.Suggestion;
 import com.guflimc.colonel.common.dispatch.tree.CommandHandler;
 import com.guflimc.colonel.common.exception.CommandFailure;
@@ -17,6 +17,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -41,7 +42,9 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
 
     final Set<RegisteredCommand> commands = new HashSet<>();
 
-    public SpigotColonel(JavaPlugin plugin) {
+    private @Nullable SpigotTranslator translator;
+
+    public SpigotColonel(@NotNull JavaPlugin plugin) {
         super(CommandSender.class);
 
         this.plugin = plugin;
@@ -55,6 +58,11 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
         }
 
         registerAll(new SpigotArguments(this));
+    }
+
+    public SpigotColonel(@NotNull JavaPlugin plugin, @NotNull SpigotTranslator translator) {
+        this(plugin);
+        this.translator = translator;
     }
 
     @Override
@@ -160,8 +168,8 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
     //
 
     void sendMessage(CommandSender source, String i18n, String fallback, Object... args) {
-        if (plugin.getServer().getPluginManager().isPluginEnabled("BrickI18n")) {
-            SpigotI18nAPI.get(plugin).send(source, i18n, args);
+        if (this.translator != null) {
+            translator.send(source, i18n, args);
             return;
         }
 
