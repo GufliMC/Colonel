@@ -3,6 +3,7 @@ package com.guflimc.colonel.minecraft.spigot;
 import com.guflimc.adventure.MixedLegacyComponentSerializer;
 import com.guflimc.colonel.annotation.annotations.Completer;
 import com.guflimc.colonel.annotation.annotations.Parser;
+import com.guflimc.colonel.annotation.annotations.parameter.Input;
 import com.guflimc.colonel.annotation.annotations.parameter.Source;
 import com.guflimc.colonel.common.build.FailureHandler;
 import net.kyori.adventure.audience.Audience;
@@ -39,7 +40,7 @@ public class SpigotArguments {
     // PLAYER
 
     @Parser(value = "player", type = Player.class)
-    public Object playerParser(@Source CommandSender source, String input) {
+    public Object playerParser(@Source CommandSender source, @Input String input) {
         Player player = plugin.getServer().getPlayer(input);
         if (player != null) {
             return player;
@@ -57,7 +58,7 @@ public class SpigotArguments {
     // AUDIENCE
 
     @Parser(value = "audience", type = Audience.class)
-    public Object audienceParser(@Source CommandSender source, String input) {
+    public Object audienceParser(@Source CommandSender source, @Input String input) {
         Player player = plugin.getServer().getPlayer(input);
         if (player != null) {
             return audiences.player(player);
@@ -75,7 +76,7 @@ public class SpigotArguments {
     // WORLD
 
     @Parser(value = "world", type = World.class)
-    public Object worldParser(@Source CommandSender source, String input) {
+    public Object worldParser(@Source CommandSender source, @Input String input) {
         World world = plugin.getServer().getWorld(input);
         if (world != null) {
             return world;
@@ -93,7 +94,7 @@ public class SpigotArguments {
     // MATERIAL
 
     @Parser(value = "material", type = Material.class)
-    public Object materialParser(@Source CommandSender source, String input) {
+    public Object materialParser(@Source CommandSender source, @Input String input) {
         Material material = Material.matchMaterial(input);
         if (material != null) {
             return material;
@@ -102,7 +103,7 @@ public class SpigotArguments {
     }
 
     @Completer(value = "material", type = Material.class)
-    public List<String> materialCompleter(String input) {
+    public List<String> materialCompleter(@Input String input) {
         return Arrays.stream(Material.values())
                 .map(m -> m.getKey().toString())
                 .toList();
@@ -111,7 +112,7 @@ public class SpigotArguments {
     // SOUND
 
     @Parser(value = "sound", type = Sound.class)
-    public Object soundParser(@Source CommandSender source, String input) {
+    public Object soundParser(@Source CommandSender source, @Input String input) {
         Sound sound = Arrays.stream(Sound.values())
                 .filter(s -> s.getKey().toString().equals(input))
                 .findFirst().orElse(null);
@@ -131,7 +132,7 @@ public class SpigotArguments {
     // ENTITY TYPE
 
     @Parser(value = "entityType", type = EntityType.class)
-    public Object entityTypeParser(@Source CommandSender source, String input) {
+    public Object entityTypeParser(@Source CommandSender source, @Input String input) {
         EntityType entityType = Arrays.stream(EntityType.values())
                 .filter(s -> s.getKey().toString().equals(input))
                 .findFirst().orElse(null);
@@ -151,7 +152,7 @@ public class SpigotArguments {
     // POTION EFFECT TYPE
 
     @Parser(value = "potioneEffectType", type = PotionEffectType.class)
-    public Object potionEffectTypeParser(@Source CommandSender source, String input) {
+    public Object potionEffectTypeParser(@Source CommandSender source, @Input String input) {
         PotionEffectType potionEffectType = Arrays.stream(PotionEffectType.values())
                 .filter(s -> s.getKey().toString().equals(input))
                 .findFirst().orElse(null);
@@ -171,7 +172,7 @@ public class SpigotArguments {
     // ENCHANTMENT
 
     @Parser(value = "enchantment", type = Enchantment.class)
-    public Object enchantmentParser(@Source CommandSender source, String input) {
+    public Object enchantmentParser(@Source CommandSender source, @Input String input) {
         Enchantment enchantment = Arrays.stream(Enchantment.values())
                 .filter(s -> s.getKey().toString().equals(input))
                 .findFirst().orElse(null);
@@ -191,26 +192,26 @@ public class SpigotArguments {
     // COMPONENT
 
     @Parser(value = "component", type = Component.class)
-    public Object componentParser(String input) {
+    public Object componentParser(@Input String input) {
         return LegacyComponentSerializer.legacyAmpersand().deserialize(input);
     }
 
     // COLOR
 
     @Parser(value = "color", type = Color.class)
-    public Object colorParser(String input) {
+    public Object colorParser(@Input String input) {
         return Color.fromRGB(Integer.decode(input));
     }
 
     @Parser(value = "color", type = java.awt.Color.class)
-    public Object intColorParser(String input) {
+    public Object intColorParser(@Input String input) {
         return java.awt.Color.decode(input);
     }
 
     // TEXT COLOR
 
     @Parser(value = "textcolor", type = TextColor.class)
-    public Object adventureColorParser(String input) {
+    public Object adventureColorParser(@Input String input) {
         NamedTextColor color = NamedTextColor.NAMES.value(input);
         if (color != null) {
             return color;

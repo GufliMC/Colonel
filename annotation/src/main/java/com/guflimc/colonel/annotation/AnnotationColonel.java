@@ -257,7 +257,9 @@ public class AnnotationColonel<S> extends Colonel<S> {
             }
 
             // input
-            if (param.isAnnotationPresent(Input.class) || param.getName().equals("input")) { // TODO remove this later, remains for backwards compatibility
+            if (param.isAnnotationPresent(Input.class)
+                    || param.getName().equals("input") // TODO backwards compatibility, @Input should be used instead
+            ) {
                 suppliers.put(param, (ctx, input) -> input);
                 continue;
             }
