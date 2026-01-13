@@ -143,8 +143,9 @@ public class AnnotationColonel<S> extends Colonel<S> {
         // read mode
         ReadMode mode = ReadMode.STRING;
         if (paramConf != null) {
-            builder.readMode(mode);
+            mode = paramConf.read();
         }
+        builder.readMode(mode);
 
         // parser
         if (paramConf != null && !paramConf.parser().isEmpty()) {
