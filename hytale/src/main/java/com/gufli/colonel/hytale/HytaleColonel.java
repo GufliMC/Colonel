@@ -1,38 +1,93 @@
 package com.gufli.colonel.hytale;
 
-import com.gufli.brick.i18n.common.localization.I18nLocalizer;
+import com.gufli.brick.i18n.hytale.localization.HytaleLocalizer;
 import com.gufli.colonel.annotation.AnnotationColonel;
+import com.gufli.colonel.common.dispatch.definition.CommandParameter;
 import com.gufli.colonel.common.dispatch.suggestion.Suggestion;
+import com.gufli.colonel.common.dispatch.tree.CommandHandler;
 import com.gufli.colonel.common.exception.CommandFailure;
 import com.gufli.colonel.common.exception.CommandNotFoundFailure;
 import com.gufli.colonel.common.exception.CommandPrepareParameterFailure;
 import com.gufli.colonel.common.safe.SafeCommandContext;
 import com.gufli.colonel.common.safe.SafeCommandHandlerBuilder;
 import com.gufli.colonel.hytale.annotations.Permission;
+import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.command.system.AbstractCommand;
+import com.hypixel.hytale.server.core.command.system.CommandSender;
+import com.hypixel.hytale.server.core.command.system.ParseResult;
+import com.hypixel.hytale.server.core.command.system.arguments.types.SingleArgumentType;
+import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
-public abstract class HytaleColonel<S> extends AnnotationColonel<S> {
+public class HytaleColonel extends AnnotationColonel<CommandSender> {
 
-    private I18nLocalizer localizer;
-    private @Nullable BiConsumer<S, CommandFailure> errorHandler;
+    private final static Color RED = new Color(0xFF5555);
+    private final static Color DARK_RED = new Color(0xAA0000);
 
-    public HytaleColonel(@NotNull Class<S> sourceType, @NotNull I18nLocalizer localizer) {
-        super(sourceType);
+    private final HytaleLocalizer localizer;
+    private @Nullable BiConsumer<CommandSender, CommandFailure> errorHandler;
+
+    private record RegisteredCommand(@NotNull String path, @NotNull CommandHandler handler, @NotNull HytaleCommand command) {}
+    private final Set<RegisteredCommand> commands = new HashSet<>();
+
+    private final JavaPlugin plugin;
+
+    public HytaleColonel(@NotNull JavaPlugin plugin, @NotNull HytaleLocalizer localizer) {
+        super(CommandSender.class);
+        this.plugin = plugin;
         this.localizer = localizer;
+    }
+
+    public HytaleColonel(@NotNull JavaPlugin plugin) {
+        super(CommandSender.class);
+        this.plugin = plugin;
+        this.localizer = null;
+    }
+
+    @Override
+    public void register(@NotNull String path, @NotNull CommandHandler handler) {
+        super.register(path, handler);
+        path = replacePlaceholders(path);
+
+        String[] literals = path.split(" ");
+        HytaleCommand cmd = commands.stream()
+                .filter(c -> (c.path() + " ").startsWith(literals[0] + " "))
+                .map(c -> c.command)
+                .findFirst().orElse(null);
+
+        if (cmd == null) {
+            cmd = new HytaleCommand(this, path, handler.definition());
+        }
+
+        commands.add(new RegisteredCommand(path, handler, cmd));
+    }
+
+    public void init() {
+        Set<HytaleCommand> commands = this.commands.stream()
+                .map(rcmd -> rcmd.command)
+                .collect(Collectors.toSet());
+
+        for ( HytaleCommand cmd : commands ) {
+            plugin.getCommandRegistry().registerCommand(cmd);
+        }
     }
 
     @Override
     protected void build(@NotNull Method method,
-                         @NotNull Map<Parameter, Function<SafeCommandContext<S>, Object>> suppliers,
-                         @NotNull SafeCommandHandlerBuilder<S> builder) {
+                         @NotNull Map<Parameter, Function<SafeCommandContext<CommandSender>, Object>> suppliers,
+                         @NotNull SafeCommandHandlerBuilder<CommandSender> builder) {
         super.build(method, suppliers, builder);
 
         Permission permissionConf = method.getAnnotation(Permission.class);
@@ -42,7 +97,7 @@ public abstract class HytaleColonel<S> extends AnnotationColonel<S> {
     }
 
     @Override
-    public void dispatch(S source, String input) {
+    public void dispatch(CommandSender source, String input) {
         try {
             super.dispatch(source, input);
         } catch (CommandFailure failure) {
@@ -51,7 +106,7 @@ public abstract class HytaleColonel<S> extends AnnotationColonel<S> {
     }
 
     @Override
-    public List<Suggestion> suggestions(S source, String input, int cursor) {
+    public List<Suggestion> suggestions(CommandSender source, String input, int cursor) {
         try {
             return super.suggestions(source, input, cursor);
         } catch (CommandFailure failure) {
@@ -62,13 +117,13 @@ public abstract class HytaleColonel<S> extends AnnotationColonel<S> {
 
     //
 
-    public void setErrorHandler(BiConsumer<S, CommandFailure> errorHandler) {
+    public void setErrorHandler(@NotNull BiConsumer<CommandSender, CommandFailure> errorHandler) {
         this.errorHandler = errorHandler;
     }
 
     //
 
-    private void handle(S source, CommandFailure failure) {
+    private void handle(CommandSender source, CommandFailure failure) {
         if (errorHandler != null) {
             errorHandler.accept(source, failure);
             return;
@@ -77,31 +132,51 @@ public abstract class HytaleColonel<S> extends AnnotationColonel<S> {
         // USER FACING ERRORS
 
         if (failure instanceof CommandNotFoundFailure) {
-            sendMessage(source, "cmd.error.notfound",
-                    ChatColor.RED + "Command not found: " + ChatColor.DARK_RED + "{0}", failure.command());
+            sendMessage(
+                    source,
+                    "cmderr.command-not-found",
+                    Message.raw("Command not found: ").color(RED).insert(Message.raw("{0}").color(DARK_RED)),
+                    failure.command()
+            );
             return;
         }
 
         if (failure instanceof CommandPrepareParameterFailure pf) {
             if (pf.input() == null) {
-                sendMessage(source, "cmd.error.parameter.missing",
-                        ChatColor.RED + "The parameter " + ChatColor.DARK_RED + "{0}" +
-                                ChatColor.RED + " is missing. Expected syntax: " + ChatColor.DARK_RED + "{1}" +
-                                ChatColor.RED + ".", pf.parameter().name(), pf.path() + " " + pf.definition().toString());
+                sendMessage(
+                        source,
+                        "cmderr.parameter-is-missing",
+                        Message.raw("The parameter").color(RED)
+                                .insert(Message.raw("{0}").color(DARK_RED))
+                                .insert(Message.raw(" is missing. Expected syntax: ").color(RED))
+                                .insert(Message.raw("{1}").color(DARK_RED)),
+                        pf.parameter().name(),
+                        pf.path() + " " + pf.definition().toString()
+                );
                 return;
             }
             if (pf.getCause() instanceof IllegalArgumentException) {
-                sendMessage(source, "cmd.error.parameter",
-                        ChatColor.RED + "The value " + ChatColor.DARK_RED + "{0}" +
-                                ChatColor.RED + " is invalid for parameter " + ChatColor.DARK_RED + "{1}" +
-                                ChatColor.RED + ".", pf.input(), pf.parameter().name());
+                sendMessage(
+                        source,
+                        "cmderr.parameter-invalid-value",
+                        Message.raw("The value ").color(RED)
+                                .insert(Message.raw("{0}").color(DARK_RED))
+                                .insert(Message.raw(" is invalid for parameter ").color(RED))
+                                .insert(Message.raw("{1}").color(DARK_RED))
+                                .insert(Message.raw(".").color(RED)),
+                        pf.input(),
+                        pf.parameter().name()
+                );
                 return;
             }
         }
 
         // INTERNAL ERRORS FOR THE DEVELOPER
-
-        sendMessage(source, "cmd.error.unexpected", ChatColor.RED + "An unexpected error occured, check the console for more information.");
+        sendMessage(
+                source,
+                "cmderr.generic",
+                Message.raw("An unexpected error occured, check the console for more information.").color(RED)
+        );
 
         if (failure.getCause() != null) {
             failure.getCause().printStackTrace();
@@ -110,17 +185,16 @@ public abstract class HytaleColonel<S> extends AnnotationColonel<S> {
 
     //
 
-    void sendMessage(S source, String i18n, String fallback, Object... args) {
+    void sendMessage(CommandSender source, String i18n, Message fallback, Object... args) {
         if (this.localizer != null) {
             localizer.send(source, i18n, args);
             return;
         }
 
-        String str = fallback;
         for (int i = 0; i < args.length; i++) {
-            str = str.replace("{" + i + "}", args[i].toString());
+            fallback = fallback.param(i + "", args[i].toString());
         }
-        source.sendMessage(str);
+        source.sendMessage(fallback);
     }
 
 }

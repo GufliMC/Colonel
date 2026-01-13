@@ -4,5 +4,5 @@
 
 generated/
 build/
-!common/src/main/java/com/guflimc/colonel/common/build
+!common/src/main/java/com/gufli/colonel/common/build
 out/

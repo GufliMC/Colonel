@@ -1,0 +1,6 @@
+{
+  "cmderr.generic": "<red>An unexpected error occured, check the console for more information.",
+  "cmderr.parameter-invalid-value": "<red>The value <dark_red>{0} <red>is invalid for parameter <dark_red>{1}<red>.",
+  "cmderr.parameter-is-missing": "<red>The parameter <dark_red>{0} <red>is missing. Expected syntax: <dark_red>{1}<red>.",
+  "cmderr.command-not-found": "<red>Command not found: <dark_red>{0}"
+}

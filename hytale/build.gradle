@@ -1,6 +1,12 @@
+repositories {
+    mavenLocal();
+}
+
 dependencies {
     api project(':annotation')
 
-//    compileOnly 'com.hypixel.hytale:Server:+'
-    compileOnly 'com.gufli.brick.i18n:common:+'
+//    compileOnly 'com.hypixel.hytale:HytaleServer-parent:1.0-SNAPSHOT'
+    compileOnly 'com.gufli.brick.i18n:hytale:+'
+
+    compileOnly files('libs/HytaleServer.jar')
 }

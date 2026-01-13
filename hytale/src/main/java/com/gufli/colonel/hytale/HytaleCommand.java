@@ -1,0 +1,71 @@
+package com.gufli.colonel.hytale;
+
+import com.gufli.colonel.common.dispatch.definition.CommandDefinition;
+import com.gufli.colonel.common.dispatch.definition.CommandParameter;
+import com.gufli.colonel.common.dispatch.definition.ReadMode;
+import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.command.system.AbstractCommand;
+import com.hypixel.hytale.server.core.command.system.CommandContext;
+import com.hypixel.hytale.server.core.command.system.ParseResult;
+import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
+import com.hypixel.hytale.server.core.command.system.arguments.types.ListArgumentType;
+import com.hypixel.hytale.server.core.command.system.arguments.types.ProcessedArgumentType;
+import com.hypixel.hytale.server.core.command.system.arguments.types.SingleArgumentType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+
+public class HytaleCommand extends AbstractCommand {
+
+    private final HytaleColonel colonel;
+
+    private HytaleCommand(@NotNull HytaleColonel colonel, @NotNull String name) {
+        super(name, null);
+        this.colonel = colonel;
+    }
+
+    public HytaleCommand(@NotNull HytaleColonel colonel, @NotNull String path, @NotNull CommandDefinition definition) {
+        this(colonel, path.split(" ")[0]);
+
+        String[] literals = path.split(" ");
+        if ( literals.length > 1 ) {
+            this.add(Arrays.copyOfRange(literals, 1, literals.length), definition);
+            return;
+        }
+
+        for ( CommandParameter param : definition.parameters() ) {
+            this.withRequiredArg(param.name(), param.name(), new SingleArgumentType<String>(param.name(), param.name()) {
+                @Override
+                public @Nullable String parse(String s, ParseResult parseResult) {
+                    return s;
+                }
+            });
+        }
+    }
+
+    public void add(@NotNull String path, @NotNull CommandDefinition definition) {
+        this.add(path.split(" "), definition);
+    }
+
+    public void add(@NotNull String[] path, @NotNull CommandDefinition definition) {
+        if ( path.length == 1 ) {
+            var command = new HytaleCommand(colonel, path[0], definition);
+            this.addSubCommand(command);
+            return;
+        }
+
+        var command = new HytaleCommand(colonel, path[0]);
+        command.add(Arrays.copyOfRange(path, 1, path.length), definition);
+        this.addSubCommand(command);
+    }
+
+    @Override
+    protected @Nullable CompletableFuture<Void> execute(@NotNull CommandContext ctx) {
+        colonel.dispatch(ctx.sender(), ctx.getInputString());
+        return CompletableFuture.completedFuture(null);
+    }
+
+
+}
