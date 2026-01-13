@@ -2,7 +2,7 @@ plugins {
     id 'pl.allegro.tech.build.axion-release' version '1.13.6'
 }
 
-group 'com.guflimc.colonel'
+group 'com.gufli.colonel'
 version = scmVersion.version
 
 def javadocProjects = [project(':common'), project(':annotation'), project(':minecraft-common'), project(':minecraft-spigot'), project(':minecraft-paper')]
