@@ -112,6 +112,12 @@ public class CommandInputReader {
     private String readAll() {
         String result = buffer;
         skip(buffer.length());
+
+        Matcher mr = QUOTED.matcher(result);
+        if (mr.find()) {
+            return mr.group(2);
+        }
+
         return result;
     }
 
