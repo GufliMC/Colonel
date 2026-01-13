@@ -5,10 +5,10 @@ plugins {
 group 'com.gufli.colonel'
 version = scmVersion.version
 
-def javadocProjects = [project(':common'), project(':annotation'), project(':minecraft-common'), project(':minecraft-spigot'), project(':minecraft-paper')]
+def javadocProjects = [project(':common'), project(':annotation'), project(':minecraft-common'), project(':minecraft-spigot'), project(':minecraft-paper'), project(':hytale')]
 ext.set("javadocProjects", javadocProjects)
 
-def publishProjects = [project(':common'), project(':annotation'), project(':minecraft-common'), project(':minecraft-spigot'), project(':minecraft-paper')]
+def publishProjects = [project(':common'), project(':annotation'), project(':minecraft-common'), project(':minecraft-spigot'), project(':minecraft-paper'), project(':hytale')]
 ext.set("publishProjects", publishProjects)
 
 subprojects {

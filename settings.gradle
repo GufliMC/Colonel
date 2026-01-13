@@ -5,4 +5,4 @@ include 'annotation'
 include 'minecraft-common'
 include 'minecraft-spigot'
 include 'minecraft-paper'
-
+include 'hytale'

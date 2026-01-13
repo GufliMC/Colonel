@@ -1,0 +1,6 @@
+dependencies {
+    api project(':annotation')
+
+//    compileOnly 'com.hypixel.hytale:Server:+'
+    compileOnly 'com.gufli.brick.i18n:common:+'
+}
