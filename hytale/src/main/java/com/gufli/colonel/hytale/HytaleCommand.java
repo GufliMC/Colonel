@@ -11,6 +11,8 @@ import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ListArgumentType;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ProcessedArgumentType;
 import com.hypixel.hytale.server.core.command.system.arguments.types.SingleArgumentType;
+import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.universe.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,6 +65,15 @@ public class HytaleCommand extends AbstractCommand {
 
     @Override
     protected @Nullable CompletableFuture<Void> execute(@NotNull CommandContext ctx) {
+        if ( ctx.isPlayer() ) {
+            World world = ctx.senderAs(Player.class).getWorld();
+            if ( world != null ) {
+                return CompletableFuture.runAsync(() -> {
+                    colonel.dispatch(ctx.sender(), ctx.getInputString());
+                }, world);
+            }
+        }
+
         colonel.dispatch(ctx.sender(), ctx.getInputString());
         return CompletableFuture.completedFuture(null);
     }

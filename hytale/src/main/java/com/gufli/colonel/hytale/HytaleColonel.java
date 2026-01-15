@@ -16,7 +16,11 @@ import com.hypixel.hytale.server.core.command.system.AbstractCommand;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
 import com.hypixel.hytale.server.core.command.system.ParseResult;
 import com.hypixel.hytale.server.core.command.system.arguments.types.SingleArgumentType;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.Universe;
+import com.hypixel.hytale.server.core.universe.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,16 +48,30 @@ public class HytaleColonel extends AnnotationColonel<CommandSender> {
 
     private final JavaPlugin plugin;
 
-    public HytaleColonel(@NotNull JavaPlugin plugin, @NotNull HytaleLocalizer localizer) {
+    public HytaleColonel(@NotNull JavaPlugin plugin, @Nullable HytaleLocalizer localizer) {
         super(CommandSender.class);
         this.plugin = plugin;
         this.localizer = localizer;
+
+        registerAll(new HytaleArguments(this, plugin));
+
+        registry().registerSourceMapper(PlayerRef.class, source -> {
+            if (source instanceof Player player) {
+                return player.getPlayerRef();
+            }
+            return null;
+        });
+
+        registry().registerSourceMapper(World.class, source -> {
+            if (source instanceof Player player) {
+                return player.getWorld();
+            }
+            return null;
+        });
     }
 
     public HytaleColonel(@NotNull JavaPlugin plugin) {
-        super(CommandSender.class);
-        this.plugin = plugin;
-        this.localizer = null;
+        this(plugin, null);
     }
 
     @Override
