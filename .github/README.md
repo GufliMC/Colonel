@@ -8,6 +8,10 @@ The main issue with alternative command frameworks is their lack of flexibility 
 Colonel tries to give you an awesome developer experience with lots of features but still give YOU control. While we have some opiniated tools to help you,
 you can always fall back to the basics. You can have full control over the argument parsing and command execution.
 
+## Platforms
+* [x] Spigot / Paper
+* [x] Hytale
+
 ## Let's get started
 
 We'd like to think that a `command` is raw input given by someone. It consists of two parts: the `path` and the `arguments`.
