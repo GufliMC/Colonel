@@ -1,12 +1,15 @@
 repositories {
-    mavenLocal();
+    mavenLocal()
+    maven {
+        name = "Jorisg"
+        url = uri("https://repo.jorisg.com/guflimc")
+        credentials(org.gradle.api.credentials.PasswordCredentials)
+    }
 }
 
 dependencies {
     api project(':annotation')
 
-//    compileOnly 'com.hypixel.hytale:HytaleServer-parent:1.0-SNAPSHOT'
     compileOnly 'com.gufli.brick.i18n:hytale:+'
-
-    compileOnly files('libs/HytaleServer.jar')
+    compileOnly 'com.hypixel.hytale:HytaleServer:0.1.0'
 }
