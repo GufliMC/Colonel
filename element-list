@@ -11,7 +11,8 @@ com.gufli.colonel.common.exception
 com.gufli.colonel.common.safe
 com.gufli.colonel.common.safe.parameter
 com.gufli.colonel.hytale
-com.gufli.colonel.hytale.annotations
+com.gufli.colonel.hytale.annotations.command
+com.gufli.colonel.hytale.annotations.parameter
 com.gufli.colonel.minecraft.common
 com.gufli.colonel.minecraft.common.annotations
 com.gufli.colonel.minecraft.paper

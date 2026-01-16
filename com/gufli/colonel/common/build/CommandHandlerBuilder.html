@@ -72,6 +72,7 @@ loadScripts(document, 'script');</script>
 <li><a href="#executor(com.gufli.colonel.common.build.CommandExecutor)" tabindex="0">executor(CommandExecutor)</a></li>
 <li><a href="#condition(java.util.function.Predicate)" tabindex="0">condition(Predicate)</a></li>
 <li><a href="#source(com.gufli.colonel.common.build.CommandSourceMapper)" tabindex="0">source(CommandSourceMapper)</a></li>
+<li><a href="#property(java.lang.String,java.lang.Object)" tabindex="0">property(String, Object)</a></li>
 <li><a href="#build()" tabindex="0">build()</a></li>
 </ol>
 </li>
@@ -151,17 +152,21 @@ loadScripts(document, 'script');</script>
  @NotNull <a href="CommandParameterCompleter.html" title="interface in com.gufli.colonel.common.build">CommandParameterCompleter</a>&nbsp;completer)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="CommandHandlerBuilder.html" title="class in com.gufli.colonel.common.build">CommandHandlerBuilder</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#source(com.gufli.colonel.common.build.CommandSourceMapper)" class="member-name-link">source</a><wbr>(<a href="CommandSourceMapper.html" title="interface in com.gufli.colonel.common.build">CommandSourceMapper</a>&nbsp;mapper)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#property(java.lang.String,java.lang.Object)" class="member-name-link">property</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;key,
+ @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;value)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="CommandHandlerBuilder.html" title="class in com.gufli.colonel.common.build">CommandHandlerBuilder</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#string(java.lang.String,com.gufli.colonel.common.build.CommandParameterParser)" class="member-name-link">string</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
- @NotNull <a href="CommandParameterParser.html" title="interface in com.gufli.colonel.common.build">CommandParameterParser</a>&nbsp;parser)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#source(com.gufli.colonel.common.build.CommandSourceMapper)" class="member-name-link">source</a><wbr>(<a href="CommandSourceMapper.html" title="interface in com.gufli.colonel.common.build">CommandSourceMapper</a>&nbsp;mapper)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="CommandHandlerBuilder.html" title="class in com.gufli.colonel.common.build">CommandHandlerBuilder</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#string(java.lang.String,com.gufli.colonel.common.build.CommandParameterParser,com.gufli.colonel.common.build.CommandParameterCompleter)" class="member-name-link">string</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#string(java.lang.String,com.gufli.colonel.common.build.CommandParameterParser)" class="member-name-link">string</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ @NotNull <a href="CommandParameterParser.html" title="interface in com.gufli.colonel.common.build">CommandParameterParser</a>&nbsp;parser)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="CommandHandlerBuilder.html" title="class in com.gufli.colonel.common.build">CommandHandlerBuilder</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#string(java.lang.String,com.gufli.colonel.common.build.CommandParameterParser,com.gufli.colonel.common.build.CommandParameterCompleter)" class="member-name-link">string</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
  @NotNull <a href="CommandParameterParser.html" title="interface in com.gufli.colonel.common.build">CommandParameterParser</a>&nbsp;parser,
  @NotNull <a href="CommandParameterCompleter.html" title="interface in com.gufli.colonel.common.build">CommandParameterCompleter</a>&nbsp;completer)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -301,6 +306,17 @@ loadScripts(document, 'script');</script>
 <h3>source</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="CommandHandlerBuilder.html" title="class in com.gufli.colonel.common.build">CommandHandlerBuilder</a></span>&nbsp;<span class="element-name">source</span><wbr><span class="parameters">(<a href="CommandSourceMapper.html" title="interface in com.gufli.colonel.common.build">CommandSourceMapper</a>&nbsp;mapper)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="property(java.lang.String,java.lang.Object)">
+<h3>property</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="CommandHandlerBuilder.html" title="class in com.gufli.colonel.common.build">CommandHandlerBuilder</a></span>&nbsp;<span class="element-name">property</span><wbr><span class="parameters">(@NotNull
+ @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;key,
+ @NotNull
+ @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;value)</span></div>
 </div>
 </section>
 </li>
