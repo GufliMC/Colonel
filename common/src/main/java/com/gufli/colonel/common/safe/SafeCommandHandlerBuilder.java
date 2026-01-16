@@ -153,13 +153,20 @@ public class SafeCommandHandlerBuilder<S> {
 
     //
 
+    public SafeCommandHandlerBuilder<S> property(@NotNull String key, @NotNull Object value) {
+        builder.property(key, value);
+        return this;
+    }
+
+    //
+
     public void register() {
         if (paths.isEmpty()) {
             throw new IllegalStateException("There must be at least 1 path to register a handler");
         }
 
         CommandHandler handler = builder.build();
-        paths.forEach(path -> colonel.register(path, handler));
+        colonel.register(paths.toArray(new String[0]), handler);
     }
 
 }

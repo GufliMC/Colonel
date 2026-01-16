@@ -60,7 +60,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
         Map<Parameter, Function<SafeCommandContext<S>, Object>> suppliers = new LinkedHashMap<>();
 
         SafeCommandHandlerBuilder<S> builder = builder();
-        build(method, suppliers, builder);
+        buildCommand(method, suppliers, builder);
 
         // set executor
         builder.executor(ctx -> {
@@ -81,7 +81,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
         builder.register();
     }
 
-    protected void build(@NotNull Method method, @NotNull Map<Parameter, Function<SafeCommandContext<S>, Object>> suppliers, @NotNull SafeCommandHandlerBuilder<S> builder) {
+    protected void buildCommand(@NotNull Method method, @NotNull Map<Parameter, Function<SafeCommandContext<S>, Object>> suppliers, @NotNull SafeCommandHandlerBuilder<S> builder) {
         method.setAccessible(true);
 
         Command[] commands = method.getAnnotationsByType(Command.class);
@@ -101,14 +101,14 @@ public class AnnotationColonel<S> extends Colonel<S> {
             if (param.isAnnotationPresent(Source.class)) {
                 SafeCommandSourceMapper<S> mapper = sourceMapper(param);
                 builder.source(mapper);
-                build(param, suppliers, mi++);
+                buildSource(param, suppliers, mi++);
                 continue;
             }
 
             // PARAMETER
             try {
                 SafeCommandParameterBuilder<S> pb = builder.parameter();
-                build(param, suppliers, pb);
+                buildParameter(param, suppliers, pb);
                 pb.done();
             } catch (Exception e) {
                 throw new RuntimeException(String.format("Error while building parameter '%s' in method '%s' in class '%s'.",
@@ -119,11 +119,11 @@ public class AnnotationColonel<S> extends Colonel<S> {
         }
     }
 
-    protected void build(@NotNull Parameter parameter, @NotNull Map<Parameter, Function<SafeCommandContext<S>, Object>> suppliers, int index) {
+    protected void buildSource(@NotNull Parameter parameter, @NotNull Map<Parameter, Function<SafeCommandContext<S>, Object>> suppliers, int index) {
         suppliers.put(parameter, ctx -> ctx.source(index));
     }
 
-    protected void build(@NotNull Parameter parameter, @NotNull Map<Parameter, Function<SafeCommandContext<S>, Object>> suppliers, @NotNull SafeCommandParameterBuilder<S> builder) {
+    protected void buildParameter(@NotNull Parameter parameter, @NotNull Map<Parameter, Function<SafeCommandContext<S>, Object>> suppliers, @NotNull SafeCommandParameterBuilder<S> builder) {
         // PARAMETER
         com.gufli.colonel.annotation.annotations.parameter.Parameter paramConf =
                 parameter.getAnnotation(com.gufli.colonel.annotation.annotations.parameter.Parameter.class);

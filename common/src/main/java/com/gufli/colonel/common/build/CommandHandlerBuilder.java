@@ -4,13 +4,17 @@ import com.gufli.colonel.common.dispatch.definition.ReadMode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 public class CommandHandlerBuilder {
 
     private final List<CommandSourceMapper> mappers = new ArrayList<>();
     private final List<CommandParameter> parameters = new ArrayList<>();
+
+    private final Map<String, Object> properties = new HashMap<>();
 
     private CommandExecutor executor;
     private Predicate<Object> condition;
@@ -80,11 +84,18 @@ public class CommandHandlerBuilder {
 
     //
 
+    public CommandHandlerBuilder property(@NotNull String key, @NotNull Object value) {
+        properties.put(key, value);
+        return this;
+    }
+
+    //
+
     public com.gufli.colonel.common.dispatch.tree.CommandHandler build() {
         CommandParameter[] parameters = this.parameters.toArray(CommandParameter[]::new);
         CommandSourceMapper[] mappers = this.mappers.toArray(CommandSourceMapper[]::new);
 
-        return new CommandHandler(parameters, executor, mappers, condition);
+        return new CommandHandler(parameters, executor, mappers, condition, properties);
     }
 
 }

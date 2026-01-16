@@ -2,7 +2,6 @@ package com.gufli.colonel.hytale;
 
 import com.gufli.brick.i18n.hytale.localization.HytaleLocalizer;
 import com.gufli.colonel.annotation.AnnotationColonel;
-import com.gufli.colonel.common.dispatch.definition.CommandParameter;
 import com.gufli.colonel.common.dispatch.suggestion.Suggestion;
 import com.gufli.colonel.common.dispatch.tree.CommandHandler;
 import com.gufli.colonel.common.exception.CommandFailure;
@@ -10,16 +9,15 @@ import com.gufli.colonel.common.exception.CommandNotFoundFailure;
 import com.gufli.colonel.common.exception.CommandPrepareParameterFailure;
 import com.gufli.colonel.common.safe.SafeCommandContext;
 import com.gufli.colonel.common.safe.SafeCommandHandlerBuilder;
-import com.gufli.colonel.hytale.annotations.Permission;
+import com.gufli.colonel.common.safe.SafeCommandParameterBuilder;
+import com.gufli.colonel.hytale.annotations.command.CommandHelp;
+import com.gufli.colonel.hytale.annotations.command.Permission;
+import com.gufli.colonel.hytale.annotations.parameter.ParameterHelp;
 import com.hypixel.hytale.server.core.Message;
-import com.hypixel.hytale.server.core.command.system.AbstractCommand;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
-import com.hypixel.hytale.server.core.command.system.ParseResult;
-import com.hypixel.hytale.server.core.command.system.arguments.types.SingleArgumentType;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +32,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class HytaleColonel extends AnnotationColonel<CommandSender> {
 
@@ -75,21 +74,25 @@ public class HytaleColonel extends AnnotationColonel<CommandSender> {
     }
 
     @Override
-    public void register(@NotNull String path, @NotNull CommandHandler handler) {
-        super.register(path, handler);
-        path = replacePlaceholders(path);
+    public void register(@NotNull String[] paths, @NotNull CommandHandler handler) {
+        super.register(paths, handler);
+        paths = Stream.of(paths).map(this::replacePlaceholders).toArray(String[]::new);
 
-        String[] literals = path.split(" ");
+        String[] literals = paths[0].split(" ");
         HytaleCommand cmd = commands.stream()
                 .filter(c -> (c.path() + " ").startsWith(literals[0] + " "))
                 .map(c -> c.command)
                 .findFirst().orElse(null);
 
         if (cmd == null) {
-            cmd = new HytaleCommand(this, path, handler.definition());
+            cmd = new HytaleCommand(this, paths, handler.definition());
+        } else {
+            cmd.add(paths, handler.definition());
         }
 
-        commands.add(new RegisteredCommand(path, handler, cmd));
+        for ( String path : paths) {
+            commands.add(new RegisteredCommand(path, handler, cmd));
+        }
     }
 
     public void init() {
@@ -103,14 +106,32 @@ public class HytaleColonel extends AnnotationColonel<CommandSender> {
     }
 
     @Override
-    protected void build(@NotNull Method method,
-                         @NotNull Map<Parameter, Function<SafeCommandContext<CommandSender>, Object>> suppliers,
-                         @NotNull SafeCommandHandlerBuilder<CommandSender> builder) {
-        super.build(method, suppliers, builder);
+    protected void buildCommand(@NotNull Method method,
+                                @NotNull Map<Parameter, Function<SafeCommandContext<CommandSender>, Object>> suppliers,
+                                @NotNull SafeCommandHandlerBuilder<CommandSender> builder) {
+        super.buildCommand(method, suppliers, builder);
 
         Permission permissionConf = method.getAnnotation(Permission.class);
         if (permissionConf != null) {
             builder.condition(s -> s.hasPermission(replacePlaceholders(permissionConf.value())));
+            builder.property("permission", permissionConf.value());
+        }
+
+        CommandHelp commandHelpConf = method.getAnnotation(CommandHelp.class);
+        if (commandHelpConf != null) {
+            builder.property("description", commandHelpConf.description());
+        }
+    }
+
+    @Override
+    protected void buildParameter(@NotNull Parameter parameter, @NotNull Map<Parameter, Function<SafeCommandContext<CommandSender>, Object>> suppliers, @NotNull SafeCommandParameterBuilder<CommandSender> builder) {
+        super.buildParameter(parameter, suppliers, builder);
+
+        ParameterHelp parameterHelpConf = parameter.getAnnotation(ParameterHelp.class);
+        if (parameterHelpConf != null) {
+            builder.property("description", parameterHelpConf.description());
+            builder.property("type", parameterHelpConf.type());
+            builder.property("examples", parameterHelpConf.examples());
         }
     }
 

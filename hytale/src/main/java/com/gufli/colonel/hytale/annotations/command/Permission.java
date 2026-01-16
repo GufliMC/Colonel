@@ -1,4 +1,4 @@
-package com.gufli.colonel.hytale.annotations;
+package com.gufli.colonel.hytale.annotations.command;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 public class CommandHandler extends com.gufli.colonel.common.dispatch.tree.CommandHandler {
@@ -25,8 +26,9 @@ public class CommandHandler extends com.gufli.colonel.common.dispatch.tree.Comma
     CommandHandler(@NotNull CommandParameter[] parameters,
                    @NotNull CommandExecutor executor,
                    @NotNull CommandSourceMapper[] mappers,
-                   @NotNull Predicate<Object> condition) {
-        super(new CommandDefinition(parameters));
+                   @NotNull Predicate<Object> condition,
+                   @NotNull Map<String, Object> properties) {
+        super(new CommandDefinition(parameters, properties));
         this.parameters = parameters;
         this.executor = executor;
         this.mappers = mappers;

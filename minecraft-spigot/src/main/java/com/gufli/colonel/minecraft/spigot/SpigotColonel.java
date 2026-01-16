@@ -89,8 +89,8 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
     }
 
     @Override
-    protected void build(@NotNull Method method, @NotNull Map<Parameter, Function<SafeCommandContext<CommandSender>, Object>> suppliers, @NotNull SafeCommandHandlerBuilder<CommandSender> builder) {
-        super.build(method, suppliers, builder);
+    protected void buildCommand(@NotNull Method method, @NotNull Map<Parameter, Function<SafeCommandContext<CommandSender>, Object>> suppliers, @NotNull SafeCommandHandlerBuilder<CommandSender> builder) {
+        super.buildCommand(method, suppliers, builder);
 
         Permission permissionConf = method.getAnnotation(Permission.class);
         if (permissionConf != null) {

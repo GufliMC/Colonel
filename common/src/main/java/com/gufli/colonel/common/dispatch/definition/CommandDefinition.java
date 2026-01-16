@@ -2,17 +2,17 @@ package com.gufli.colonel.common.dispatch.definition;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CommandDefinition {
 
     private final CommandParameter[] parameters;
+    private final Map<String, Object> properties;
 
-    public CommandDefinition(@NotNull CommandParameter[] parameters) {
+    public CommandDefinition(@NotNull CommandParameter[] parameters, @NotNull Map<String, Object> properties) {
         this.parameters = parameters;
+        this.properties = Collections.unmodifiableMap(properties);
 
         // check for name validity
         Set<String> names = new HashSet<>();
@@ -35,8 +35,24 @@ public class CommandDefinition {
         }
     }
 
+    public CommandDefinition(@NotNull CommandParameter[] parameters) {
+        this(parameters, Collections.emptyMap());
+    }
+
     public CommandParameter[] parameters() {
         return parameters;
+    }
+
+    public Map<String, Object> properties() {
+        return properties;
+    }
+
+    public Optional<Object> property(@NotNull String key) {
+        return Optional.ofNullable(properties.get(key));
+    }
+
+    public Optional<String> propertyAsString(@NotNull String key) {
+        return Optional.ofNullable(properties.get(key)).map(Object::toString);
     }
 
     //

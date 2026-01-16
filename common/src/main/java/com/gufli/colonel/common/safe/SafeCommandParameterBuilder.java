@@ -165,6 +165,13 @@ public class SafeCommandParameterBuilder<S> {
 
     //
 
+    public SafeCommandParameterBuilder<S> property(@NotNull String key, @NotNull Object value) {
+        builder.property(String.format("parameters.%s.%s", this.name, key), value);
+        return this;
+    }
+
+    //
+
     public SafeCommandHandlerBuilder<S> done() {
         if (name == null) {
             throw new IllegalStateException("Name is not set.");

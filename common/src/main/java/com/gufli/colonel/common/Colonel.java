@@ -46,10 +46,15 @@ public class Colonel<S> {
 
     //
 
-    public void register(@NotNull String path, @NotNull CommandHandler handler) {
-        path = replacePlaceholders(path);
+    public void register(@NotNull String[] paths, @NotNull CommandHandler handler) {
+        for (String path : paths) {
+            path = replacePlaceholders(path);
+            tree.register(path, handler);
+        }
+    }
 
-        tree.register(path, handler);
+    public void register(@NotNull String path, @NotNull CommandHandler handler) {
+        this.register(new String[]{ path }, handler);
     }
 
     public SafeCommandHandlerBuilder<S> builder() {
