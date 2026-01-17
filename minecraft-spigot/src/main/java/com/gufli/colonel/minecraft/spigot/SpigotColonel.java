@@ -66,21 +66,23 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
     }
 
     @Override
-    public void register(@NotNull String path, @NotNull CommandHandler handler) {
-        super.register(path, handler);
+    public void register(@NotNull CommandHandler handler, @NotNull String... paths) {
+        super.register(handler, paths);
 
-        String firstLiteral = path.split(" ")[0];
-        SpigotCommand cmd = commands.stream()
-                .filter(c -> (c.path() + " ").startsWith(firstLiteral + " "))
-                .map(c -> c.command)
-                .findFirst().orElse(null);
+        for ( String path : paths ) {
+            String firstLiteral = path.split(" ")[0];
+            SpigotCommand cmd = commands.stream()
+                    .filter(c -> (c.path() + " ").startsWith(firstLiteral + " "))
+                    .map(c -> c.command)
+                    .findFirst().orElse(null);
 
-        if (cmd == null) {
-            cmd = new SpigotCommand(this, firstLiteral);
-            commandMap.register(plugin.getName().toLowerCase(), cmd);
+            if (cmd == null) {
+                cmd = new SpigotCommand(this, firstLiteral);
+                commandMap.register(plugin.getName().toLowerCase(), cmd);
+            }
+
+            commands.add(new RegisteredCommand(path, handler, cmd));
         }
-
-        commands.add(new RegisteredCommand(path, handler, cmd));
     }
 
     @Override

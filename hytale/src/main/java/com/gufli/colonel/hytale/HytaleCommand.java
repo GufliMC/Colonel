@@ -11,38 +11,37 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class HytaleCommand extends AbstractCommand {
 
     private final HytaleColonel colonel;
 
-    private HytaleCommand(@NotNull HytaleColonel colonel, @NotNull String name) {
-        super(name, null);
+    public HytaleCommand(@NotNull HytaleColonel colonel, @NotNull String name) {
+        super(name, "");
         this.colonel = colonel;
     }
 
-    public HytaleCommand(@NotNull HytaleColonel colonel, @NotNull String[] paths, @NotNull CommandDefinition definition) {
-        this(colonel, paths[0].split(" ")[0]);
+    public HytaleCommand(@NotNull HytaleColonel colonel, @NotNull CommandDefinition definition) {
+        super(definition.propertyAsString("description").orElse(""));
+        this.colonel = colonel;
+        setup(definition);
+    }
+
+    public HytaleCommand(@NotNull HytaleColonel colonel, @NotNull String name, @NotNull CommandDefinition definition) {
+        super(name, definition.propertyAsString("description").orElse(""));
+        this.colonel = colonel;
+        setup(definition);
+    }
+
+    //
+
+    private void setup(@NotNull CommandDefinition definition) {
         this.setAllowsExtraArguments(true);
 
-        for ( int i = 1; i < paths.length; i++ ) {
-            this.addAliases(paths[i].split(" ")[0]);
-        }
-
-        String[] literals = paths[0].split(" ");
-        if (literals.length > 1) {
-            this.add(Arrays.copyOfRange(literals, 1, literals.length), definition);
-            return;
-        }
-
         String permission = definition.propertyAsString("permission").filter(p -> !p.isEmpty()).orElse(null);
-        if ( permission != null ) {
-            this.requirePermission(permission);
-        } else {
-            this.requirePermission("");
-        }
+        this.requirePermission(Objects.requireNonNullElse(permission, ""));
 
         for ( CommandParameter param : definition.parameters() ) {
             String description = definition.propertyAsString("parameters." + param.name() + ".description").orElse("");
@@ -58,27 +57,7 @@ public class HytaleCommand extends AbstractCommand {
         }
     }
 
-    public HytaleCommand(@NotNull HytaleColonel colonel, @NotNull String path, @NotNull CommandDefinition definition) {
-        this(colonel, path.split(" ")[0]);
-    }
-
     //
-
-    public void add(@NotNull String path, @NotNull CommandDefinition definition) {
-        this.add(path.split(" "), definition);
-    }
-
-    public void add(@NotNull String[] path, @NotNull CommandDefinition definition) {
-        if ( path.length == 1 ) {
-            var command = new HytaleCommand(colonel, path[0], definition);
-            this.addSubCommand(command);
-            return;
-        }
-
-        var command = new HytaleCommand(colonel, path[0]);
-        command.add(Arrays.copyOfRange(path, 1, path.length), definition);
-        this.addSubCommand(command);
-    }
 
     @Override
     protected @Nullable CompletableFuture<Void> execute(@NotNull CommandContext ctx) {

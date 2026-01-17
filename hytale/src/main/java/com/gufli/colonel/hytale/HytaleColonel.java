@@ -2,6 +2,8 @@ package com.gufli.colonel.hytale;
 
 import com.gufli.brick.i18n.hytale.localization.HytaleLocalizer;
 import com.gufli.colonel.annotation.AnnotationColonel;
+import com.gufli.colonel.common.dispatch.definition.CommandDefinition;
+import com.gufli.colonel.common.dispatch.definition.CommandNode;
 import com.gufli.colonel.common.dispatch.suggestion.Suggestion;
 import com.gufli.colonel.common.dispatch.tree.CommandHandler;
 import com.gufli.colonel.common.exception.CommandFailure;
@@ -14,6 +16,8 @@ import com.gufli.colonel.hytale.annotations.command.CommandHelp;
 import com.gufli.colonel.hytale.annotations.command.Permission;
 import com.gufli.colonel.hytale.annotations.parameter.ParameterHelp;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.command.system.AbstractCommand;
+import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
@@ -25,10 +29,9 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,9 +45,6 @@ public class HytaleColonel extends AnnotationColonel<CommandSender> {
     private final HytaleLocalizer localizer;
     private @Nullable BiConsumer<CommandSender, CommandFailure> errorHandler;
 
-    private record RegisteredCommand(@NotNull String path, @NotNull CommandHandler handler, @NotNull HytaleCommand command) {}
-    private final Set<RegisteredCommand> commands = new HashSet<>();
-
     private final JavaPlugin plugin;
 
     public HytaleColonel(@NotNull JavaPlugin plugin, @Nullable HytaleLocalizer localizer) {
@@ -56,7 +56,13 @@ public class HytaleColonel extends AnnotationColonel<CommandSender> {
 
         registry().registerSourceMapper(PlayerRef.class, source -> {
             if (source instanceof Player player) {
-                return player.getPlayerRef();
+                var ref = player.getReference();
+                if ( ref == null ) {
+                    return null;
+                }
+
+                var store = ref.getStore();
+                return store.getComponent(ref, PlayerRef.getComponentType());
             }
             return null;
         });
@@ -73,37 +79,54 @@ public class HytaleColonel extends AnnotationColonel<CommandSender> {
         this(plugin, null);
     }
 
-    @Override
-    public void register(@NotNull String[] paths, @NotNull CommandHandler handler) {
-        super.register(paths, handler);
-        paths = Stream.of(paths).map(this::replacePlaceholders).toArray(String[]::new);
-
-        String[] literals = paths[0].split(" ");
-        HytaleCommand cmd = commands.stream()
-                .filter(c -> (c.path() + " ").startsWith(literals[0] + " "))
-                .map(c -> c.command)
-                .findFirst().orElse(null);
-
-        if (cmd == null) {
-            cmd = new HytaleCommand(this, paths, handler.definition());
-        } else {
-            cmd.add(paths, handler.definition());
-        }
-
-        for ( String path : paths) {
-            commands.add(new RegisteredCommand(path, handler, cmd));
-        }
-    }
-
     public void init() {
-        Set<HytaleCommand> commands = this.commands.stream()
-                .map(rcmd -> rcmd.command)
-                .collect(Collectors.toSet());
+        var nodes = this.tree();
 
-        for ( HytaleCommand cmd : commands ) {
-            plugin.getCommandRegistry().registerCommand(cmd);
+        for ( CommandNode node : nodes ) {
+            HytaleCommand command = convert(node);
+            plugin.getCommandRegistry().registerCommand(command);
         }
     }
+
+    private HytaleCommand convert(CommandNode node) {
+        HytaleCommand command;
+
+        if ( node.definitions().size() == 1 ) {
+            var definition = node.definitions().iterator().next();
+            command = new HytaleCommand(this, node.name(), definition);
+        }
+        else {
+            CommandDefinition empty = node.definitions().stream()
+                    .filter(def -> def.parameters().length == 0)
+                    .findFirst()
+                    .orElse(null);
+
+            if ( empty != null ) {
+                command = new HytaleCommand(this, node.name(), empty);
+            }
+            else {
+                command = new HytaleCommand(this, node.name());
+            }
+
+            for (CommandDefinition definition : node.definitions()) {
+                if (definition.parameters().length == 0) {
+                    continue;
+                }
+
+                HytaleCommand variant = new HytaleCommand(this, definition);
+                command.addUsageVariant(variant);
+            }
+        }
+
+        for ( CommandNode child : node.children() ) {
+            HytaleCommand subCommand = convert(child);
+            command.addSubCommand(subCommand);
+        }
+
+        return command;
+    }
+
+    //
 
     @Override
     protected void buildCommand(@NotNull Method method,

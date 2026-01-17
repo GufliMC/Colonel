@@ -166,7 +166,7 @@ public class SafeCommandHandlerBuilder<S> {
         }
 
         CommandHandler handler = builder.build();
-        colonel.register(paths.toArray(new String[0]), handler);
+        colonel.register(handler, paths.toArray(new String[0]));
     }
 
 }

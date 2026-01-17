@@ -1,9 +1,11 @@
 package com.gufli.colonel.common;
 
 import com.gufli.colonel.common.build.FailureHandler;
+import com.gufli.colonel.common.dispatch.definition.CommandNode;
 import com.gufli.colonel.common.dispatch.suggestion.Suggestion;
 import com.gufli.colonel.common.dispatch.tree.CommandHandler;
 import com.gufli.colonel.common.dispatch.tree.CommandTree;
+import com.gufli.colonel.common.dispatch.tree.CommandTreeNode;
 import com.gufli.colonel.common.exception.CommandFailure;
 import com.gufli.colonel.common.exception.CommandNotFoundFailure;
 import com.gufli.colonel.common.safe.FunctionRegistry;
@@ -46,15 +48,11 @@ public class Colonel<S> {
 
     //
 
-    public void register(@NotNull String[] paths, @NotNull CommandHandler handler) {
+    public void register(@NotNull CommandHandler handler, @NotNull String... paths) {
         for (String path : paths) {
             path = replacePlaceholders(path);
             tree.register(path, handler);
         }
-    }
-
-    public void register(@NotNull String path, @NotNull CommandHandler handler) {
-        this.register(new String[]{ path }, handler);
     }
 
     public SafeCommandHandlerBuilder<S> builder() {
@@ -89,6 +87,20 @@ public class Colonel<S> {
 
     public List<Suggestion> suggestions(S source, String input, int cursor) {
         return tree.suggestions(source, input, cursor);
+    }
+
+    //
+
+    public List<CommandNode> tree() {
+        return this.tree.nodes().stream().map(this::tree).toList();
+    }
+
+    public CommandNode tree(@NotNull CommandTreeNode node) {
+        return new CommandNode(
+                node.name(),
+                node.handlers().stream().map(CommandHandler::definition).toList(),
+                node.children().stream().map(this::tree).toList()
+        );
     }
 
     // INTERNAL

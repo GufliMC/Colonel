@@ -3,10 +3,7 @@ package com.gufli.colonel.common.dispatch.tree;
 import com.gufli.colonel.common.dispatch.suggestion.Suggestion;
 import com.gufli.colonel.common.exception.CommandDispatchFailure;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public final class CommandTree {
@@ -14,6 +11,12 @@ public final class CommandTree {
     private final static String SPACE = Pattern.quote(" ");
 
     private final List<CommandTreeNode> nodes = new ArrayList<>();
+
+    //
+
+    public List<CommandTreeNode> nodes() {
+        return Collections.unmodifiableList(nodes);
+    }
 
     //
 
