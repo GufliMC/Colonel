@@ -65,12 +65,13 @@ loadScripts(document, 'script');</script>
 <li><a href="#registry()" tabindex="0">registry()</a></li>
 <li><a href="#placeholder(java.lang.String,java.lang.String)" tabindex="0">placeholder(String, String)</a></li>
 <li><a href="#replacePlaceholders(java.lang.String)" tabindex="0">replacePlaceholders(String)</a></li>
-<li><a href="#register(java.lang.String%5B%5D,com.gufli.colonel.common.dispatch.tree.CommandHandler)" tabindex="0">register(String[], CommandHandler)</a></li>
-<li><a href="#register(java.lang.String,com.gufli.colonel.common.dispatch.tree.CommandHandler)" tabindex="0">register(String, CommandHandler)</a></li>
+<li><a href="#register(com.gufli.colonel.common.dispatch.tree.CommandHandler,java.lang.String...)" tabindex="0">register(CommandHandler, String...)</a></li>
 <li><a href="#builder()" tabindex="0">builder()</a></li>
 <li><a href="#dispatch(S,java.lang.String)" tabindex="0">dispatch(S, String)</a></li>
 <li><a href="#suggestions(S,java.lang.String)" tabindex="0">suggestions(S, String)</a></li>
 <li><a href="#suggestions(S,java.lang.String,int)" tabindex="0">suggestions(S, String, int)</a></li>
+<li><a href="#tree()" tabindex="0">tree()</a></li>
+<li><a href="#tree(com.gufli.colonel.common.dispatch.tree.CommandTreeNode)" tabindex="0">tree(CommandTreeNode)</a></li>
 </ol>
 </li>
 </ol>
@@ -132,28 +133,30 @@ loadScripts(document, 'script');</script>
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;value)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#register(java.lang.String%5B%5D,com.gufli.colonel.common.dispatch.tree.CommandHandler)" class="member-name-link">register</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;paths,
- @NotNull <a href="dispatch/tree/CommandHandler.html" title="class in com.gufli.colonel.common.dispatch.tree">CommandHandler</a>&nbsp;handler)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#register(com.gufli.colonel.common.dispatch.tree.CommandHandler,java.lang.String...)" class="member-name-link">register</a><wbr>(@NotNull <a href="dispatch/tree/CommandHandler.html" title="class in com.gufli.colonel.common.dispatch.tree">CommandHandler</a>&nbsp;handler,
+ @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>...&nbsp;paths)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#register(java.lang.String,com.gufli.colonel.common.dispatch.tree.CommandHandler)" class="member-name-link">register</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;path,
- @NotNull <a href="dispatch/tree/CommandHandler.html" title="class in com.gufli.colonel.common.dispatch.tree">CommandHandler</a>&nbsp;handler)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="safe/FunctionRegistry.html" title="class in com.gufli.colonel.common.safe">FunctionRegistry</a><wbr>&lt;<a href="#type-param-S" title="type parameter in Colonel">S</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#registry()" class="member-name-link">registry</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="safe/FunctionRegistry.html" title="class in com.gufli.colonel.common.safe">FunctionRegistry</a><wbr>&lt;<a href="#type-param-S" title="type parameter in Colonel">S</a>&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#registry()" class="member-name-link">registry</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#replacePlaceholders(java.lang.String)" class="member-name-link">replacePlaceholders</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;value)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="dispatch/suggestion/Suggestion.html" title="class in com.gufli.colonel.common.dispatch.suggestion">Suggestion</a>&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#suggestions(S,java.lang.String)" class="member-name-link">suggestions</a><wbr>(<a href="#type-param-S" title="type parameter in Colonel">S</a>&nbsp;source,
- <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;input)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#replacePlaceholders(java.lang.String)" class="member-name-link">replacePlaceholders</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;value)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="dispatch/suggestion/Suggestion.html" title="class in com.gufli.colonel.common.dispatch.suggestion">Suggestion</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#suggestions(S,java.lang.String,int)" class="member-name-link">suggestions</a><wbr>(<a href="#type-param-S" title="type parameter in Colonel">S</a>&nbsp;source,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#suggestions(S,java.lang.String)" class="member-name-link">suggestions</a><wbr>(<a href="#type-param-S" title="type parameter in Colonel">S</a>&nbsp;source,
+ <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;input)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="dispatch/suggestion/Suggestion.html" title="class in com.gufli.colonel.common.dispatch.suggestion">Suggestion</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#suggestions(S,java.lang.String,int)" class="member-name-link">suggestions</a><wbr>(<a href="#type-param-S" title="type parameter in Colonel">S</a>&nbsp;source,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;input,
  int&nbsp;cursor)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="dispatch/definition/CommandNode.html" title="class in com.gufli.colonel.common.dispatch.definition">CommandNode</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#tree()" class="member-name-link">tree</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="dispatch/definition/CommandNode.html" title="class in com.gufli.colonel.common.dispatch.definition">CommandNode</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#tree(com.gufli.colonel.common.dispatch.tree.CommandTreeNode)" class="member-name-link">tree</a><wbr>(@NotNull <a href="dispatch/tree/CommandTreeNode.html" title="class in com.gufli.colonel.common.dispatch.tree">CommandTreeNode</a>&nbsp;node)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -213,24 +216,13 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="register(java.lang.String[],com.gufli.colonel.common.dispatch.tree.CommandHandler)">
+<section class="detail" id="register(com.gufli.colonel.common.dispatch.tree.CommandHandler,java.lang.String...)">
 <h3>register</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">register</span><wbr><span class="parameters">(@NotNull
- @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;paths,
+ @NotNull <a href="dispatch/tree/CommandHandler.html" title="class in com.gufli.colonel.common.dispatch.tree">CommandHandler</a>&nbsp;handler,
  @NotNull
- @NotNull <a href="dispatch/tree/CommandHandler.html" title="class in com.gufli.colonel.common.dispatch.tree">CommandHandler</a>&nbsp;handler)</span></div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="register(java.lang.String,com.gufli.colonel.common.dispatch.tree.CommandHandler)">
-<h3>register</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">register</span><wbr><span class="parameters">(@NotNull
- @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;path,
- @NotNull
- @NotNull <a href="dispatch/tree/CommandHandler.html" title="class in com.gufli.colonel.common.dispatch.tree">CommandHandler</a>&nbsp;handler)</span></div>
+ @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>...&nbsp;paths)</span></div>
 </div>
 </section>
 </li>
@@ -267,6 +259,23 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="dispatch/suggestion/Suggestion.html" title="class in com.gufli.colonel.common.dispatch.suggestion">Suggestion</a>&gt;</span>&nbsp;<span class="element-name">suggestions</span><wbr><span class="parameters">(<a href="#type-param-S" title="type parameter in Colonel">S</a>&nbsp;source,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;input,
  int&nbsp;cursor)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="tree()">
+<h3>tree</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="dispatch/definition/CommandNode.html" title="class in com.gufli.colonel.common.dispatch.definition">CommandNode</a>&gt;</span>&nbsp;<span class="element-name">tree</span>()</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="tree(com.gufli.colonel.common.dispatch.tree.CommandTreeNode)">
+<h3>tree</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="dispatch/definition/CommandNode.html" title="class in com.gufli.colonel.common.dispatch.definition">CommandNode</a></span>&nbsp;<span class="element-name">tree</span><wbr><span class="parameters">(@NotNull
+ @NotNull <a href="dispatch/tree/CommandTreeNode.html" title="class in com.gufli.colonel.common.dispatch.tree">CommandTreeNode</a>&nbsp;node)</span></div>
 </div>
 </section>
 </li>

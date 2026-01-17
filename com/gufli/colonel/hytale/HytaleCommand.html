@@ -58,14 +58,13 @@ loadScripts(document, 'script');</script>
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
-<li><a href="#%3Cinit%3E(com.gufli.colonel.hytale.HytaleColonel,java.lang.String%5B%5D,com.gufli.colonel.common.dispatch.definition.CommandDefinition)" tabindex="0">HytaleCommand(HytaleColonel, String[], CommandDefinition)</a></li>
+<li><a href="#%3Cinit%3E(com.gufli.colonel.hytale.HytaleColonel,java.lang.String)" tabindex="0">HytaleCommand(HytaleColonel, String)</a></li>
+<li><a href="#%3Cinit%3E(com.gufli.colonel.hytale.HytaleColonel,com.gufli.colonel.common.dispatch.definition.CommandDefinition)" tabindex="0">HytaleCommand(HytaleColonel, CommandDefinition)</a></li>
 <li><a href="#%3Cinit%3E(com.gufli.colonel.hytale.HytaleColonel,java.lang.String,com.gufli.colonel.common.dispatch.definition.CommandDefinition)" tabindex="0">HytaleCommand(HytaleColonel, String, CommandDefinition)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
-<li><a href="#add(java.lang.String,com.gufli.colonel.common.dispatch.definition.CommandDefinition)" tabindex="0">add(String, CommandDefinition)</a></li>
-<li><a href="#add(java.lang.String%5B%5D,com.gufli.colonel.common.dispatch.definition.CommandDefinition)" tabindex="0">add(String[], CommandDefinition)</a></li>
 <li><a href="#execute(com.hypixel.hytale.server.core.command.system.CommandContext)" tabindex="0">execute(CommandContext)</a></li>
 </ol>
 </li>
@@ -107,14 +106,16 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.gufli.colonel.hytale.HytaleColonel,java.lang.String%5B%5D,com.gufli.colonel.common.dispatch.definition.CommandDefinition)" class="member-name-link">HytaleCommand</a><wbr>(@NotNull <a href="HytaleColonel.html" title="class in com.gufli.colonel.hytale">HytaleColonel</a>&nbsp;colonel,
- @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;paths,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.gufli.colonel.hytale.HytaleColonel,com.gufli.colonel.common.dispatch.definition.CommandDefinition)" class="member-name-link">HytaleCommand</a><wbr>(@NotNull <a href="HytaleColonel.html" title="class in com.gufli.colonel.hytale">HytaleColonel</a>&nbsp;colonel,
  @NotNull <a href="../common/dispatch/definition/CommandDefinition.html" title="class in com.gufli.colonel.common.dispatch.definition">CommandDefinition</a>&nbsp;definition)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(com.gufli.colonel.hytale.HytaleColonel,java.lang.String,com.gufli.colonel.common.dispatch.definition.CommandDefinition)" class="member-name-link">HytaleCommand</a><wbr>(@NotNull <a href="HytaleColonel.html" title="class in com.gufli.colonel.hytale">HytaleColonel</a>&nbsp;colonel,
- @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;path,
- @NotNull <a href="../common/dispatch/definition/CommandDefinition.html" title="class in com.gufli.colonel.common.dispatch.definition">CommandDefinition</a>&nbsp;definition)</code></div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(com.gufli.colonel.hytale.HytaleColonel,java.lang.String)" class="member-name-link">HytaleCommand</a><wbr>(@NotNull <a href="HytaleColonel.html" title="class in com.gufli.colonel.hytale">HytaleColonel</a>&nbsp;colonel,
+ @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.gufli.colonel.hytale.HytaleColonel,java.lang.String,com.gufli.colonel.common.dispatch.definition.CommandDefinition)" class="member-name-link">HytaleCommand</a><wbr>(@NotNull <a href="HytaleColonel.html" title="class in com.gufli.colonel.hytale">HytaleColonel</a>&nbsp;colonel,
+ @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ @NotNull <a href="../common/dispatch/definition/CommandDefinition.html" title="class in com.gufli.colonel.common.dispatch.definition">CommandDefinition</a>&nbsp;definition)</code></div>
+<div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
 </li>
@@ -129,14 +130,6 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#add(java.lang.String%5B%5D,com.gufli.colonel.common.dispatch.definition.CommandDefinition)" class="member-name-link">add</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;path,
- @NotNull <a href="../common/dispatch/definition/CommandDefinition.html" title="class in com.gufli.colonel.common.dispatch.definition">CommandDefinition</a>&nbsp;definition)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#add(java.lang.String,com.gufli.colonel.common.dispatch.definition.CommandDefinition)" class="member-name-link">add</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;path,
- @NotNull <a href="../common/dispatch/definition/CommandDefinition.html" title="class in com.gufli.colonel.common.dispatch.definition">CommandDefinition</a>&nbsp;definition)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected @Nullable <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/concurrent/CompletableFuture.html" title="class or interface in java.util.concurrent" class="external-link">CompletableFuture</a><wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Void.html" title="class or interface in java.lang" class="external-link">Void</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#execute(com.hypixel.hytale.server.core.command.system.CommandContext)" class="member-name-link">execute</a><wbr>(@NotNull com.hypixel.hytale.server.core.command.system.CommandContext&nbsp;ctx)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
@@ -161,13 +154,22 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(com.gufli.colonel.hytale.HytaleColonel,java.lang.String[],com.gufli.colonel.common.dispatch.definition.CommandDefinition)">
+<section class="detail" id="&lt;init&gt;(com.gufli.colonel.hytale.HytaleColonel,java.lang.String)">
 <h3>HytaleCommand</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">HytaleCommand</span><wbr><span class="parameters">(@NotNull
  @NotNull <a href="HytaleColonel.html" title="class in com.gufli.colonel.hytale">HytaleColonel</a>&nbsp;colonel,
  @NotNull
- @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;paths,
+ @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="&lt;init&gt;(com.gufli.colonel.hytale.HytaleColonel,com.gufli.colonel.common.dispatch.definition.CommandDefinition)">
+<h3>HytaleCommand</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">HytaleCommand</span><wbr><span class="parameters">(@NotNull
+ @NotNull <a href="HytaleColonel.html" title="class in com.gufli.colonel.hytale">HytaleColonel</a>&nbsp;colonel,
  @NotNull
  @NotNull <a href="../common/dispatch/definition/CommandDefinition.html" title="class in com.gufli.colonel.common.dispatch.definition">CommandDefinition</a>&nbsp;definition)</span></div>
 </div>
@@ -180,7 +182,7 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">HytaleCommand</span><wbr><span class="parameters">(@NotNull
  @NotNull <a href="HytaleColonel.html" title="class in com.gufli.colonel.hytale">HytaleColonel</a>&nbsp;colonel,
  @NotNull
- @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;path,
+ @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
  @NotNull
  @NotNull <a href="../common/dispatch/definition/CommandDefinition.html" title="class in com.gufli.colonel.common.dispatch.definition">CommandDefinition</a>&nbsp;definition)</span></div>
 </div>
@@ -194,28 +196,6 @@ loadScripts(document, 'script');</script>
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
-<li>
-<section class="detail" id="add(java.lang.String,com.gufli.colonel.common.dispatch.definition.CommandDefinition)">
-<h3>add</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">add</span><wbr><span class="parameters">(@NotNull
- @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;path,
- @NotNull
- @NotNull <a href="../common/dispatch/definition/CommandDefinition.html" title="class in com.gufli.colonel.common.dispatch.definition">CommandDefinition</a>&nbsp;definition)</span></div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="add(java.lang.String[],com.gufli.colonel.common.dispatch.definition.CommandDefinition)">
-<h3>add</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">add</span><wbr><span class="parameters">(@NotNull
- @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;path,
- @NotNull
- @NotNull <a href="../common/dispatch/definition/CommandDefinition.html" title="class in com.gufli.colonel.common.dispatch.definition">CommandDefinition</a>&nbsp;definition)</span></div>
-</div>
-</section>
-</li>
 <li>
 <section class="detail" id="execute(com.hypixel.hytale.server.core.command.system.CommandContext)">
 <h3>execute</h3>

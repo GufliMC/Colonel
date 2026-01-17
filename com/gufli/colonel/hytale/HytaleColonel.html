@@ -64,7 +64,6 @@ loadScripts(document, 'script');</script>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
-<li><a href="#register(java.lang.String%5B%5D,com.gufli.colonel.common.dispatch.tree.CommandHandler)" tabindex="0">register(String[], CommandHandler)</a></li>
 <li><a href="#init()" tabindex="0">init()</a></li>
 <li><a href="#buildCommand(java.lang.reflect.Method,java.util.Map,com.gufli.colonel.common.safe.SafeCommandHandlerBuilder)" tabindex="0">buildCommand(Method, Map, SafeCommandHandlerBuilder)</a></li>
 <li><a href="#buildParameter(java.lang.reflect.Parameter,java.util.Map,com.gufli.colonel.common.safe.SafeCommandParameterBuilder)" tabindex="0">buildParameter(Parameter, Map, SafeCommandParameterBuilder)</a></li>
@@ -150,17 +149,13 @@ loadScripts(document, 'script');</script>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#init()" class="member-name-link">init</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#register(java.lang.String%5B%5D,com.gufli.colonel.common.dispatch.tree.CommandHandler)" class="member-name-link">register</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;paths,
- @NotNull <a href="../common/dispatch/tree/CommandHandler.html" title="class in com.gufli.colonel.common.dispatch.tree">CommandHandler</a>&nbsp;handler)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setErrorHandler(java.util.function.BiConsumer)" class="member-name-link">setErrorHandler</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/function/BiConsumer.html" title="class or interface in java.util.function" class="external-link">BiConsumer</a>&lt;com.hypixel.hytale.server.core.command.system.CommandSender, <a href="../common/exception/CommandFailure.html" title="class in com.gufli.colonel.common.exception">CommandFailure</a>&gt;&nbsp;errorHandler)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setErrorHandler(java.util.function.BiConsumer)" class="member-name-link">setErrorHandler</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/function/BiConsumer.html" title="class or interface in java.util.function" class="external-link">BiConsumer</a>&lt;com.hypixel.hytale.server.core.command.system.CommandSender, <a href="../common/exception/CommandFailure.html" title="class in com.gufli.colonel.common.exception">CommandFailure</a>&gt;&nbsp;errorHandler)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="../common/dispatch/suggestion/Suggestion.html" title="class in com.gufli.colonel.common.dispatch.suggestion">Suggestion</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#suggestions(com.hypixel.hytale.server.core.command.system.CommandSender,java.lang.String,int)" class="member-name-link">suggestions</a><wbr>(com.hypixel.hytale.server.core.command.system.CommandSender&nbsp;source,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="../common/dispatch/suggestion/Suggestion.html" title="class in com.gufli.colonel.common.dispatch.suggestion">Suggestion</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#suggestions(com.hypixel.hytale.server.core.command.system.CommandSender,java.lang.String,int)" class="member-name-link">suggestions</a><wbr>(com.hypixel.hytale.server.core.command.system.CommandSender&nbsp;source,
  <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;input,
  int&nbsp;cursor)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -169,7 +164,7 @@ loadScripts(document, 'script');</script>
 <code><a href="../annotation/AnnotationColonel.html#buildSource(java.lang.reflect.Parameter,java.util.Map,int)" title="buildSource(Parameter, Map, int)">buildSource</a>, <a href="../annotation/AnnotationColonel.html#registerAll(java.lang.Object)" title="registerAll(Object)">registerAll</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.gufli.colonel.common.Colonel">Methods inherited from class&nbsp;<a href="../common/Colonel.html#method-summary" title="class in com.gufli.colonel.common">Colonel</a></h3>
-<code><a href="../common/Colonel.html#builder()" title="builder()">builder</a>, <a href="../common/Colonel.html#placeholder(java.lang.String,java.lang.String)" title="placeholder(String, String)">placeholder</a>, <a href="../common/Colonel.html#register(java.lang.String,com.gufli.colonel.common.dispatch.tree.CommandHandler)" title="register(String, CommandHandler)">register</a>, <a href="../common/Colonel.html#registry()" title="registry()">registry</a>, <a href="../common/Colonel.html#replacePlaceholders(java.lang.String)" title="replacePlaceholders(String)">replacePlaceholders</a>, <a href="../common/Colonel.html#suggestions(S,java.lang.String)" title="suggestions(CommandSender, String)">suggestions</a></code></div>
+<code><a href="../common/Colonel.html#builder()" title="builder()">builder</a>, <a href="../common/Colonel.html#placeholder(java.lang.String,java.lang.String)" title="placeholder(String, String)">placeholder</a>, <a href="../common/Colonel.html#register(com.gufli.colonel.common.dispatch.tree.CommandHandler,java.lang.String...)" title="register(CommandHandler, String...)">register</a>, <a href="../common/Colonel.html#registry()" title="registry()">registry</a>, <a href="../common/Colonel.html#replacePlaceholders(java.lang.String)" title="replacePlaceholders(String)">replacePlaceholders</a>, <a href="../common/Colonel.html#suggestions(S,java.lang.String)" title="suggestions(CommandSender, String)">suggestions</a>, <a href="../common/Colonel.html#tree()" title="tree()">tree</a>, <a href="../common/Colonel.html#tree(com.gufli.colonel.common.dispatch.tree.CommandTreeNode)" title="tree(CommandTreeNode)">tree</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#method-summary" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
@@ -212,21 +207,6 @@ loadScripts(document, 'script');</script>
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
-<li>
-<section class="detail" id="register(java.lang.String[],com.gufli.colonel.common.dispatch.tree.CommandHandler)">
-<h3>register</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">register</span><wbr><span class="parameters">(@NotNull
- @NotNull <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;paths,
- @NotNull
- @NotNull <a href="../common/dispatch/tree/CommandHandler.html" title="class in com.gufli.colonel.common.dispatch.tree">CommandHandler</a>&nbsp;handler)</span></div>
-<dl class="notes">
-<dt>Overrides:</dt>
-<dd><code><a href="../common/Colonel.html#register(java.lang.String%5B%5D,com.gufli.colonel.common.dispatch.tree.CommandHandler)">register</a></code>&nbsp;in class&nbsp;<code><a href="../common/Colonel.html" title="class in com.gufli.colonel.common">Colonel</a>&lt;com.hypixel.hytale.server.core.command.system.CommandSender&gt;</code></dd>
-</dl>
-</div>
-</section>
-</li>
 <li>
 <section class="detail" id="init()">
 <h3>init</h3>
