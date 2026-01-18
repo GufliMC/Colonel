@@ -2,6 +2,7 @@ package com.gufli.colonel.hytale;
 
 import com.gufli.brick.i18n.hytale.localization.HytaleLocalizer;
 import com.gufli.colonel.annotation.AnnotationColonel;
+import com.gufli.colonel.common.build.FailureHandler;
 import com.gufli.colonel.common.dispatch.definition.CommandDefinition;
 import com.gufli.colonel.common.dispatch.definition.CommandNode;
 import com.gufli.colonel.common.dispatch.suggestion.Suggestion;
@@ -57,14 +58,19 @@ public class HytaleColonel extends AnnotationColonel<CommandSender> {
         registry().registerSourceMapper(PlayerRef.class, source -> {
             if (source instanceof Player player) {
                 var ref = player.getReference();
-                if ( ref == null ) {
-                    return null;
+                if (ref != null) {
+                    var store = ref.getStore();
+                    return store.getComponent(ref, PlayerRef.getComponentType());
                 }
-
-                var store = ref.getStore();
-                return store.getComponent(ref, PlayerRef.getComponentType());
             }
-            return null;
+
+            throw FailureHandler.of(() -> {
+                sendMessage(
+                        source,
+                        "cmderr.sender-not-player",
+                        Message.raw("This command can only be executed by players.").color(RED)
+                );
+            });
         });
 
         registry().registerSourceMapper(World.class, source -> {
@@ -82,7 +88,7 @@ public class HytaleColonel extends AnnotationColonel<CommandSender> {
     public void init() {
         var nodes = this.tree();
 
-        for ( CommandNode node : nodes ) {
+        for (CommandNode node : nodes) {
             HytaleCommand command = convert(node);
             plugin.getCommandRegistry().registerCommand(command);
         }
@@ -91,20 +97,18 @@ public class HytaleColonel extends AnnotationColonel<CommandSender> {
     private HytaleCommand convert(CommandNode node) {
         HytaleCommand command;
 
-        if ( node.definitions().size() == 1 ) {
+        if (node.definitions().size() == 1) {
             var definition = node.definitions().iterator().next();
             command = new HytaleCommand(this, node.name(), definition);
-        }
-        else {
+        } else {
             CommandDefinition empty = node.definitions().stream()
                     .filter(def -> def.parameters().length == 0)
                     .findFirst()
                     .orElse(null);
 
-            if ( empty != null ) {
+            if (empty != null) {
                 command = new HytaleCommand(this, node.name(), empty);
-            }
-            else {
+            } else {
                 command = new HytaleCommand(this, node.name());
             }
 
@@ -118,7 +122,7 @@ public class HytaleColonel extends AnnotationColonel<CommandSender> {
             }
         }
 
-        for ( CommandNode child : node.children() ) {
+        for (CommandNode child : node.children()) {
             HytaleCommand subCommand = convert(child);
             command.addSubCommand(subCommand);
         }
