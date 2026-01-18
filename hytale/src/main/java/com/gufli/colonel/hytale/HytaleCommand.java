@@ -2,6 +2,7 @@ package com.gufli.colonel.hytale;
 
 import com.gufli.colonel.common.dispatch.definition.CommandDefinition;
 import com.gufli.colonel.common.dispatch.definition.CommandParameter;
+import com.hypixel.hytale.protocol.GameMode;
 import com.hypixel.hytale.server.core.command.system.AbstractCommand;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.ParseResult;
@@ -42,6 +43,10 @@ public class HytaleCommand extends AbstractCommand {
 
         String permission = definition.propertyAsString("permission").filter(p -> !p.isEmpty()).orElse(null);
         this.requirePermission(Objects.requireNonNullElse(permission, ""));
+
+        if ( permission == null ) {
+            this.setPermissionGroups(GameMode.Adventure.toString(), GameMode.Creative.toString());
+        }
 
         for ( CommandParameter param : definition.parameters() ) {
             String description = definition.propertyAsString("parameters." + param.name() + ".description").orElse("");
