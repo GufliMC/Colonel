@@ -44,7 +44,7 @@ public class HytaleCommand extends AbstractCommand {
         String permission = definition.propertyAsString("permission").filter(p -> !p.isEmpty()).orElse(null);
         this.requirePermission(Objects.requireNonNullElse(permission, ""));
 
-        if ( permission == null ) {
+        if ( permission == null || permission.isBlank() ) {
             this.setPermissionGroups(GameMode.Adventure.toString(), GameMode.Creative.toString());
         }
 
