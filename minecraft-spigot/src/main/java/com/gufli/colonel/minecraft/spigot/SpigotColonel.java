@@ -1,6 +1,6 @@
 package com.gufli.colonel.minecraft.spigot;
 
-import com.guflimc.brick.i18n.spigot.api.SpigotTranslator;
+import com.gufli.brick.i18n.spigot.localization.SpigotLocalizer;
 import com.gufli.colonel.common.dispatch.suggestion.Suggestion;
 import com.gufli.colonel.common.dispatch.tree.CommandHandler;
 import com.gufli.colonel.common.exception.CommandFailure;
@@ -42,7 +42,7 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
 
     final Set<RegisteredCommand> commands = new HashSet<>();
 
-    private @Nullable SpigotTranslator translator;
+    private @Nullable SpigotLocalizer localizer;
 
     public SpigotColonel(@NotNull JavaPlugin plugin) {
         super(CommandSender.class);
@@ -60,9 +60,9 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
         registerAll(new SpigotArguments(this));
     }
 
-    public SpigotColonel(@NotNull JavaPlugin plugin, @NotNull SpigotTranslator translator) {
+    public SpigotColonel(@NotNull JavaPlugin plugin, @NotNull SpigotLocalizer localizer) {
         this(plugin);
-        this.translator = translator;
+        this.localizer = localizer;
     }
 
     @Override
@@ -170,8 +170,8 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
     //
 
     void sendMessage(CommandSender source, String i18n, String fallback, Object... args) {
-        if (this.translator != null) {
-            translator.send(source, i18n, args);
+        if (this.localizer != null) {
+            localizer.send(source, i18n, args);
             return;
         }
 
