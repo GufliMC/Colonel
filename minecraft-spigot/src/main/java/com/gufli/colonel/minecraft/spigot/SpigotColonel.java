@@ -136,21 +136,21 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
         // USER FACING ERRORS
 
         if (failure instanceof CommandNotFoundFailure) {
-            sendMessage(source, "cmd.error.notfound",
+            sendMessage(source, "cmderr.notfound",
                     ChatColor.RED + "Command not found: " + ChatColor.DARK_RED + "{0}", failure.command());
             return;
         }
 
         if (failure instanceof CommandPrepareParameterFailure pf) {
             if (pf.input() == null) {
-                sendMessage(source, "cmd.error.parameter.missing",
+                sendMessage(source, "cmderr.parameter.missing",
                         ChatColor.RED + "The parameter " + ChatColor.DARK_RED + "{0}" +
                                 ChatColor.RED + " is missing. Expected syntax: " + ChatColor.DARK_RED + "{1}" +
                                 ChatColor.RED + ".", pf.parameter().name(), pf.path() + " " + pf.definition().toString());
                 return;
             }
             if (pf.getCause() instanceof IllegalArgumentException) {
-                sendMessage(source, "cmd.error.parameter",
+                sendMessage(source, "cmderr.parameter",
                         ChatColor.RED + "The value " + ChatColor.DARK_RED + "{0}" +
                                 ChatColor.RED + " is invalid for parameter " + ChatColor.DARK_RED + "{1}" +
                                 ChatColor.RED + ".", pf.input(), pf.parameter().name());
@@ -160,7 +160,7 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
 
         // INTERNAL ERRORS FOR THE DEVELOPER
 
-        sendMessage(source, "cmd.error.unexpected", ChatColor.RED + "An unexpected error occured, check the console for more information.");
+        sendMessage(source, "cmderr.unexpected", ChatColor.RED + "An unexpected error occured, check the console for more information.");
 
         if (failure.getCause() != null) {
             failure.getCause().printStackTrace();

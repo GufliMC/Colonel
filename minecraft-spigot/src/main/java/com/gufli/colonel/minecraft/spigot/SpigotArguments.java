@@ -44,7 +44,7 @@ public class SpigotArguments {
         if (player != null) {
             return player;
         }
-        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.player.notfound", "Player not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmderr.args.player-not-found", "Player not found: {0}", input));
     }
 
     @Completer(value = "player", type = Player.class)
@@ -62,7 +62,7 @@ public class SpigotArguments {
         if (player != null) {
             return audiences.player(player);
         }
-        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.player.notfound", ChatColor.RED + "Player not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmderr.args.player-not-found", ChatColor.RED + "Player not found: {0}", input));
     }
 
     @Completer(value = "audience", type = Audience.class)
@@ -80,7 +80,7 @@ public class SpigotArguments {
         if (world != null) {
             return world;
         }
-        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.world.notfound", ChatColor.RED + "World not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmderr.args.world-not-found", ChatColor.RED + "World not found: {0}", input));
     }
 
     @Completer(value = "world", type = World.class)
@@ -98,7 +98,7 @@ public class SpigotArguments {
         if (material != null) {
             return material;
         }
-        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.material.notfound", ChatColor.RED + "Material not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmderr.args.material-not-found", ChatColor.RED + "Material not found: {0}", input));
     }
 
     @Completer(value = "material", type = Material.class)
@@ -118,7 +118,7 @@ public class SpigotArguments {
         if (sound != null) {
             return sound;
         }
-        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.sound.notfound", ChatColor.RED + "Sound not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmderr.args.sound-not-found", ChatColor.RED + "Sound not found: {0}", input));
     }
 
     @Completer(value = "sound", type = Sound.class)
@@ -138,7 +138,7 @@ public class SpigotArguments {
         if (entityType != null) {
             return entityType;
         }
-        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.entitytype.notfound", ChatColor.RED + "Entity type not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmderr.args.entitytype-not-found", ChatColor.RED + "Entity type not found: {0}", input));
     }
 
     @Completer(value = "entityType", type = EntityType.class)
@@ -158,7 +158,7 @@ public class SpigotArguments {
         if (potionEffectType != null) {
             return potionEffectType;
         }
-        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.potioneffecttype.notfound", ChatColor.RED + "Potion effect type not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmderr.args.potioneffect-not-found", ChatColor.RED + "Potion effect type not found: {0}", input));
     }
 
     @Completer(value = "potioneEffectType", type = PotionEffectType.class)
@@ -178,7 +178,7 @@ public class SpigotArguments {
         if (enchantment != null) {
             return enchantment;
         }
-        return FailureHandler.of(() -> colonel.sendMessage(source, "cmd.error.enchantment.notfound", ChatColor.RED + "Enchantment not found: {0}", input));
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmderr.args.enchantment-not-found", ChatColor.RED + "Enchantment not found: {0}", input));
     }
 
     @Completer(value = "enchantment", type = Enchantment.class)
