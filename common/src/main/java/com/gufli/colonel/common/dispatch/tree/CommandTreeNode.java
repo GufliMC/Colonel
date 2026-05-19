@@ -38,7 +38,6 @@ public final class CommandTreeNode {
     public boolean apply(Object source, String input) {
         // parse arguments in as strings
         Map<CommandHandler, CommandInput> parsed = new LinkedHashMap<>(); // keep order
-        int min = Integer.MAX_VALUE;
         for (CommandHandler handler : handlers) {
             if ( !handler.available(source) ) {
                 continue;
@@ -52,17 +51,19 @@ public final class CommandTreeNode {
                 continue;
             }
 
-            min = Math.min(min, ci.errors().size());
             parsed.put(handler, ci);
         }
 
-        // remove handlers that don't match or have too many errors
-        for ( CommandHandler handler : new HashSet<>(parsed.keySet())) {
-            if ( parsed.get(handler).errors().size() > min )  // exceeds max error count
-                parsed.remove(handler);
-            else if ( parsed.get(handler).excess() != null )  // not a match (too many arguments)
-                parsed.remove(handler);
+        // remove all with too many arguments
+        if ( parsed.values().stream().anyMatch(ci -> ci.excess() == null) ) {
+            parsed.entrySet()
+                    .removeIf(entry -> entry.getValue().excess() != null);
         }
+
+        // exceeds max error count
+        int min = parsed.values().stream().mapToInt(ci -> ci.errors().size()).min()
+                .orElse(Integer.MAX_VALUE);
+        parsed.values().removeIf(ci -> ci.errors().size() > min);
 
         // find the best handler
         CommandDelegate best = null;
