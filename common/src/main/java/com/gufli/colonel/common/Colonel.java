@@ -18,6 +18,7 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class Colonel<S> {
 
@@ -118,6 +119,7 @@ public class Colonel<S> {
         registry.registerParameterParser(LocalDateTime.class, s -> LocalDateTime.parse(s));
         registry.registerParameterParser(Boolean.class, Boolean::parseBoolean);
         registry.registerParameterCompleter(Boolean.class, () -> List.of("true", "false"));
+        registry.registerParameterParser(UUID.class, UUID::fromString);
     }
 
 }
