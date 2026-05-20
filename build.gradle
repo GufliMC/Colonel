@@ -14,7 +14,13 @@ ext.set("publishProjects", publishProjects)
 subprojects {
     apply plugin: 'java-library'
 
+    java {
+        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+    }
+
     repositories {
+        mavenLocal()
         maven { url "https://libraries.minecraft.net" }
         maven { url "https://repo.jorisg.com/snapshots" }
     }
