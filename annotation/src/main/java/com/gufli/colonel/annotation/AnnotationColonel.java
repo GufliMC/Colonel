@@ -300,7 +300,7 @@ public class AnnotationColonel<S> extends Colonel<S> {
                     .orElseThrow(() -> new IllegalStateException(String.format("No source mapper found with name '%s' for parameter '%s' of type %s in method '%s' in class '%s'.",
                             sourceConf.value(), param.getName(), param.getType().getSimpleName(), param.getDeclaringExecutable().getName(),
                             param.getDeclaringExecutable().getDeclaringClass().getSimpleName())));
-        } else if (sourceType.isAssignableFrom(param.getType())) {
+        } else if (param.getType().isAssignableFrom(sourceType)) {
             return (source) -> source;
         } else {
             mapper = registry().mapper(param.getType(), name, true)

@@ -1,6 +1,7 @@
 package com.gufli.colonel.minecraft.spigot;
 
 import com.gufli.brick.i18n.spigot.localization.SpigotLocalizer;
+import com.gufli.colonel.common.build.FailureHandler;
 import com.gufli.colonel.common.dispatch.suggestion.Suggestion;
 import com.gufli.colonel.common.dispatch.tree.CommandHandler;
 import com.gufli.colonel.common.exception.CommandFailure;
@@ -15,6 +16,7 @@ import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -49,6 +51,14 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
 
         this.plugin = plugin;
         this.audiences = BukkitAudiences.create(plugin);
+
+        registry().registerSourceMapper(Player.class, cs -> {
+            if (cs instanceof Player p) {
+                return p;
+            }
+            throw FailureHandler.of(() -> sendMessage(cs, "cmderr.sender-not-player",
+                    ChatColor.RED + "This command can only be executed by a player."));
+        });
 
         try {
             commandMap = (SimpleCommandMap) plugin.getServer().getClass()
@@ -150,7 +160,7 @@ public class SpigotColonel extends MinecraftColonel<CommandSender> {
                 return;
             }
             if (pf.getCause() instanceof IllegalArgumentException) {
-                sendMessage(source, "parameter-invalid-value",
+                sendMessage(source, "cmderr.parameter-invalid-value",
                         ChatColor.RED + "The value " + ChatColor.DARK_RED + "{0}" +
                                 ChatColor.RED + " is invalid for parameter " + ChatColor.DARK_RED + "{1}" +
                                 ChatColor.RED + ".", pf.input(), pf.parameter().name());
