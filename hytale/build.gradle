@@ -5,11 +5,14 @@ repositories {
         url = uri("https://repo.jorisg.com/guflimc")
         credentials(org.gradle.api.credentials.PasswordCredentials)
     }
+    maven {url "https://maven.hytale.com/release" }
+    maven {url "https://maven.hytale.com/pre-release" }
 }
 
 dependencies {
     api project(':annotation')
 
+    compileOnly 'com.hypixel.hytale:Server:0.5.3'
+
     compileOnly 'com.gufli.brick.i18n:hytale:+'
-    compileOnly 'com.hypixel.hytale:HytaleServer:0.1.0'
 }

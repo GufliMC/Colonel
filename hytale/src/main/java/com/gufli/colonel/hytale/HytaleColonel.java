@@ -6,7 +6,6 @@ import com.gufli.colonel.common.build.FailureHandler;
 import com.gufli.colonel.common.dispatch.definition.CommandDefinition;
 import com.gufli.colonel.common.dispatch.definition.CommandNode;
 import com.gufli.colonel.common.dispatch.suggestion.Suggestion;
-import com.gufli.colonel.common.dispatch.tree.CommandHandler;
 import com.gufli.colonel.common.exception.CommandFailure;
 import com.gufli.colonel.common.exception.CommandNotFoundFailure;
 import com.gufli.colonel.common.exception.CommandPrepareParameterFailure;
@@ -17,12 +16,10 @@ import com.gufli.colonel.hytale.annotations.command.CommandHelp;
 import com.gufli.colonel.hytale.annotations.command.Permission;
 import com.gufli.colonel.hytale.annotations.parameter.ParameterHelp;
 import com.hypixel.hytale.server.core.Message;
-import com.hypixel.hytale.server.core.command.system.AbstractCommand;
-import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
-import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,13 +27,11 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class HytaleColonel extends AnnotationColonel<CommandSender> {
 
@@ -56,12 +51,8 @@ public class HytaleColonel extends AnnotationColonel<CommandSender> {
         registerAll(new HytaleArguments(this, plugin));
 
         registry().registerSourceMapper(PlayerRef.class, source -> {
-            if (source instanceof Player player) {
-                var ref = player.getReference();
-                if (ref != null) {
-                    var store = ref.getStore();
-                    return store.getComponent(ref, PlayerRef.getComponentType());
-                }
+            if (source instanceof PlayerRef player) {
+                return player;
             }
 
             throw FailureHandler.of(() -> {
@@ -74,8 +65,10 @@ public class HytaleColonel extends AnnotationColonel<CommandSender> {
         });
 
         registry().registerSourceMapper(World.class, source -> {
-            if (source instanceof Player player) {
-                return player.getWorld();
+            if (source instanceof PlayerRef player) {
+                return Optional.ofNullable(player.getWorldUuid())
+                        .map(id -> Universe.get().getWorld(id))
+                        .orElse(null);
             }
             return null;
         });
@@ -245,7 +238,7 @@ public class HytaleColonel extends AnnotationColonel<CommandSender> {
         );
 
         if (failure.getCause() != null) {
-            failure.getCause().printStackTrace();
+            plugin.getLogger().atSevere().log("Unexpected error occured when handling command.", failure.getCause());
         }
     }
 

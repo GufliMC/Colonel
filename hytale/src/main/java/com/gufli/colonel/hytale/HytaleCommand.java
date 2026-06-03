@@ -7,12 +7,14 @@ import com.hypixel.hytale.server.core.command.system.AbstractCommand;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.ParseResult;
 import com.hypixel.hytale.server.core.command.system.arguments.types.SingleArgumentType;
-import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class HytaleCommand extends AbstractCommand {
@@ -44,11 +46,11 @@ public class HytaleCommand extends AbstractCommand {
         String permission = definition.propertyAsString("permission").filter(p -> !p.isEmpty()).orElse(null);
         this.requirePermission(Objects.requireNonNullElse(permission, ""));
 
-        if ( permission == null || permission.isBlank() ) {
+        if (permission == null || permission.isBlank()) {
             this.setPermissionGroups(GameMode.Adventure.toString(), GameMode.Creative.toString());
         }
 
-        for ( CommandParameter param : definition.parameters() ) {
+        for (CommandParameter param : definition.parameters()) {
             String description = definition.propertyAsString("parameters." + param.name() + ".description").orElse("");
             String type = definition.propertyAsString("parameters." + param.name() + ".type").orElse("");
             String usage = definition.propertyAsString("parameters." + param.name() + ".usage").orElse("");
@@ -66,9 +68,12 @@ public class HytaleCommand extends AbstractCommand {
 
     @Override
     protected @Nullable CompletableFuture<Void> execute(@NotNull CommandContext ctx) {
-        if ( ctx.isPlayer() ) {
-            World world = ctx.senderAs(Player.class).getWorld();
-            if ( world != null ) {
+        if (ctx.isPlayer()) {
+            World world = Optional.ofNullable(ctx.senderAs(PlayerRef.class).getWorldUuid())
+                    .map(id -> Universe.get().getWorld(id))
+                    .orElse(null);
+
+            if (world != null) {
                 return CompletableFuture.runAsync(() -> {
                     colonel.dispatch(ctx.sender(), ctx.getInputString());
                 }, world);
