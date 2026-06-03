@@ -1,5 +1,6 @@
 package com.gufli.colonel.minecraft.spigot;
 
+import com.gufli.brick.i18n.common.time.DurationParser;
 import com.gufli.colonel.annotation.annotations.Completer;
 import com.gufli.colonel.annotation.annotations.Parser;
 import com.gufli.colonel.annotation.annotations.parameter.Input;
@@ -20,6 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
@@ -216,6 +218,17 @@ public class SpigotArguments {
             return color;
         }
         return TextColor.color(Integer.decode(input));
+    }
+
+    // DURATION
+
+    @Parser(value = "duration", type = Duration.class)
+    public Object durationParser(@Source CommandSender source, @Input String input) {
+        Duration duration = DurationParser.parse(input);
+        if ( !duration.isZero() ) {
+            return duration;
+        }
+        return FailureHandler.of(() -> colonel.sendMessage(source, "cmderr.args.invalid-duration", "Duration format is invalid: {0}. Examples: '1d', '2h30m', '45s'", input));
     }
 
 }
