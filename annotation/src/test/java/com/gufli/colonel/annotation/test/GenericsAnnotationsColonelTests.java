@@ -9,8 +9,7 @@ import com.gufli.colonel.annotation.annotations.parameter.Source;
 import com.gufli.colonel.annotation.test.util.Person;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GenericsAnnotationsColonelTests {
 
@@ -66,13 +65,15 @@ public class GenericsAnnotationsColonelTests {
 
     @Test
     public void singleGenericSourceNoMapper() {
+        colonel.registerAll(new Object() {
+            @Command("addage")
+            public <T> void addage(@Source Person person, @Source T amount) {
+                person.setAge(person.age() + (int) amount);
+            }
+        });
+
         assertThrows(RuntimeException.class, () -> {
-            colonel.registerAll(new Object() {
-                @Command("addage")
-                public <T> void addage(@Source Person person, @Source T amount) {
-                    person.setAge(person.age() + (int) amount);
-                }
-            });
+            colonel.dispatch(person, "addage 5");
         });
     }
 
@@ -86,6 +87,10 @@ public class GenericsAnnotationsColonelTests {
                 person.setAge((int) age + amount);
             }
         });
+
+        assertThrows(RuntimeException.class, () -> {
+            colonel.dispatch(person, "addage 5");
+        });
     }
 
     @Test
@@ -97,6 +102,10 @@ public class GenericsAnnotationsColonelTests {
             public <T> void addage(@Source("age") T num, @Parameter int amount) {
                 person.setAge((int) num + amount);
             }
+        });
+
+        assertDoesNotThrow(() -> {
+            colonel.dispatch(person, "addage 5");
         });
     }
 
@@ -111,7 +120,9 @@ public class GenericsAnnotationsColonelTests {
             }
         });
 
-        colonel.dispatch(person, "addage 5");
+        assertDoesNotThrow(() -> {
+            colonel.dispatch(person, "addage 5");
+        });
     }
 
 }
